@@ -1,66 +1,170 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="사물인터넷과 센서 제어 수업을 위한 실습 시뮬레이터 모음">
-  <title>사물인터넷과 센서 제어 | 실습 시뮬레이터</title>
-  <style>
-    :root { --ink:#10233f; --muted:#64748b; --line:#dbe5ef; --blue:#2563eb; --mint:#14b8a6; --bg:#f4f8fc; --card:#fff; }
-    * { box-sizing:border-box; }
-    body { margin:0; color:var(--ink); background:var(--bg); font-family:Pretendard,"Noto Sans KR","Segoe UI",sans-serif; line-height:1.6; }
-    header { background:linear-gradient(135deg,#173b74,#2563eb 64%,#14b8a6); color:#fff; }
-    .wrap { width:min(1080px,calc(100% - 32px)); margin:auto; }
-    .hero { padding:70px 0 64px; }
-    .eyebrow { margin:0 0 10px; font-size:14px; letter-spacing:.08em; opacity:.85; }
-    h1 { margin:0; font-size:clamp(32px,5vw,52px); line-height:1.18; }
-    .lead { max-width:650px; margin:18px 0 0; font-size:18px; opacity:.9; }
-    main { padding:48px 0 80px; }
-    .section-head { display:flex; justify-content:space-between; gap:16px; align-items:end; margin-bottom:18px; }
-    h2 { margin:0; font-size:25px; }
-    .section-head p { margin:0; color:var(--muted); }
-    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:18px; }
-    .card { display:flex; flex-direction:column; min-height:265px; padding:24px; color:inherit; background:var(--card); border:1px solid var(--line); border-radius:18px; text-decoration:none; box-shadow:0 10px 30px rgba(15,35,65,.06); transition:.2s ease; }
-    .card:hover { transform:translateY(-4px); border-color:#93b4ef; box-shadow:0 15px 34px rgba(37,99,235,.12); }
-    .icon { display:grid; place-items:center; width:52px; height:52px; border-radius:14px; color:#fff; background:linear-gradient(135deg,var(--blue),var(--mint)); font-size:25px; }
-    .card h3 { margin:22px 0 8px; font-size:21px; }
-    .card p { margin:0; color:var(--muted); }
-    .tag { display:inline-block; width:max-content; margin-top:16px; padding:4px 10px; border-radius:999px; background:#e8f0ff; color:#1d4ed8; font-size:13px; }
-    .go { margin-top:auto; padding-top:20px; color:var(--blue); font-weight:700; }
-    .planned { opacity:.62; pointer-events:none; }
-    footer { padding:26px 0; color:var(--muted); border-top:1px solid var(--line); text-align:center; }
-    @media (max-width:640px) { .hero{padding:52px 0 48px}.section-head{display:block}.section-head p{margin-top:6px} }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>사물 인터넷과 센서 제어</title>
+<meta name="description" content="숭신고 2학년 사물 인터넷과 센서 제어 — 수업 대본과 실습 도구">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@600&display=swap">
+<style>
+  :root{
+    --bg:#0B0F14; --panel:#141B25; --panel2:#0F141C; --line:#232D3B;
+    --text:#E8EDF4; --muted:#93A1B5; --faint:#5C6B7E;
+    --amber:#FFB03A; --green:#7BD88F;
+    --disp:'Black Han Sans',sans-serif;
+    --body:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
+    --mono:'IBM Plex Mono','Consolas',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);
+    padding:0 28px 80px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto}
+
+  header{padding:64px 0 36px;border-bottom:1px solid var(--line);margin-bottom:40px}
+  .eyebrow{font-size:16px;letter-spacing:.24em;color:var(--amber);font-weight:700;margin-bottom:14px}
+  h1{font-family:var(--disp);font-weight:400;font-size:54px;line-height:1.15}
+  .lede{color:var(--muted);font-size:20px;margin-top:16px;font-weight:500;max-width:44em}
+  .lede b{color:var(--text)}
+
+  .tools{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+  .tools a{display:inline-flex;align-items:center;gap:9px;text-decoration:none;
+    background:var(--panel);border:2px solid var(--line);border-radius:999px;
+    padding:11px 22px;color:var(--text);font-weight:900;font-size:17px}
+  .tools a:hover{border-color:var(--amber);color:var(--amber)}
+  .tools a:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+
+  h3.sec{font-family:var(--disp);font-weight:400;font-size:30px;margin:0 0 18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;
+    padding:24px 26px;display:flex;flex-direction:column;gap:10px;
+    text-decoration:none;color:inherit}
+  .card.ready{border-left:6px solid var(--green)}
+  .card.ready:hover{border-color:var(--green);background:#182231}
+  .card.ready:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+  .card.todo{border-left:6px solid var(--line);opacity:.6}
+  .no{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--amber);letter-spacing:.1em}
+  .card h2{font-family:var(--disp);font-weight:400;font-size:26px;line-height:1.25}
+  .go{font-size:15px;font-weight:700;color:var(--green);margin-top:auto}
+  .soon{font-size:14px;font-weight:700;color:var(--faint);margin-top:auto}
+
+  footer{margin-top:52px;padding-top:22px;border-top:1px solid var(--line);
+    color:var(--faint);font-size:15px;font-weight:500;line-height:1.9}
+  footer b{color:var(--muted)}
+
+  @media (max-width:640px){
+    h1{font-size:36px} body{padding:0 18px 60px}
+    .grid{grid-template-columns:minmax(0,1fr)}
+  }
+</style>
 </head>
 <body>
-  <header>
-    <div class="wrap hero">
-      <p class="eyebrow">2022 개정 교육과정 · 체험형 학습 자료</p>
-      <h1>사물인터넷과 센서 제어<br>실습 시뮬레이터</h1>
-      <p class="lead">눈에 보이지 않는 신호와 제어 원리를 직접 조작하며 이해하는 수업용 실습 공간입니다.</p>
-    </div>
-  </header>
-  <main class="wrap">
-    <div class="section-head">
-      <h2>시뮬레이터 목록</h2>
-      <p>카드를 선택해 실습을 시작하세요.</p>
-    </div>
-    <section class="grid" aria-label="시뮬레이터 목록">
-      <a class="card" href="pwm.html">
-        <span class="icon" aria-hidden="true">〽</span>
-        <h3>PWM 조작 실습</h3>
-        <p>듀티비와 주파수를 변경하며 파형, LED 밝기, 모터 출력의 변화를 관찰합니다.</p>
-        <span class="tag">PWM · 듀티비 · 주파수</span>
-        <span class="go">실습 시작 →</span>
-      </a>
-      <article class="card planned" aria-label="새 시뮬레이터 준비 중">
-        <span class="icon" aria-hidden="true">＋</span>
-        <h3>새로운 실습 추가 예정</h3>
-        <p>앞으로 제작하는 센서 및 제어 시뮬레이터가 이곳에 순서대로 추가됩니다.</p>
-        <span class="go">준비 중</span>
-      </article>
-    </section>
-  </main>
-  <footer><div class="wrap">사물인터넷과 센서 제어 수업 자료</div></footer>
+<div class="wrap">
+<header>
+  <div class="eyebrow">숭신고 2학년 · ESP32 올인원 키트</div>
+  <h1>사물 인터넷과 센서 제어</h1>
+  <p class="lede">챕터를 고르면 <b>수업 대본</b>이 열립니다.
+    코드 해설과 <b>직접 조작하는 실행 데모</b>가 들어 있습니다.
+    현재 <b>2개 챕터</b> 완성.</p>
+  <div class="tools">
+    <a href="pinmap.html">📍 ESP32 핀 지도</a>
+    <a href="pwm.html">🎚 PWM 조작 실습</a>
+  </div>
+</header>
+
+<h3 class="sec">챕터</h3>
+<div class="grid">
+  <div class="card todo">
+    <div class="no">01</div>
+    <h2>제품 소개와 조립</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+  <div class="card todo">
+    <div class="no">02</div>
+    <h2>개발 환경과 첫 프로젝트</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+  <a class="card ready" href="ch03.html">
+    <div class="no">03</div>
+    <h2>LED 기초</h2>
+    <span class="go">수업 대본 열기 →</span>
+  </a>
+  <a class="card ready" href="ch04.html">
+    <div class="no">04</div>
+    <h2>RGB LED</h2>
+    <span class="go">수업 대본 열기 →</span>
+  </a>
+  <div class="card todo">
+    <div class="no">05</div>
+    <h2>소리</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+  <div class="card todo">
+    <div class="no">06</div>
+    <h2>디스플레이</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+  <div class="card todo">
+    <div class="no">07</div>
+    <h2>LCD와 서보모터</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+  <div class="card todo">
+    <div class="no">08</div>
+    <h2>버튼 입력</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+  <div class="card todo">
+    <div class="no">09</div>
+    <h2>게임 만들기</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+  <div class="card todo">
+    <div class="no">10</div>
+    <h2>센서 입문</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+  <div class="card todo">
+    <div class="no">11</div>
+    <h2>아날로그 입력</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+  <div class="card todo">
+    <div class="no">12</div>
+    <h2>소리 센서</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+  <div class="card todo">
+    <div class="no">13</div>
+    <h2>온습도 센서</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+  <div class="card todo">
+    <div class="no">14</div>
+    <h2>초음파 거리 측정</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+  <div class="card todo">
+    <div class="no">15</div>
+    <h2>스마트 주차 시스템</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+  <div class="card todo">
+    <div class="no">16</div>
+    <h2>적외선 리모컨</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+  <div class="card todo">
+    <div class="no">17</div>
+    <h2>WiFi · IoT</h2>
+    <span class="soon">대본 준비 중</span>
+  </div>
+</div>
+
+<footer>
+  해설 영상은 용량이 커서 <b>학교 구글 드라이브</b>에 있습니다.<br>
+  실습 코드와 교재의 저작권은 <b>아이씨뱅큐(ICBANQ)</b>에 있어 이 사이트에는 싣지 않았습니다.
+</footer>
+</div>
 </body>
 </html>

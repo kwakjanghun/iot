@@ -1,0 +1,1163 @@
+<title>03장 LED 기초 수업 진행 대본</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  :root{
+    --bg:#0B0F14; --panel:#121822; --panel2:#0F141C; --line:#232D3B;
+    --text:#E8EDF4; --muted:#93A1B5;
+    --amber:#FFB03A; --amber-dim:#3A2C12;
+    --blue:#6FB7FF; --red:#FF7A6B; --green:#7BD88F;
+    --disp:'Black Han Sans',sans-serif;
+    --body:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
+    --mono:'IBM Plex Mono','Consolas',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);
+    font-size:22px;line-height:1.9;font-weight:400}
+  .wrap{max-width:880px;margin:0 auto;padding:0 28px 120px}
+
+  /* ── sticky nav ── */
+  nav{position:sticky;top:0;z-index:50;background:rgba(11,15,20,.92);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav .in{max-width:880px;margin:0 auto;padding:14px 28px;display:flex;gap:10px;flex-wrap:wrap}
+  nav a{color:var(--muted);text-decoration:none;font-size:17px;font-weight:700;
+    padding:6px 16px;border:1px solid var(--line);border-radius:999px;white-space:nowrap}
+  nav a:hover,nav a:focus-visible{color:var(--amber);border-color:var(--amber);outline:none}
+
+  /* ── hero ── */
+  header{padding:72px 0 40px}
+  .eyebrow{font-size:17px;letter-spacing:.25em;color:var(--amber);font-weight:700;margin-bottom:14px}
+  h1{font-family:var(--disp);font-size:56px;line-height:1.2;font-weight:400;text-wrap:balance}
+  .lede{color:var(--muted);font-size:22px;margin-top:18px;max-width:34em}
+  .lede b{color:var(--text)}
+
+  /* ── 시간 배분 바 ── */
+  .timebar{display:flex;border-radius:14px;overflow:hidden;margin:36px 0 8px;
+    border:1px solid var(--line);font-size:16px;font-weight:700;text-align:center}
+  .timebar div{padding:12px 4px;color:#0B0F14;white-space:nowrap;overflow:hidden}
+  .t1{flex:5;background:#8B9BB0}.t2{flex:15;background:var(--amber)}
+  .t3{flex:10;background:#E89A2E}.t4{flex:15;background:#C97F1E}
+  .t5{flex:5;background:#8B9BB0}
+  .timecap{color:var(--muted);font-size:17px;text-align:center;margin-bottom:8px}
+
+  /* ── sections ── */
+  section{margin-top:96px}
+  .secnum{display:inline-flex;align-items:center;gap:14px;margin-bottom:10px}
+  .secnum .chip{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--amber);
+    border:1px solid var(--amber);border-radius:999px;padding:3px 16px}
+  h2{font-family:var(--disp);font-size:40px;font-weight:400;line-height:1.3;text-wrap:balance}
+  h3{font-size:24px;font-weight:900;margin:48px 0 16px;display:flex;align-items:center;gap:10px}
+  h3 .tag{font-size:15px;font-weight:700;letter-spacing:.12em;color:var(--bg);
+    background:var(--amber);border-radius:6px;padding:2px 10px}
+
+  /* ── 대사 카드 (핵심 장치) ── */
+  .say{background:var(--panel);border-left:6px solid var(--amber);border-radius:0 16px 16px 0;
+    padding:26px 30px;margin:18px 0;font-size:25px;line-height:1.85;font-weight:500}
+  .say b{color:var(--amber);font-weight:900}
+  .say .who{display:block;font-size:15px;letter-spacing:.2em;color:var(--muted);
+    font-weight:700;margin-bottom:8px}
+  .say.big{font-size:29px;font-weight:700}
+
+  /* ── 비유 카드 ── */
+  .ana{background:var(--panel2);border:1px solid var(--line);border-top:4px solid var(--blue);
+    border-radius:16px;padding:26px 30px;margin:18px 0}
+  .ana .lab{color:var(--blue);font-weight:900;font-size:18px;letter-spacing:.1em;margin-bottom:10px}
+  .ana p{margin:6px 0}
+  .ana b{color:var(--blue)}
+
+  /* ── 주의 카드 ── */
+  .warn{background:var(--panel2);border:1px solid var(--line);border-top:4px solid var(--red);
+    border-radius:16px;padding:22px 30px;margin:18px 0}
+  .warn .lab{color:var(--red);font-weight:900;font-size:18px;letter-spacing:.1em;margin-bottom:8px}
+  .warn b{color:var(--red)}
+
+  /* ── 순서 리스트 ── */
+  ol.steps{list-style:none;counter-reset:s;margin:10px 0}
+  ol.steps li{counter-increment:s;position:relative;padding:14px 0 14px 64px;
+    border-bottom:1px dashed var(--line)}
+  ol.steps li:last-child{border-bottom:none}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:14px;
+    width:42px;height:42px;border-radius:50%;background:var(--amber-dim);color:var(--amber);
+    font-family:var(--mono);font-weight:600;font-size:20px;
+    display:flex;align-items:center;justify-content:center}
+  ol.steps b{color:var(--amber)}
+
+  /* 본문 속 인라인 코드 */
+  p code,.a code{font-family:var(--mono);font-size:.9em;background:var(--panel);
+    border:1px solid var(--line);border-radius:6px;padding:1px 8px;color:var(--amber)}
+  section > p{margin:10px 0;font-size:21px}
+
+  /* ── 전체 코드 ── */
+  pre.src{background:var(--panel2);border:1px solid var(--line);border-radius:14px;
+    padding:22px 26px;font-family:var(--mono);font-size:17px;line-height:1.75;
+    overflow-x:auto;color:#C9D6E8;margin:14px 0}
+  pre.src .cm{color:#5E7189}
+  pre.src .kw{color:var(--blue)}
+  pre.src .fn{color:var(--amber)}
+  pre.src .num{color:var(--green)}
+
+  /* ── 명령어 해부 (인수 설명) ── */
+  .anat{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:24px 28px;margin:16px 0}
+  .anat .call{font-family:var(--mono);font-size:23px;font-weight:600;color:var(--text);
+    overflow-x:auto;white-space:nowrap;padding-bottom:8px}
+  .anat .call .fn{color:var(--amber)}
+  .anat .a1{color:#FFB03A}.anat .a2{color:#6FB7FF}.anat .a3{color:#7BD88F}
+  /* 이름 유래 뱃지 */
+  .anat .origin{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;
+    background:var(--amber-dim);border-radius:10px;padding:12px 18px;margin-bottom:16px;
+    font-size:19px}
+  .anat .origin .why{font-size:15px;font-weight:900;letter-spacing:.1em;color:var(--amber);
+    flex-shrink:0}
+  .anat .origin b{color:var(--amber)}
+
+  /* 화살표 해부도 */
+  .diagram{display:flex;flex-wrap:nowrap;align-items:flex-start;gap:0 8px;
+    font-family:var(--mono);background:var(--panel2);border:1px solid var(--line);
+    border-radius:12px;padding:20px 24px;margin-bottom:16px;overflow-x:auto}
+  .diagram .dcol{display:flex;flex-direction:column;align-items:center;gap:7px;flex-shrink:0}
+  .diagram .dfn,.diagram .dsep{font-size:21px;font-weight:600;color:var(--amber);padding-top:1px}
+  .diagram .dsep{color:var(--muted)}
+  .diagram .arg{font-size:21px;font-weight:600;white-space:nowrap}
+  .diagram .arw{font-size:17px;color:var(--muted);line-height:1}
+  .diagram .q{font-family:var(--body);font-size:16px;font-weight:700;
+    color:var(--muted);white-space:nowrap}
+  .diagram .dcol.a1 .arg{color:#FFB03A}
+  .diagram .dcol.a2 .arg{color:#6FB7FF}
+  .diagram .dcol.a3 .arg{color:#7BD88F}
+
+  .anat .parts{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+  .anat .parts div{display:flex;gap:14px;align-items:baseline;font-size:20px}
+  .anat .parts code{font-family:var(--mono);font-size:18px;font-weight:600;
+    padding:2px 12px;border-radius:8px;white-space:nowrap;flex-shrink:0}
+  .anat .parts .p1 code{background:var(--amber-dim);color:#FFB03A}
+  .anat .parts .p2 code{background:#12283A;color:#6FB7FF}
+  .anat .parts .p3 code{background:#12301C;color:#7BD88F}
+  .anat .mean{margin-top:14px;font-size:21px;border-top:1px dashed var(--line);padding-top:14px}
+  .anat .mean b{color:var(--amber)}
+
+  /* ── 핀 지도 (투사용) ── */
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+  .legend span{display:inline-flex;align-items:center;gap:8px;font-size:17px;font-weight:700;
+    border:1px solid var(--line);border-radius:999px;padding:6px 16px}
+  .legend i{width:16px;height:16px;border-radius:4px;display:block;font-style:normal}
+  .lg-ok i{background:#7BD88F}.lg-in i{background:#6FB7FF}
+  .lg-care i{background:#E8B34A}.lg-no i{background:#FF7A6B}
+
+  .pinmap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 22px;margin:16px 0}
+  .pin{display:flex;align-items:center;gap:12px;padding:9px 14px;border-radius:10px;
+    background:var(--panel2);border:1px solid var(--line);border-left-width:6px}
+  .pin .nm{font-family:var(--mono);font-size:20px;font-weight:600;
+    min-width:4.4em;flex-shrink:0}
+  .pin .us{font-size:17px;color:var(--muted);font-weight:700;line-height:1.4}
+  .pin.ok{border-left-color:#7BD88F} .pin.ok .nm{color:#7BD88F}
+  .pin.in{border-left-color:#6FB7FF} .pin.in .nm{color:#6FB7FF}
+  .pin.care{border-left-color:#E8B34A} .pin.care .nm{color:#E8B34A}
+  .pin.no{border-left-color:#FF7A6B} .pin.no .nm{color:#FF7A6B}
+  .pin.use{background:var(--amber-dim);border-color:var(--amber)}
+  .pin.use .us{color:var(--amber)}
+  @media (max-width:640px){.pinmap{grid-template-columns:minmax(0,1fr)}}
+
+  /* ── 실행 결과 데모 ── */
+  .demo{background:var(--panel);border:1px solid var(--line);
+    border-top:4px solid var(--green);border-radius:16px;padding:24px 28px;margin:16px 0}
+  .demo .lab{color:var(--green);font-weight:900;font-size:18px;letter-spacing:.1em;
+    margin-bottom:18px}
+  .stage{display:flex;align-items:center;gap:30px;flex-wrap:wrap}
+
+  .led{position:relative;width:96px;height:96px;border-radius:50%;
+    background:#241310;border:2px solid #3A2420;flex-shrink:0}
+  .led .core{position:absolute;inset:6px;border-radius:50%;opacity:var(--lv,0)}
+  .led .glow{position:absolute;inset:-38%;border-radius:50%;opacity:var(--lv,0);
+    pointer-events:none}
+  .led.r .core{background:#FF3B2F}
+  .led.r .glow{background:radial-gradient(circle,rgba(255,59,47,.8),transparent 68%)}
+  .led.g .core{background:#35D06A}
+  .led.g .glow{background:radial-gradient(circle,rgba(53,208,106,.8),transparent 68%)}
+  .led.y .core{background:#F5C542}
+  .led.y .glow{background:radial-gradient(circle,rgba(245,197,66,.8),transparent 68%)}
+  .led.sm{width:76px;height:76px}
+
+  .readout{font-family:var(--mono);font-size:34px;font-weight:600;color:var(--amber);
+    min-width:3.2em;font-variant-numeric:tabular-nums}
+  .readout small{display:block;font-family:var(--body);font-size:15px;
+    color:var(--muted);font-weight:700;letter-spacing:.1em}
+  .morse{font-family:var(--mono);font-size:40px;font-weight:700;letter-spacing:.16em;
+    color:var(--muted);min-width:4.6em}
+  .morse b{color:var(--amber)}
+
+  .demo .ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:20px}
+  .demo button{font-family:var(--body);font-weight:900;font-size:18px;cursor:pointer;
+    background:var(--panel2);color:var(--text);border:2px solid var(--line);
+    border-radius:999px;padding:9px 22px}
+  .demo button:hover{border-color:var(--green);color:var(--green)}
+  .demo button:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+  .demo button[aria-pressed="true"]{background:var(--green);color:#06210F;border-color:var(--green)}
+  .demo .hint{color:var(--muted);font-size:16px;font-weight:700}
+
+  .slider{display:flex;align-items:center;gap:14px;margin-top:18px;flex-wrap:wrap}
+  .slider label{font-size:17px;font-weight:700;color:var(--muted)}
+  .slider input{flex:1;min-width:200px;accent-color:#FF3B2F;height:30px}
+
+  .lamps{display:flex;flex-direction:column;gap:14px;
+    background:#15100A;border:2px solid #2E2A22;border-radius:22px;padding:18px}
+
+  @media (prefers-reduced-motion:reduce){.led .core,.led .glow{transition:none}}
+
+  /* ── 생각 넓히기 (확장 문제) ── */
+  .think{background:linear-gradient(180deg,#1B1430,#151024);
+    border:2px solid #4B3A7A;border-radius:18px;padding:26px 30px;margin:22px 0}
+  .think .hd{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .think .hd .ic{font-size:26px;line-height:1}
+  .think .hd b{font-family:var(--disp);font-weight:400;font-size:27px;color:#C9B6FF;
+    letter-spacing:.01em}
+  .think .hd .tail{margin-left:auto;font-size:15px;font-weight:700;letter-spacing:.12em;
+    color:#8B7BC0;white-space:nowrap}
+  .think .cap{color:#9B8CCB;font-size:17px;font-weight:700;margin-bottom:18px}
+
+  .think .q{background:#221A3C;border:1px solid #4B3A7A;border-radius:14px;
+    padding:20px 24px;margin-top:14px}
+  .think .q .no{display:inline-block;font-family:var(--mono);font-size:16px;font-weight:600;
+    color:#0E0A18;background:#C9B6FF;border-radius:999px;padding:2px 14px;margin-bottom:12px}
+  .think .q .ask{font-size:23px;font-weight:700;line-height:1.75}
+  .think .q .ask b{color:#C9B6FF}
+
+  .think details{margin-top:14px;background:#171126;border:1px solid #3B2E62;
+    border-radius:11px;overflow:hidden}
+  .think summary{cursor:pointer;padding:14px 20px;font-size:19px;font-weight:700;
+    color:#9B8CCB;list-style:none}
+  .think summary::-webkit-details-marker{display:none}
+  .think summary::before{content:'🔎';margin-right:10px}
+  .think details[open] summary{border-bottom:1px solid #3B2E62;color:#C9B6FF}
+  .think details .ans{padding:18px 20px;font-size:20px;line-height:1.8}
+  .think details .ans b{color:#C9B6FF}
+  .think details .ans .link{display:block;margin-top:12px;padding-top:12px;
+    border-top:1px dashed #3B2E62;font-size:17px;color:#8B7BC0;font-weight:700}
+
+  /* ── 코드 짚기 ── */
+  .code3{display:flex;flex-direction:column;gap:12px;margin:14px 0}
+  .crow{display:grid;grid-template-columns:minmax(0,1fr);gap:0;background:var(--panel);
+    border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .crow code{display:block;font-family:var(--mono);font-size:19px;padding:16px 22px;
+    background:var(--panel2);color:var(--green);overflow-x:auto;white-space:pre}
+  .crow p{padding:14px 22px;font-size:21px}
+  .crow p b{color:var(--amber)}
+
+  /* ── Q&A ── */
+  details{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    margin:14px 0;overflow:hidden}
+  summary{cursor:pointer;padding:20px 26px;font-size:22px;font-weight:700;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:'❓';margin-right:12px}
+  details[open] summary{border-bottom:1px solid var(--line);color:var(--amber)}
+  details .a{padding:20px 26px;font-size:21px}
+  details .a b{color:var(--amber)}
+
+  /* ── 핵심 세 줄 ── */
+  .core{display:flex;flex-direction:column;gap:14px;margin-top:20px}
+  .core div{background:linear-gradient(90deg,var(--amber-dim),var(--panel) 60%);
+    border:1px solid var(--line);border-radius:16px;padding:22px 28px;
+    font-size:24px;font-weight:700}
+  .core b{color:var(--amber)}
+
+  .demo-link{display:inline-block;margin-top:10px;color:var(--amber);font-weight:700;
+    font-size:19px;text-decoration:none;border-bottom:2px solid var(--amber)}
+  .demo-link:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+
+  hr{border:none;border-top:1px solid var(--line);margin:80px 0 0}
+
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  @media (max-width:640px){
+    body{font-size:20px}
+    h1{font-size:40px} h2{font-size:32px}
+    .say{font-size:22px}.say.big{font-size:24px}
+    ol.steps li{padding-left:54px}
+  }
+
+  /* ── 영상 ── */
+  .films{display:flex;flex-direction:column;gap:16px;margin:24px 0}
+  .film{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    overflow:hidden}
+  .film > b{display:block;padding:16px 24px 12px;font-size:19px;font-weight:900}
+  .film > b small{display:block;font-size:15px;color:var(--muted);
+    font-weight:700;margin-top:3px}
+  .film video{display:block;width:100%;background:#000;max-height:70vh}
+  .clips{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  .clips .film > b{padding:12px 18px 9px;font-size:17px}
+  .nofilm{color:var(--muted);font-size:17px;font-weight:700;padding:16px 24px}
+
+  nav .in .home{color:var(--amber);border-color:var(--amber);font-weight:900}
+</style>
+
+<nav><div class="in">
+  <a class="home" href="index.html">← 수업 홈</a>
+  <a href="#film">📺 영상</a>
+  <a href="#intro">도입</a>
+  <a href="pinmap.html" target="_blank" rel="noopener">📍 핀 지도</a>
+  <a href="#p1">① 숨쉬는 LED</a>
+  <a href="#p2">② SOS</a>
+  <a href="#p3">③ 신호등</a>
+  <a href="#plus">심화</a>
+  <a href="#wrap">마무리</a>
+</div></nav>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">ESP32 올인원 키트 · 수업 진행 대본</div>
+  <h1>03장 LED 기초, 이렇게 설명하세요</h1>
+  <p class="lede">노란 카드의 <b>대사를 그대로 읽으면</b> 수업이 진행됩니다.
+  파란 카드는 비유, 물음표 카드는 학생 질문 대비용입니다.</p>
+
+  <div class="timebar">
+    <div class="t1">도입 5</div><div class="t2">숨쉬는 LED 15</div>
+    <div class="t3">SOS 10</div><div class="t4">신호등 15</div><div class="t5">정리 5</div>
+  </div>
+  <p class="timecap">50분 기준 시간 배분 (단위: 분)</p>
+</header>
+
+<!-- ══════════ 도입 ══════════ -->
+<section id="film">
+  <div class="secnum"><span class="chip">영상</span></div>
+  <h2>📺 오늘의 영상</h2>
+  <div class="warn" style="border-top-color:var(--amber)">
+    <div class="lab" style="color:var(--amber)">🏫 영상은 학교 자료에서</div>
+    해설 영상은 용량이 커서 이 사이트에는 올리지 않았습니다.
+    <b>구글 드라이브의 수업 폴더</b>에서 재생하세요.
+    그 폴더의 같은 대본 파일에서는 영상이 페이지 안에서 바로 열립니다.
+  </div>
+</section>
+
+<section id="intro">
+  <div class="secnum"><span class="chip">도입 5분</span></div>
+  <h2>수업 첫 마디</h2>
+
+  <div class="say big"><span class="who">🗣 첫 마디</span>
+    "여러분, 오늘은 <b>불빛 하나로 세 가지</b>를 해볼 거예요.
+    숨 쉬게 하고, 구조 신호를 보내고, 신호등을 만듭니다.
+    전부 <b>LED 한 종류</b>로요."
+  </div>
+
+  <h3>화면에 띄울 것</h3>
+  <ol class="steps">
+    <li>통합 해설 영상 <b>03_00_LED기초_통합_코드해설.mp4</b> 준비</li>
+    <li>인터랙티브 수업 페이지(슬라이더·SOS·신호등 데모) 열어두기</li>
+    <li><b>핀 지도 페이지</b> 탭으로 열어두기 — 핀 이야기 나올 때마다 전환
+      <br><a class="demo-link" href="pinmap.html" target="_blank" rel="noopener">📍 ESP32 핀 지도 열기</a></li>
+  </ol>
+</section>
+
+<!-- ══════════ 실습 1 ══════════ -->
+<section id="p1">
+  <div class="secnum"><span class="chip">실습 1 · 15분</span></div>
+  <h2>🫁 숨쉬는 LED — 밝기 조절의 비밀</h2>
+
+  <div class="say"><span class="who">🗣 첫 마디</span>
+    "LED는 사실 <b>켜기와 끄기, 딱 두 가지</b>밖에 못 해요.
+    그런데 어떻게 밝기가 서서히 변할까요?"
+  </div>
+
+  <div class="ana"><div class="lab">🌀 비유 — 선풍기 날개</div>
+    <p>선풍기 날개가 빨리 돌면 <b>하나의 원판</b>처럼 보이죠.</p>
+    <p>LED도 1초에 <b>1000번</b> 껐다 켜면, 눈에는 깜빡임이 안 보이고</p>
+    <p><b>켜져 있던 시간만큼의 평균 밝기</b>로 보입니다.</p>
+    <p>이 기술의 이름이 <b>PWM</b>이에요. 비유 먼저, 이름은 나중에!</p>
+  </div>
+
+
+  <h3><span class="tag">코드</span> 1단계 — 전체 코드부터 보여주기</h3>
+<pre class="src"><span class="cm">/*
+  ESP32 올인원 키트 — 숨쉬는 LED (breathing_led.ino)
+*/</span>
+<span class="kw">#define</span> PIN_LED   <span class="num">5</span>      <span class="cm">// LED가 연결된 핀 (IO5)</span>
+<span class="kw">#define</span> CHN       <span class="num">0</span>      <span class="cm">// 사용할 PWM 채널 번호</span>
+<span class="kw">#define</span> FRQ       <span class="num">1000</span>   <span class="cm">// PWM 주파수 (1초에 1000번 깜빡)</span>
+<span class="kw">#define</span> PWM_BIT   <span class="num">8</span>      <span class="cm">// 밝기 단계 정밀도 (8비트 = 0~255단계)</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>()
+{
+  <span class="fn">ledcSetup</span>(CHN, FRQ, PWM_BIT); <span class="cm">// PWM 채널 준비</span>
+  <span class="fn">ledcAttachPin</span>(PIN_LED, CHN);  <span class="cm">// LED 핀을 PWM 채널에 연결</span>
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>()
+{
+  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; <span class="num">255</span>; i++) <span class="cm">// 0 → 255 : 점점 밝아짐</span>
+  {
+    <span class="fn">ledcWrite</span>(CHN, i);          <span class="cm">// i 만큼의 밝기로 켜기</span>
+    <span class="fn">delay</span>(<span class="num">10</span>);                  <span class="cm">// 10밀리초 기다림</span>
+  }
+  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">255</span>; i &gt; -<span class="num">1</span>; i--) <span class="cm">// 255 → 0 : 점점 어두워짐</span>
+  {
+    <span class="fn">ledcWrite</span>(CHN, i);
+    <span class="fn">delay</span>(<span class="num">10</span>);
+  }
+}</pre>
+
+  <div class="demo">
+    <div class="lab">▶ 실행 결과 — 보드에서 이렇게 됩니다</div>
+    <div class="stage">
+      <div class="led r" id="bLed"><span class="core"></span><span class="glow"></span></div>
+      <div class="readout"><span id="bVal">0</span><small>ledcWrite 값</small></div>
+    </div>
+    <div class="ctl">
+      <button id="bRun" aria-pressed="false">▶ 실행</button>
+      <span class="hint">밝아지는 데 2.5초 · 어두워지는 데 2.5초</span>
+    </div>
+    <div class="slider">
+      <label for="bMan">직접 조절</label>
+      <input type="range" id="bMan" min="0" max="255" value="0" aria-label="밝기 직접 조절">
+    </div>
+  </div>
+
+  <h3><span class="tag">해부</span> 2단계 — 괄호 안을 하나씩 뜯기</h3>
+
+  <div class="anat">
+    <div class="origin"><span class="why">이름의 뜻</span>
+      <span><b>ledc</b> = <b>LED C</b>ontrol (LED 제어 장치) + <b>Setup</b> (준비하다)
+      → "<b>LED 제어 장치를 준비해라</b>"</span></div>
+    <div class="diagram">
+      <div class="dcol dfn"><div class="arg">ledcSetup(</div></div>
+      <div class="dcol a1"><div class="arg">CHN</div><div class="arw">↓</div><div class="q">몇 번 조절기?</div></div>
+      <div class="dcol dsep"><div class="arg">,</div></div>
+      <div class="dcol a2"><div class="arg">FRQ</div><div class="arw">↓</div><div class="q">1초에 몇 번?</div></div>
+      <div class="dcol dsep"><div class="arg">,</div></div>
+      <div class="dcol a3"><div class="arg">PWM_BIT</div><div class="arw">↓</div><div class="q">밝기 몇 칸?</div></div>
+      <div class="dcol dfn"><div class="arg">);</div></div>
+    </div>
+    <div class="parts">
+      <div class="p1"><code>CHN = 0</code><span>몇 번 조절기를 쓸까? — <b>0번 채널</b> (ESP32엔 조절기가 여러 개)</span></div>
+      <div class="p2"><code>FRQ = 1000</code><span>1초에 몇 번 깜빡일까? — <b>1000번</b> (눈에 안 보이게 빠르게)</span></div>
+      <div class="p3"><code>PWM_BIT = 8</code><span>밝기를 몇 칸으로 나눌까? — <b>8비트 = 256칸</b> (0~255)</span></div>
+    </div>
+    <div class="mean">🗣 "<b>0번 밝기 조절기</b>를 만든다. 1초에 1000번 깜빡이고, 밝기는 256칸짜리로!"</div>
+  </div>
+
+  <div class="anat">
+    <div class="origin"><span class="why">이름의 뜻</span>
+      <span><b>ledc</b> + <b>Attach</b>(붙이다) + <b>Pin</b>(핀)
+      → "<b>핀을 조절기에 붙여라</b>"</span></div>
+    <div class="diagram">
+      <div class="dcol dfn"><div class="arg">ledcAttachPin(</div></div>
+      <div class="dcol a1"><div class="arg">PIN_LED</div><div class="arw">↓</div><div class="q">어느 핀을?</div></div>
+      <div class="dcol dsep"><div class="arg">,</div></div>
+      <div class="dcol a2"><div class="arg">CHN</div><div class="arw">↓</div><div class="q">어느 조절기에?</div></div>
+      <div class="dcol dfn"><div class="arg">);</div></div>
+    </div>
+    <div class="parts">
+      <div class="p1"><code>PIN_LED = 5</code><span>어느 핀에? — LED가 꽂힌 <b>5번 핀</b></span></div>
+      <div class="p2"><code>CHN = 0</code><span>어느 조절기를? — 방금 만든 <b>0번 채널</b></span></div>
+    </div>
+    <div class="mean">🗣 "5번 핀에 0번 조절기를 <b>연결</b>한다. 이제 이 핀의 밝기를 조절할 수 있어요."</div>
+  </div>
+
+  <div class="anat">
+    <div class="origin"><span class="why">이름의 뜻</span>
+      <span><b>ledc</b> + <b>Write</b>(쓰다) → "<b>조절기에 밝기 값을 써넣어라</b>"</span></div>
+    <div class="diagram">
+      <div class="dcol dfn"><div class="arg">ledcWrite(</div></div>
+      <div class="dcol a1"><div class="arg">CHN</div><div class="arw">↓</div><div class="q">어느 조절기로?</div></div>
+      <div class="dcol dsep"><div class="arg">,</div></div>
+      <div class="dcol a2"><div class="arg">i</div><div class="arw">↓</div><div class="q">얼마나 밝게?</div></div>
+      <div class="dcol dfn"><div class="arg">);</div></div>
+    </div>
+    <div class="parts">
+      <div class="p1"><code>CHN = 0</code><span>어느 조절기로? — <b>0번 채널</b></span></div>
+      <div class="p2"><code>i = 0~255</code><span>얼마나 밝게? — for문이 <b>0부터 255까지</b> 한 칸씩 올림</span></div>
+    </div>
+    <div class="mean">🗣 "볼륨을 <b>i 칸</b>에 맞춘다. i가 커질수록 밝아져요."</div>
+  </div>
+
+  <div class="anat">
+    <div class="origin"><span class="why">이름의 뜻</span>
+      <span><b>delay</b> = 지연, 미루다 → "<b>여기서 잠깐 멈춰라</b>"</span></div>
+    <div class="diagram">
+      <div class="dcol dfn"><div class="arg">delay(</div></div>
+      <div class="dcol a1"><div class="arg">10</div><div class="arw">↓</div><div class="q">몇 밀리초 쉴까?</div></div>
+      <div class="dcol dfn"><div class="arg">);</div></div>
+    </div>
+    <div class="parts">
+      <div class="p1"><code>10</code><span>몇 밀리초 쉴까? — <b>10ms = 0.01초</b></span></div>
+    </div>
+    <div class="mean">🗣 "한 칸마다 0.01초씩 쉰다 → 255칸 × 0.01초 ≈ <b>2.5초</b>에 걸쳐 천천히 밝아져요."</div>
+  </div>
+
+  <div class="warn"><div class="lab">⚠️ 꼭 말해줄 주의사항</div>
+    GPIO <b>34 · 35 · 36 · 39</b> 핀은 PWM을 쓸 수 없습니다. (입력 전용 핀)
+    연결은 LED 제어선 ↔ <b>IO5</b>.
+  </div>
+
+  <h3><span class="tag">질문</span> 학생이 물어보면</h3>
+  <details><summary>"delay를 30으로 바꾸면요?"</summary>
+    <div class="a">"<b>3배 천천히</b> 밝아져요. 한 칸마다 쉬는 시간이 3배니까,
+    0에서 255까지 가는 데도 3배 걸리죠." — 직접 바꿔서 업로드해 보게 하면 최고!</div>
+  </details>
+  <details><summary>"진짜로 깜빡이고 있는 거예요?"</summary>
+    <div class="a">"네! 휴대폰 카메라 <b>슬로모션</b>으로 LED를 찍어보세요.
+    깜빡임이 보입니다." — 시간 남으면 실제로 시켜보기.</div>
+  </details>
+
+  <div class="think">
+    <div class="hd"><span class="ic">🧠</span><b>생각 넓히기</b>
+      <span class="tail">정답은 토글 안에</span></div>
+    <div class="cap">결과를 봤으니, 이제 한 발 더 나가 봅시다.</div>
+
+    <div class="q">
+      <span class="no">문제 1</span>
+      <div class="ask">지금은 1초에 <b>1000번</b> 깜빡여서 우리 눈에 깜빡임이 안 보였죠.
+        그럼 <code>FRQ</code>를 <b>5</b>로 바꿔서 1초에 5번만 깜빡이게 하면
+        LED는 어떻게 <b>보일까요?</b></div>
+      <details><summary>같이 생각해보기</summary>
+        <div class="ans"><b>깜빡임이 그대로 보입니다.</b> 밝기 조절이 아니라 그냥 껌뻑이는 등이 되죠.
+          선풍기를 아주 느리게 돌리면 날개가 하나하나 보이는 것과 같습니다.
+          <b>PWM이 밝기로 보이려면 "눈이 못 따라갈 만큼 빨라야"</b> 한다는 게 핵심이에요.
+          <span class="link">👉 사람 눈은 보통 <b>초당 60번</b>이 넘어가면 깜빡임을 못 느낍니다.
+            그래서 1000번은 넉넉히 빠른 값이에요.</span></div>
+      </details>
+    </div>
+
+    <div class="q">
+      <span class="no">문제 2</span>
+      <div class="ask">슬라이더를 <b>128</b>에 놓아 보세요. 255의 딱 절반입니다.
+        그런데 눈으로 볼 때도 <b>절반 밝기</b>로 보이나요?</div>
+      <details><summary>같이 생각해보기</summary>
+        <div class="ans"><b>아니요. 절반보다 훨씬 밝게 느껴집니다.</b>
+          사람 눈은 어두울 때는 작은 변화도 크게 느끼고, 밝을 때는 큰 변화도 조금만 느낍니다.
+          그래서 <b>0→50 구간의 변화가 200→255 구간보다 훨씬 크게</b> 보이죠.
+          숨쉬는 LED가 끝부분에서 "천천히 꺼지는 느낌"이 드는 것도 이 때문입니다.
+          <span class="link">👉 숫자(기계의 세계)와 느낌(사람의 세계)은 <b>같지 않습니다.</b>
+            좋은 제품을 만들려면 이 차이를 알아야 해요.</span></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 실습 2 ══════════ -->
+<section id="p2">
+  <div class="secnum"><span class="chip">실습 2 · 10분</span></div>
+  <h2>🆘 SOS — 깜빡임의 길이가 곧 언어</h2>
+
+  <div class="say"><span class="who">🗣 첫 마디</span>
+    "무인도에 갇혔는데 손전등 하나만 있어요.
+    <b>말도 글자도 없이</b>, 빛만으로 '살려주세요'를 어떻게 보낼까요?"
+  </div>
+
+  <div class="ana"><div class="lab">📡 비유 — 모스 부호는 깜빡임 언어</div>
+    <p><b>S</b> = 짧게 3번 (· · ·) &nbsp;&nbsp; <b>O</b> = 길게 3번 (— — —)</p>
+    <p>그래서 SOS = <b>짧게 3번 → 길게 3번 → 짧게 3번</b></p>
+    <p>같은 LED인데 <b>켜져 있는 시간의 길이</b>만 다르게 하면 정보가 됩니다.</p>
+  </div>
+
+
+  <h3><span class="tag">코드</span> 1단계 — 전체 코드부터 보여주기</h3>
+  <div class="say">"코드가 길어 보이지만, 사실 <b>같은 덩어리가 3번</b> 나올 뿐이에요. 숫자만 다릅니다."</div>
+<pre class="src"><span class="cm">/*
+  ESP32 올인원 키트 — SOS 구조 신호 (sos.ino)
+*/</span>
+<span class="kw">int</span> ledPin = <span class="num">5</span>;   <span class="cm">// LED가 연결된 핀 (IO5)</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>()
+{
+  <span class="fn">pinMode</span>(ledPin, OUTPUT); <span class="cm">// LED 핀을 출력으로 설정</span>
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>()
+{
+  <span class="kw">for</span> (<span class="kw">int</span> x = <span class="num">0</span>; x &lt; <span class="num">3</span>; x++)  <span class="cm">// 빠르게 3번 깜빡 = 'S'</span>
+  {
+    <span class="fn">digitalWrite</span>(ledPin, HIGH); <span class="cm">// LED 켜기</span>
+    <span class="fn">delay</span>(<span class="num">150</span>);                 <span class="cm">// 0.15초 유지 (짧게 = 점)</span>
+    <span class="fn">digitalWrite</span>(ledPin, LOW);  <span class="cm">// LED 끄기</span>
+    <span class="fn">delay</span>(<span class="num">100</span>);
+  }
+  <span class="fn">delay</span>(<span class="num">200</span>); <span class="cm">// 글자 사이 간격</span>
+
+  <span class="kw">for</span> (<span class="kw">int</span> x = <span class="num">0</span>; x &lt; <span class="num">3</span>; x++)  <span class="cm">// 천천히 3번 깜빡 = 'O'</span>
+  {
+    <span class="fn">digitalWrite</span>(ledPin, HIGH);
+    <span class="fn">delay</span>(<span class="num">400</span>);                 <span class="cm">// 0.4초 유지 (길게 = 선)</span>
+    <span class="fn">digitalWrite</span>(ledPin, LOW);
+    <span class="fn">delay</span>(<span class="num">200</span>);
+  }
+  <span class="fn">delay</span>(<span class="num">100</span>);
+
+  <span class="kw">for</span> (<span class="kw">int</span> x = <span class="num">0</span>; x &lt; <span class="num">3</span>; x++)  <span class="cm">// 다시 빠르게 3번 = 'S'</span>
+  {
+    <span class="fn">digitalWrite</span>(ledPin, HIGH);
+    <span class="fn">delay</span>(<span class="num">150</span>);
+    <span class="fn">digitalWrite</span>(ledPin, LOW);
+    <span class="fn">delay</span>(<span class="num">100</span>);
+  }
+  <span class="fn">delay</span>(<span class="num">5000</span>); <span class="cm">// 5초 쉬고 SOS 반복</span>
+}</pre>
+
+  <div class="demo">
+    <div class="lab">▶ 실행 결과 — 빛으로 보내는 SOS</div>
+    <div class="stage">
+      <div class="led r" id="sLed"><span class="core"></span><span class="glow"></span></div>
+      <div class="morse" id="sMorse">· · ·</div>
+    </div>
+    <div class="ctl">
+      <button id="sRun" aria-pressed="false">▶ 실행</button>
+      <span class="hint">짧게 3번 → 길게 3번 → 짧게 3번 → 5초 쉼</span>
+    </div>
+  </div>
+
+  <h3><span class="tag">해부</span> 2단계 — 괄호 안을 하나씩 뜯기</h3>
+
+  <div class="anat">
+    <div class="origin"><span class="why">이름의 뜻</span>
+      <span><b>pin</b>(핀) + <b>Mode</b>(모드, 역할) → "<b>이 핀의 역할을 정해라</b>"</span></div>
+    <div class="diagram">
+      <div class="dcol dfn"><div class="arg">pinMode(</div></div>
+      <div class="dcol a1"><div class="arg">ledPin</div><div class="arw">↓</div><div class="q">어느 핀을?</div></div>
+      <div class="dcol dsep"><div class="arg">,</div></div>
+      <div class="dcol a2"><div class="arg">OUTPUT</div><div class="arw">↓</div><div class="q">무슨 역할로?</div></div>
+      <div class="dcol dfn"><div class="arg">);</div></div>
+    </div>
+    <div class="parts">
+      <div class="p1"><code>ledPin = 5</code><span>어느 핀을? — LED가 꽂힌 <b>5번 핀</b></span></div>
+      <div class="p2"><code>OUTPUT</code><span>무슨 역할로? — 신호를 <b>내보내는</b> 문 (반대는 INPUT = 받는 문)</span></div>
+    </div>
+    <div class="mean">🗣 "5번 핀을 <b>내보내는 문</b>으로 만든다. setup에서 딱 한 번!"</div>
+  </div>
+
+  <div class="anat">
+    <div class="origin"><span class="why">이름의 뜻</span>
+      <span><b>digital</b>(디지털 = 0 또는 1) + <b>Write</b>(쓰다)
+      → "<b>핀에 0이냐 1이냐를 써넣어라</b>" · 중간값이 없어서 '디지털'</span></div>
+    <div class="diagram">
+      <div class="dcol dfn"><div class="arg">digitalWrite(</div></div>
+      <div class="dcol a1"><div class="arg">ledPin</div><div class="arw">↓</div><div class="q">어느 핀에?</div></div>
+      <div class="dcol dsep"><div class="arg">,</div></div>
+      <div class="dcol a2"><div class="arg">HIGH</div><div class="arw">↓</div><div class="q">켤까 끌까?</div></div>
+      <div class="dcol dfn"><div class="arg">);</div></div>
+    </div>
+    <div class="parts">
+      <div class="p1"><code>ledPin = 5</code><span>어느 핀에? — <b>5번 핀</b></span></div>
+      <div class="p2"><code>HIGH / LOW</code><span>켤까 끌까? — <b>HIGH = 켜기</b>, <b>LOW = 끄기</b>. 중간은 없음!</span></div>
+    </div>
+    <div class="mean">🗣 "5번 핀에 <b>전기를 보낸다(HIGH)</b> = LED 켜기. LOW면 끄기."</div>
+  </div>
+
+  <div class="anat">
+    <div class="origin"><span class="why">이건 함수가 아님</span>
+      <span><b>for</b>는 <b>예약어</b> — C++이 미리 정해둔 단어입니다.
+      그래서 괄호 안은 인수가 아니라 <b>초기식 · 조건식 · 증감식</b>,
+      구분도 쉼표가 아닌 <b>세미콜론(;)</b>입니다.</span></div>
+    <div class="diagram">
+      <div class="dcol dfn"><div class="arg">for (</div></div>
+      <div class="dcol a1"><div class="arg">int x = 0</div><div class="arw">↓</div><div class="q">어디서 출발?</div></div>
+      <div class="dcol dsep"><div class="arg">;</div></div>
+      <div class="dcol a2"><div class="arg">x &lt; 3</div><div class="arw">↓</div><div class="q">언제까지?</div></div>
+      <div class="dcol dsep"><div class="arg">;</div></div>
+      <div class="dcol a3"><div class="arg">x++</div><div class="arw">↓</div><div class="q">얼마씩 증가?</div></div>
+      <div class="dcol dfn"><div class="arg">)</div></div>
+    </div>
+    <div class="parts">
+      <div class="p1"><code>int x = 0</code><span>출발 — 세는 숫자 x를 <b>0에서 시작</b></span></div>
+      <div class="p2"><code>x &lt; 3</code><span>조건 — x가 <b>3보다 작은 동안</b> 계속 (0, 1, 2 → 총 3번)</span></div>
+      <div class="p3"><code>x++</code><span>증가 — 한 바퀴 돌 때마다 x를 <b>1씩 올림</b></span></div>
+    </div>
+    <div class="mean">🗣 "0부터 세서 3번 반복! S도 O도 3번씩이니까 <b>깜빡임 한 세트를 3번</b> 돌려요."</div>
+  </div>
+
+  <div class="anat">
+    <div class="diagram">
+      <div class="dcol dfn"><div class="arg">delay(</div></div>
+      <div class="dcol a1"><div class="arg">150</div><div class="arw">↓</div><div class="q">짧게 = 점(·) = S</div></div>
+      <div class="dcol dfn"><div class="arg">)</div></div>
+      <div class="dcol dsep"><div class="arg">&nbsp;vs&nbsp;</div></div>
+      <div class="dcol dfn"><div class="arg">delay(</div></div>
+      <div class="dcol a2"><div class="arg">400</div><div class="arw">↓</div><div class="q">길게 = 선(—) = O</div></div>
+      <div class="dcol dfn"><div class="arg">)</div></div>
+    </div>
+    <div class="parts">
+      <div class="p1"><code>150</code><span>0.15초 = <b>짧게 = 점(·)</b> = S</span></div>
+      <div class="p2"><code>400</code><span>0.4초 = <b>길게 = 선(—)</b> = O</span></div>
+    </div>
+    <div class="mean">🗣 "코드는 완전히 똑같고 <b>이 숫자 하나만</b> 다릅니다. 숫자가 곧 언어예요!"</div>
+  </div>
+
+  <h3><span class="tag">질문</span> 학생이 물어보면</h3>
+  <details><summary>"마지막 delay(5000)은 뭐예요?"</summary>
+    <div class="a">"SOS 한 번 보내고 <b>5초 쉬는</b> 거예요. 안 쉬면 어디가 시작이고
+    어디가 끝인지 구분이 안 되죠. 쉼표도 언어의 일부입니다."</div>
+  </details>
+  <details><summary>"내 이름도 모스 부호로 보낼 수 있어요?"</summary>
+    <div class="a">"당연하죠! 모스 부호 표를 찾아서 <b>자기 이니셜</b>을 깜빡여 보세요."
+    — 빨리 끝낸 학생용 심화 과제로 좋습니다.</div>
+  </details>
+
+  <div class="think">
+    <div class="hd"><span class="ic">🧠</span><b>생각 넓히기</b>
+      <span class="tail">정답은 토글 안에</span></div>
+    <div class="cap">깜빡임이 언어가 됐습니다. 그럼 이건 어떨까요?</div>
+
+    <div class="q">
+      <span class="no">문제 1</span>
+      <div class="ask">빛 대신 <b>소리</b>로 SOS를 보내고 싶습니다.
+        LED 자리에 부저(스피커)를 꽂는다면, <b>코드에서 무엇을 바꿔야</b> 할까요?</div>
+      <details><summary>같이 생각해보기</summary>
+        <div class="ans"><b>거의 안 바꿔도 됩니다.</b> 부저를 꽂은 <b>핀 번호만</b> 바꾸면 끝이에요.
+          <code>digitalWrite(HIGH)</code>는 "전기를 보내라"는 뜻이고,
+          LED는 그걸 <b>빛</b>으로, 부저는 <b>소리</b>로 바꿔줄 뿐입니다.
+          <span class="link">👉 <b>같은 명령이 부품에 따라 다른 결과</b>를 냅니다.
+            이게 사물인터넷의 기본 원리예요. (05장 소리에서 다시 만납니다)</span></div>
+      </details>
+    </div>
+
+    <div class="q">
+      <span class="no">문제 2</span>
+      <div class="ask">SOS는 왜 하필 <b>· · ·  — — —  · · ·</b> 일까요?
+        더 멋진 모양으로 정할 수도 있었을 텐데요.</div>
+      <details><summary>같이 생각해보기</summary>
+        <div class="ans"><b>가장 단순하고, 헷갈릴 일이 없기 때문입니다.</b>
+          급할 때 떨리는 손으로도 보낼 수 있어야 하고,
+          멀리서 흐릿하게 봐도 <b>짧은 것 3번 · 긴 것 3번</b>은 구분이 됩니다.
+          <span class="link">👉 위급 상황에서 쓰는 신호는 <b>멋짐보다 확실함</b>이 먼저입니다.
+            여러분이 만들 장치의 경고음도 마찬가지예요.</span></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 실습 3 ══════════ -->
+<section id="p3">
+  <div class="secnum"><span class="chip">실습 3 · 15분</span></div>
+  <h2>🚦 신호등 — 순서가 곧 프로그램</h2>
+
+  <div class="say"><span class="who">🗣 첫 마디</span>
+    "이번엔 LED가 <b>3개</b>예요. 진짜 신호등처럼
+    초록 → 노랑 깜빡 → 빨강, <b>순서대로</b> 켜 봅시다."
+  </div>
+
+  <div class="ana"><div class="lab">📖 비유 — 코드는 요리 레시피</div>
+    <p>레시피는 <b>위에서 아래로</b> 순서대로 따라 하죠.</p>
+    <p>코드도 똑같아요. <b>초록 줄 → 노랑 줄 → 빨강 줄</b> 순서로 쓰면</p>
+    <p>신호등도 그 순서로 바뀝니다. 그리고 loop()는 끝나면 <b>처음부터 다시</b>.</p>
+  </div>
+
+
+  <h3><span class="tag">코드</span> 1단계 — 전체 코드부터 보여주기</h3>
+  <div class="say">"명령어는 아까 SOS와 <b>완전히 똑같아요</b>. 핀이 3개로 늘었을 뿐입니다."</div>
+<pre class="src"><span class="cm">/*
+  ESP32 올인원 키트 — 신호등 (traffic_light.ino)
+*/</span>
+<span class="kw">int</span> greenPin  = <span class="num">27</span>;  <span class="cm">// 초록 LED 핀 (IO27)</span>
+<span class="kw">int</span> yellowPin = <span class="num">26</span>;  <span class="cm">// 노랑 LED 핀 (IO26)</span>
+<span class="kw">int</span> redPin    = <span class="num">25</span>;  <span class="cm">// 빨강 LED 핀 (IO25)</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>()
+{
+  <span class="fn">pinMode</span>(greenPin, OUTPUT);  <span class="cm">// 세 LED를 모두 출력으로 설정</span>
+  <span class="fn">pinMode</span>(yellowPin, OUTPUT);
+  <span class="fn">pinMode</span>(redPin, OUTPUT);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>()
+{
+  <span class="fn">digitalWrite</span>(greenPin, HIGH); <span class="cm">// 🟢 초록불 켜기</span>
+  <span class="fn">delay</span>(<span class="num">5000</span>);                  <span class="cm">// 5초 유지</span>
+  <span class="fn">digitalWrite</span>(greenPin, LOW);  <span class="cm">// 초록불 끄기</span>
+
+  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt;= <span class="num">3</span>; i++)  <span class="cm">// 🟡 노랑불 3번 깜빡</span>
+  {
+    <span class="fn">digitalWrite</span>(yellowPin, HIGH);
+    <span class="fn">delay</span>(<span class="num">500</span>);                    <span class="cm">// 0.5초</span>
+    <span class="fn">digitalWrite</span>(yellowPin, LOW);
+    <span class="fn">delay</span>(<span class="num">500</span>);
+  }
+
+  <span class="fn">digitalWrite</span>(redPin, HIGH); <span class="cm">// 🔴 빨강불 켜기</span>
+  <span class="fn">delay</span>(<span class="num">5000</span>);                <span class="cm">// 5초 유지</span>
+  <span class="fn">digitalWrite</span>(redPin, LOW);  <span class="cm">// 빨강불 끄기</span>
+}</pre>
+
+  <div class="demo">
+    <div class="lab">▶ 실행 결과 — 신호등 한 바퀴</div>
+    <div class="stage">
+      <div class="lamps">
+        <div class="led g sm" id="tG"><span class="core"></span><span class="glow"></span></div>
+        <div class="led y sm" id="tY"><span class="core"></span><span class="glow"></span></div>
+        <div class="led r sm" id="tR"><span class="core"></span><span class="glow"></span></div>
+      </div>
+      <div class="readout"><span id="tNow">대기</span><small>지금 상태</small></div>
+    </div>
+    <div class="ctl">
+      <button id="tRun" aria-pressed="false">▶ 실행</button>
+      <button id="tFast" aria-pressed="false">⏩ 4배 빠르게</button>
+      <span class="hint">초록 5초 → 노랑 3번 깜빡 → 빨강 5초 → 반복</span>
+    </div>
+  </div>
+
+  <h3><span class="tag">해부</span> 2단계 — 새 인수는 딱 하나, 핀 번호</h3>
+
+  <div class="anat">
+    <div class="origin"><span class="why">같은 명령어</span>
+      <span>SOS에서 쓴 <b>digitalWrite</b> 그대로 — <b>첫 번째 인수(핀 번호)만</b> 바뀝니다</span></div>
+    <div class="diagram">
+      <div class="dcol dfn"><div class="arg">digitalWrite(</div></div>
+      <div class="dcol a1"><div class="arg">greenPin</div><div class="arw">↓</div><div class="q">🟢 IO27 (노랑 26 · 빨강 25)</div></div>
+      <div class="dcol dsep"><div class="arg">,</div></div>
+      <div class="dcol a2"><div class="arg">HIGH</div><div class="arw">↓</div><div class="q">켤까 끌까?</div></div>
+      <div class="dcol dfn"><div class="arg">);</div></div>
+    </div>
+    <div class="parts">
+      <div class="p1"><code>greenPin = 27</code><span>어느 핀에? — 🟢 <b>IO27</b> (노랑은 26, 빨강은 25)</span></div>
+      <div class="p2"><code>HIGH / LOW</code><span>SOS에서 배운 그대로 — <b>켜기 / 끄기</b></span></div>
+    </div>
+    <div class="mean">🗣 "명령어는 그대로, <b>첫 번째 인수(핀 번호)만 바꾸면</b> 다른 색이 켜져요.
+    이게 인수의 힘입니다!"</div>
+  </div>
+
+  <h3><span class="tag">읽기</span> 3단계 — 세 토막으로 읽기</h3>
+  <div class="code3">
+    <div class="crow"><code>digitalWrite(greenPin, HIGH);
+delay(5000);
+digitalWrite(greenPin, LOW);</code>
+      <p>🟢 "초록불 <b>켜고 → 5초 → 끄고</b>. 이 세 줄이 한 세트예요."</p></div>
+    <div class="crow"><code>for (int i = 1; i &lt;= 3; i++) { ... }</code>
+      <p>🟡 "노랑은 <b>0.5초씩 3번 깜빡</b> — 아까 배운 for문이 또 나왔죠?"</p></div>
+    <div class="crow"><code>// loop() 끝 → 자동으로 처음부터</code>
+      <p>🔁 "빨강이 꺼지면 loop()가 끝나고, <b>다시 초록불부터</b> 반복!"</p></div>
+  </div>
+
+  <h3><span class="tag">질문</span> 학생이 물어보면</h3>
+  <details><summary>"두 색이 동시에 켜져요!" (자주 나오는 실수)</summary>
+    <div class="a">"앞 색을 <b>끄는 줄(LOW)을 빠뜨렸는지</b> 확인하세요.
+    '한 번에 한 색만' 규칙 = 켜기 전에 앞의 것을 끄기."</div>
+  </details>
+  <details><summary>"진짜 신호등도 이렇게 움직여요?"</summary>
+    <div class="a">"원리는 같아요! 진짜 신호등은 여기에 <b>센서와 통신</b>이 더해져서
+    차량 흐름에 따라 시간이 바뀝니다. 그건 뒤 챕터에서 배워요."</div>
+  </details>
+
+  <div class="think">
+    <div class="hd"><span class="ic">🧠</span><b>생각 넓히기</b>
+      <span class="tail">정답은 토글 안에</span></div>
+    <div class="cap">우리 신호등과 진짜 신호등, 무엇이 다를까요?</div>
+
+    <div class="q">
+      <span class="no">문제 1</span>
+      <div class="ask">진짜 신호등은 <b>차가 없으면 초록불이 더 길어지기도</b> 합니다.
+        우리 코드로는 그게 안 되죠. <b>무엇이 더 있어야</b> 가능할까요?</div>
+      <details><summary>같이 생각해보기</summary>
+        <div class="ans">차가 있는지 <b>알아내는 장치 — 센서</b>가 필요합니다.
+          지금 우리 코드는 <b>정해진 시간만 세는</b> 일방통행이에요.
+          바깥 상황을 <b>읽어들여야</b> 상황에 맞게 바꿀 수 있습니다.
+          <span class="link">👉 지금까지는 <b>내보내기(출력)</b>만 했습니다.
+            <b>읽어들이기(입력)</b>를 배우면 진짜 스마트해집니다. (10장 센서 입문)</span></div>
+      </details>
+    </div>
+
+    <div class="q">
+      <span class="no">문제 2</span>
+      <div class="ask">여기에 <b>보행자 신호등</b>도 붙이려고 합니다.
+        LED가 몇 개 더 필요하고, 그 불은 <b>언제</b> 켜져야 할까요?</div>
+      <details><summary>같이 생각해보기</summary>
+        <div class="ans">LED <b>2개</b>(보행자 빨강·초록)가 더 필요합니다.
+          중요한 건 <b>타이밍</b>이에요 — 차 신호가 <b>빨강일 때</b> 보행자가 초록입니다.
+          즉 <b>서로 반대로</b> 움직여야 하죠.
+          <span class="link">👉 두 신호가 <b>동시에 초록이면 사고가 납니다.</b>
+            여러 장치를 함께 다룰 때는 "같이 켜지면 안 되는 조합"을 먼저 확인하세요.</span></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 심화 ══════════ -->
+<hr>
+<section id="plus">
+  <div class="secnum"><span class="chip">심화 · 질문 나올 때</span></div>
+  <h2>🔍 더 깊이 물어보는 학생에게</h2>
+
+  <div class="say"><span class="who">🗣 안내</span>
+    "이 부분은 <b>수업 필수가 아닙니다.</b>
+    빨리 끝낸 학생이나 질문이 나올 때만 꺼내 쓰세요."
+  </div>
+
+  <h3><span class="tag">이름표</span> #define과 변수, 뭐가 다른가</h3>
+  <p>03장 안에 <b>두 방식이 다 나옵니다.</b> 숨쉬는 LED는 <code>#define</code>,
+  SOS와 신호등은 <code>int</code>를 씁니다. <b>둘 다 맞습니다.</b></p>
+
+  <div class="code3">
+    <div class="crow"><code>#define PIN_LED   5</code>
+      <p>컴파일 전에 <b>글자를 그대로 갈아끼움</b>. 등호 없음 · <b>세미콜론 없음</b> · 메모리 안 씀</p></div>
+    <div class="crow"><code>int PIN_LED = 5;</code>
+      <p>진짜 <b>상자를 만들어</b> 5를 담음. 자료형 있음 · <b>세미콜론 있음</b> · 도중에 값 변경 가능</p></div>
+    <div class="crow"><code>const int PIN_LED = 5;</code>
+      <p><b>자물쇠를 채운 상자</b>. 읽기만 되고 못 바꿈 → 실수하면 컴파일러가 잡아줌</p></div>
+  </div>
+
+  <div class="ana"><div class="lab">🔒 비유 — const는 안전벨트</div>
+    <p>변수는 <b>화이트보드</b>, <code>const</code>는 거기에 <b>코팅을 씌운 것</b>입니다.</p>
+    <p>없어도 코드는 <b>똑같이 잘 돌아갑니다.</b> 다만 실수로 값을 바꿨을 때</p>
+    <p>업로드 전에 컴퓨터가 <b>"안 돼요!"</b> 하고 막아줍니다.</p>
+  </div>
+
+  <details><summary>"const를 빼면 어떻게 돼요?"</summary>
+    <div class="a"><b>아무 일도 안 일어납니다. 똑같이 잘 작동해요.</b>
+    딱 하나, 실수로 <code>PIN_LED = 7;</code>이라고 써도 <b>에러 없이 통과</b>합니다.
+    그러면 LED는 안 켜지는데 에러 메시지가 없어서, 회로를 의심하며 한참 헤매게 되죠.
+    <b>const는 있으면 좋은 안전장치이지, 필수품이 아닙니다.</b></div>
+  </details>
+
+  <h3><span class="tag">용어</span> 함수 · 예약어 · 지시자 — 셋은 다릅니다</h3>
+  <p>학생들은 전부 "명령어"라고 부르지만, 정확히는 <b>세 종류</b>입니다.</p>
+
+  <div class="code3">
+    <div class="crow"><code>ledcSetup( ... )   ← 함수</code>
+      <p><b>괄호 안에 인수를 받습니다.</b> 자동 완성 목록의 🟣 육각형 표시가 함수라는 뜻.
+        <br>digitalWrite · pinMode · delay 도 모두 함수</p></div>
+    <div class="crow"><code>for ( ... )   ← 예약어</code>
+      <p><b>C++이 정해둔 단어.</b> 괄호가 있어도 인수가 아니라
+        <b>초기식·조건식·증감식</b>이라 세미콜론으로 나눕니다.
+        <br>if · int · void 도 예약어</p></div>
+    <div class="crow"><code>#define PIN_LED 5   ← 전처리기 지시자</code>
+      <p><b>#으로 시작.</b> 컴파일 전에 글자를 바꿔치기합니다. 세미콜론 없음</p></div>
+  </div>
+
+  <div class="say">"셋 다 '명령어'라고 불러도 수업엔 지장 없어요.
+    다만 <b>괄호 안에 들어가는 걸 전부 '인수'라고 부르면</b> 나중에 헷갈립니다."</div>
+
+  <h3><span class="tag">위치</span> #define을 setup 안에 넣어도 되나?</h3>
+  <div class="say"><span class="who">🗣 학생이 물어보면</span>
+    "<b>넣어도 됩니다.</b> 그런데 결과가 좀 이상해요. 왜 그런지 봅시다."</div>
+
+<pre class="src"><span class="kw">void</span> <span class="fn">setup</span>()
+{
+  <span class="cm">#define PIN_LED 5</span>        <span class="cm">// setup 안에서 정의</span>
+  <span class="fn">pinMode</span>(PIN_LED, OUTPUT);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>()
+{
+  <span class="fn">digitalWrite</span>(PIN_LED, HIGH);   <span class="cm">// ✅ 여기서도 잘 됩니다!</span>
+}</pre>
+
+  <div class="ana"><div class="lab">🔎 비유 — 찾아 바꾸기(Ctrl+H)</div>
+    <p><code>#define</code>은 <b>중괄호 { }를 아예 모릅니다.</b></p>
+    <p>컴파일 전에 <b>그 줄 아래로 전부</b> 글자를 바꿔버려요.</p>
+    <p>그래서 setup 안에 적어도 loop까지 바뀝니다.</p>
+    <p>맨 위에 적는 이유는 <b>빠짐없이 바뀌게 하려고</b>입니다.</p>
+  </div>
+
+  <div class="warn"><div class="lab">⚠️ 딱 하나 규칙 — 순서</div>
+    전처리기는 <b>위에서 아래로</b> 훑습니다.
+    정의보다 <b>위에서 쓰면 에러</b>입니다.
+    loop에서 정의하고 setup에서 쓰면 <b>was not declared</b> 오류가 납니다.
+  </div>
+
+  <div class="code3">
+    <div class="crow"><code>#define PIN_LED 5   (setup 안)</code>
+      <p>loop에서도 <b>쓸 수 있음</b> — 글자 바꿔치기라 중괄호를 무시</p></div>
+    <div class="crow"><code>int pinLed = 5;      (setup 안)</code>
+      <p>loop에서 <b>못 씀</b> — setup이 끝나면 상자가 사라짐 (<b>지역 변수</b>)</p></div>
+  </div>
+
+  <details><summary>"그럼 변수는 왜 사라져요?"</summary>
+    <div class="a">변수는 <b>중괄호 안에서 태어나 중괄호가 닫히면 죽습니다.</b>
+    setup이 끝나는 순간 <code>pinLed</code>라는 상자는 치워지죠.
+    그래서 setup·loop 양쪽에서 쓸 값은 <b>맨 위(중괄호 바깥)</b>에 선언합니다.
+    03장 코드들이 전부 그렇게 돼 있어요.</div>
+  </details>
+
+  <h3><span class="tag">실험</span> LED 2개를 한꺼번에 숨쉬게 하기</h3>
+  <div class="say">"핀 번호를 <b>도중에 바꾸면</b> 어떻게 될까요? 한번 해봅시다."</div>
+
+<pre class="src"><span class="kw">int</span> PIN_LED = <span class="num">5</span>;      <span class="cm">// const 없는 변수 (도중에 바꿀 거니까)</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>()
+{
+  <span class="fn">ledcSetup</span>(CHN, FRQ, PWM_BIT);
+
+  <span class="fn">ledcAttachPin</span>(PIN_LED, CHN);   <span class="cm">// ① 5번 핀을 붙임</span>
+
+  PIN_LED = <span class="num">18</span>;                   <span class="cm">// ② 이름표 값을 18로 바꿈</span>
+
+  <span class="fn">ledcAttachPin</span>(PIN_LED, CHN);   <span class="cm">// ③ 18번 핀도 붙임</span>
+}                                 <span class="cm">// → LED 2개가 똑같이 숨쉼!</span></pre>
+
+  <div class="warn"><div class="lab">⚠️ 핀 고를 때 주의</div>
+    ESP32는 <b>GPIO 6 · 7 · 8 · 9 · 10 · 11</b>이 내부 플래시 메모리에 연결돼 있습니다.
+    이 핀을 쓰면 <b>보드가 재부팅을 반복</b>합니다. <b>IO18</b>처럼 여유 있는 핀을 쓰세요.
+    (PWM 금지 핀 <b>34 · 35 · 36 · 39</b>와는 다른 문제입니다)
+  </div>
+
+  <div class="ana"><div class="lab">📦 비유 — 이미 보낸 택배</div>
+    <p>②에서 값을 18로 바꿔도 <b>①에서 붙은 5번은 떨어지지 않습니다.</b></p>
+    <p>주소를 5번지로 적어 <b>택배를 이미 보냈는데</b>,</p>
+    <p>수첩의 주소를 고친다고 택배가 돌아오나요? 안 오죠.</p>
+    <p>명령어는 <b>실행되는 그 순간의 값</b>으로 일을 끝내버립니다.</p>
+  </div>
+
+  <details><summary>"두 LED를 따로따로 조종하려면요?"</summary>
+    <div class="a">조절기(채널)를 <b>2개</b> 만들면 됩니다.
+    <code>ledcSetup(0,...)</code>과 <code>ledcSetup(1,...)</code>로 두 개를 만들고,
+    핀을 하나씩 붙인 뒤 <code>ledcWrite(0, i)</code> · <code>ledcWrite(1, 255 - i)</code>로 쓰면
+    <b>한쪽이 밝아질 때 다른 쪽은 어두워지는</b> 시소 효과가 납니다.</div>
+  </details>
+
+  <h3><span class="tag">팁</span> 자동 완성 알려주기</h3>
+  <p><code>ledc</code>까지만 쳐도 후보 목록이 뜨는 기능 —
+  이름은 <b>자동 완성</b>(코드 완성 · 인텔리센스)입니다.
+  방향키로 고르고 <b>Tab</b> 또는 <b>Enter</b>를 누르면 나머지를 대신 써줍니다.</p>
+
+  <div class="say">"명령어를 <b>다 외울 필요 없어요.</b>
+  앞 글자만 치고 목록에서 고르면 오타도 안 나고 빠릅니다."</div>
+
+  <div class="code3">
+    <div class="crow"><code>🟣 육각형 아이콘</code><p><b>함수</b> — ledcSetup, ledcWrite 같은 명령어</p></div>
+    <div class="crow"><code>abc 아이콘</code><p><b>상수</b> — 미리 정해진 이름표 (LEDC_HS_SIG_OUT0_IDX 등)</p></div>
+  </div>
+</section>
+
+<!-- ══════════ 마무리 ══════════ -->
+<hr>
+<section id="wrap">
+  <div class="secnum"><span class="chip">정리 5분</span></div>
+  <h2>⭐ 오늘의 핵심 세 줄</h2>
+
+  <div class="say"><span class="who">🗣 마무리 멘트</span>
+    "오늘 배운 건 딱 세 가지예요. 이 세 줄만 기억하면 됩니다."
+  </div>
+
+  <div class="core">
+    <div>1️⃣ <b>PWM</b> — 아주 빠르게 껐다 켰다 하면, 켜진 시간만큼 밝게 보인다</div>
+    <div>2️⃣ <b>delay</b> — 켜져 있는 시간의 길이. 길이만 달라도 정보를 보낼 수 있다</div>
+    <div>3️⃣ <b>순서</b> — 코드는 위에서 아래로, loop()는 끝나면 처음으로</div>
+  </div>
+
+  <h3>다음 시간 예고</h3>
+  <div class="say">"오늘은 LED를 <b>하나씩</b> 다뤘죠?
+    다음 시간엔 빨강·초록·파랑이 <b>한 몸에 들어간 RGB LED</b>로
+    무지개색을 만들어 봅니다."</div>
+</section>
+
+</div>
+
+<script>
+(function () {
+  const set = (el, v) => el.style.setProperty('--lv', v);
+
+  /* ── 실습 1. 숨쉬는 LED ─────────────────────────
+     for(i=0;i<255;i++){ ledcWrite(i); delay(10); }  → 2.55초
+     for(i=255;i>-1;i--){ ledcWrite(i); delay(10); } → 2.55초        */
+  const bLed = document.getElementById('bLed'),
+        bVal = document.getElementById('bVal'),
+        bBtn = document.getElementById('bRun'),
+        bMan = document.getElementById('bMan');
+  const CYCLE = 5100;
+  let bOn = false, bT0 = 0, bRaf = 0;
+
+  const bShow = v => { set(bLed, v / 255); bVal.textContent = v; bMan.value = v; };
+
+  function bTick(t) {
+    if (!bT0) bT0 = t;
+    const e = ((t - bT0) % CYCLE) / CYCLE;
+    bShow(Math.round((e < 0.5 ? e * 2 : (1 - e) * 2) * 255));
+    bRaf = requestAnimationFrame(bTick);
+  }
+  bBtn.addEventListener('click', () => {
+    bOn = !bOn;
+    bBtn.setAttribute('aria-pressed', String(bOn));
+    bBtn.textContent = bOn ? '⏸ 멈춤' : '▶ 실행';
+    if (bOn) { bT0 = 0; bRaf = requestAnimationFrame(bTick); }
+    else { cancelAnimationFrame(bRaf); }
+  });
+  bMan.addEventListener('input', () => {
+    if (bOn) bBtn.click();
+    bShow(Number(bMan.value));
+  });
+  bShow(0);
+
+  /* ── 순서대로 실행하는 작은 엔진 ── */
+  function runner(apply) {
+    let timer = null, idx = 0, steps = [], speed = 1, live = false;
+    function step() {
+      if (!live) return;
+      if (idx >= steps.length) idx = 0;
+      const [state, ms] = steps[idx++];
+      apply(state);
+      timer = setTimeout(step, ms / speed);
+    }
+    return {
+      start(s) { steps = s; idx = 0; live = true; step(); },
+      stop() { live = false; clearTimeout(timer); },
+      setSpeed(v) { speed = v; },
+      get live() { return live; }
+    };
+  }
+
+  /* ── 실습 2. SOS ───────────────────────────────
+     S: HIGH 150 / LOW 100 ×3 → 200
+     O: HIGH 400 / LOW 200 ×3 → 100
+     S: HIGH 150 / LOW 100 ×3 → 5000                                */
+  const sLed = document.getElementById('sLed'),
+        sMorse = document.getElementById('sMorse'),
+        sBtn = document.getElementById('sRun');
+
+  const blink = (n, on, off, mark) => {
+    const out = [];
+    for (let i = 0; i < n; i++) { out.push([[1, mark], on]); out.push([[0, mark], off]); }
+    return out;
+  };
+  const SOS = [
+    ...blink(3, 150, 100, 'S1'), [[0, 'S1'], 200],
+    ...blink(3, 400, 200, 'O'),  [[0, 'O'], 100],
+    ...blink(3, 150, 100, 'S2'), [[0, 'x'], 5000],
+  ];
+  const MORSE = {
+    S1: '<b>· · ·</b>　— — —　· · ·',
+    O:  '· · ·　<b>— — —</b>　· · ·',
+    S2: '· · ·　— — —　<b>· · ·</b>',
+    x:  '· · ·　— — —　· · ·'
+  };
+
+  const sRun = runner(([lv, mark]) => { set(sLed, lv); sMorse.innerHTML = MORSE[mark]; });
+  sBtn.addEventListener('click', () => {
+    if (sRun.live) { sRun.stop(); set(sLed, 0); sBtn.textContent = '▶ 실행'; }
+    else { sRun.start(SOS); sBtn.textContent = '⏸ 멈춤'; }
+    sBtn.setAttribute('aria-pressed', String(sRun.live));
+  });
+  set(sLed, 0);
+  sMorse.innerHTML = MORSE.x;
+
+  /* ── 실습 3. 신호등 ─────────────────────────────
+     초록 5000 → 노랑 500/500 ×3 → 빨강 5000                        */
+  const tG = document.getElementById('tG'), tY = document.getElementById('tY'),
+        tR = document.getElementById('tR'), tNow = document.getElementById('tNow'),
+        tBtn = document.getElementById('tRun'), tFast = document.getElementById('tFast');
+
+  const TRAFFIC = [
+    [['g', '초록'], 5000],
+    [['-', '전환'], 300],
+    [['y', '노랑'], 500], [['-', '노랑'], 500],
+    [['y', '노랑'], 500], [['-', '노랑'], 500],
+    [['y', '노랑'], 500], [['-', '노랑'], 500],
+    [['r', '빨강'], 5000],
+    [['-', '전환'], 300],
+  ];
+  const tRun = runner(([lamp, name]) => {
+    set(tG, lamp === 'g' ? 1 : 0);
+    set(tY, lamp === 'y' ? 1 : 0);
+    set(tR, lamp === 'r' ? 1 : 0);
+    tNow.textContent = name;
+  });
+  tBtn.addEventListener('click', () => {
+    if (tRun.live) {
+      tRun.stop(); [tG, tY, tR].forEach(l => set(l, 0));
+      tNow.textContent = '대기'; tBtn.textContent = '▶ 실행';
+    } else { tRun.start(TRAFFIC); tBtn.textContent = '⏸ 멈춤'; }
+    tBtn.setAttribute('aria-pressed', String(tRun.live));
+  });
+  tFast.addEventListener('click', () => {
+    const fast = tFast.getAttribute('aria-pressed') !== 'true';
+    tFast.setAttribute('aria-pressed', String(fast));
+    tRun.setSpeed(fast ? 4 : 1);
+  });
+  [tG, tY, tR].forEach(l => set(l, 0));
+})();
+</script>

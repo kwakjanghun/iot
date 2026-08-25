@@ -1,0 +1,275 @@
+<title>ESP32 올인원 키트 핀 지도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@500;700;900&family=IBM+Plex+Mono:wght@600;700&display=swap">
+<style>
+  :root{
+    --bg:#0B0F14; --panel:#141B25; --line:#2A3644;
+    --text:#EDF2F8; --muted:#93A1B5; --faint:#5C6B7E;
+    --ok:#6BD98A; --in:#5FB0FF; --care:#F0B441; --no:#FF6F5E; --today:#FFB03A;
+    --disp:'Black Han Sans',sans-serif;
+    --body:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
+    --mono:'IBM Plex Mono','Consolas',monospace;
+    --scale:1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);
+    padding:22px 24px 60px;-webkit-font-smoothing:antialiased}
+
+  h1{font-family:var(--disp);font-weight:400;font-size:calc(40px * var(--scale));line-height:1.1}
+  .sub{color:var(--muted);font-size:calc(17px * var(--scale));font-weight:700;margin-top:5px}
+  .sub b{color:var(--today)}
+
+  /* ── 조작 줄 ── */
+  .bar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;
+    margin:16px 0;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  button{font-family:var(--body);font-weight:900;cursor:pointer;
+    background:var(--panel);color:var(--muted);border:2px solid var(--line);
+    border-radius:999px;padding:7px 17px;font-size:calc(15px * var(--scale));
+    display:inline-flex;align-items:center;gap:8px}
+  button i{width:13px;height:13px;border-radius:4px;font-style:normal;display:block}
+  button:hover{color:var(--text);border-color:var(--muted)}
+  button:focus-visible{outline:3px solid var(--today);outline-offset:3px}
+  button[aria-pressed="true"]{color:var(--bg);background:var(--text);border-color:var(--text)}
+  button.f-ok[aria-pressed="true"]{background:var(--ok);border-color:var(--ok)}
+  button.f-in[aria-pressed="true"]{background:var(--in);border-color:var(--in)}
+  button.f-care[aria-pressed="true"]{background:var(--care);border-color:var(--care)}
+  button.f-no[aria-pressed="true"]{background:var(--no);border-color:var(--no)}
+  button.f-today[aria-pressed="true"]{background:var(--today);border-color:var(--today)}
+  .spacer{flex:1;min-width:16px}
+  .zoom{display:flex;gap:7px;align-items:center}
+  .zoom span{color:var(--muted);font-size:14px;font-weight:700;letter-spacing:.08em}
+  .zoom button{width:40px;height:40px;padding:0;justify-content:center;
+    font-family:var(--mono);font-size:21px;border-radius:11px}
+
+  /* ── 보드 : 가운데 모듈 + 좌우 핀 줄 ── */
+  .board{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+    gap:calc(18px * var(--scale));align-items:start}
+
+  .side{display:flex;flex-direction:column;gap:calc(6px * var(--scale))}
+  .sidehd{font-size:calc(15px * var(--scale));font-weight:900;letter-spacing:.14em;
+    padding:0 6px calc(8px * var(--scale));white-space:nowrap}
+  .left .sidehd{text-align:right;color:var(--faint)}
+  .right .sidehd{color:var(--today)}
+  .sidehd small{display:block;font-size:calc(13px * var(--scale));
+    letter-spacing:.02em;font-weight:700;color:var(--faint);margin-top:3px}
+
+  .pin{display:flex;align-items:center;gap:calc(13px * var(--scale));
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:calc(8px * var(--scale)) calc(15px * var(--scale))}
+  .nm{font-family:var(--mono);font-weight:700;font-size:calc(25px * var(--scale));
+    min-width:3.4em;flex-shrink:0;letter-spacing:-.02em}
+  .us{font-size:calc(16px * var(--scale));font-weight:700;color:var(--muted);line-height:1.3}
+  .gp{font-family:var(--mono);font-size:calc(13px * var(--scale));
+    color:var(--muted);opacity:.65;flex-shrink:0;font-weight:600}
+  .conn{display:flex;gap:calc(4px * var(--scale));flex-shrink:0}
+  .conn b{width:calc(11px * var(--scale));height:calc(11px * var(--scale));
+    border-radius:3px;display:block}
+  .conn .s{background:#E8C84A}.conn .v{background:#E24B3C}
+  .conn .g{background:#20242B;border:1px solid #3A424E}
+
+  /* 왼쪽은 거울처럼 뒤집어 배치 — 이름이 가운데를 향하도록 */
+  .left .pin{flex-direction:row-reverse;border-right-width:9px}
+  .left .nm{text-align:right}
+  .left .gp{margin-right:auto}
+  .right .pin{border-left-width:9px}
+  .right .gp{margin-left:auto}
+
+  /* 오른쪽(ESP32) 색 구분 */
+  .right .pin.ok{border-left-color:var(--ok)}    .right .pin.ok   .nm{color:var(--ok)}
+  .right .pin.in{border-left-color:var(--in)}    .right .pin.in   .nm{color:var(--in)}
+  .right .pin.care{border-left-color:var(--care)}.right .pin.care .nm{color:var(--care)}
+  .right .pin.no{border-left-color:var(--no)}    .right .pin.no   .nm{color:var(--no)}
+  .right .pin.today{background:#3A2C12;border-color:var(--today);border-left-color:var(--today)}
+  .right .pin.today .nm{color:var(--today)} .right .pin.today .us{color:#FFD9A0}
+
+  /* 왼쪽(NANO) — 이번 수업 미사용, 조용하게 */
+  .left .pin{background:#101620;border-right-color:#39424E;opacity:.62}
+  .left .nm{color:var(--faint)} .left .us{color:var(--faint);opacity:.9}
+
+  .pin.dim{opacity:.14}
+
+  /* ── 가운데 모듈 ── */
+  .mod{position:sticky;top:16px;display:flex;flex-direction:column;align-items:center;
+    gap:calc(8px * var(--scale));padding-top:calc(30px * var(--scale))}
+  .usb{width:calc(48px * var(--scale));height:calc(20px * var(--scale));
+    background:#8A9099;border-radius:5px 5px 3px 3px;border:2px solid #B9C0C9}
+  .chip{width:calc(126px * var(--scale));padding:calc(18px * var(--scale)) calc(10px * var(--scale));
+    background:linear-gradient(160deg,#C8CDD4,#8F959E);border-radius:8px;
+    color:#1A1E24;text-align:center;font-family:var(--mono);font-weight:700;
+    font-size:calc(12px * var(--scale));line-height:1.5;letter-spacing:.02em;
+    box-shadow:0 0 0 3px #2A3644}
+  .chip b{display:block;font-size:calc(14px * var(--scale));margin-bottom:4px}
+  .modcap{font-size:calc(13px * var(--scale));color:var(--faint);font-weight:700;
+    text-align:center;line-height:1.5;max-width:calc(140px * var(--scale))}
+
+  @media (max-width:1000px){
+    .board{grid-template-columns:minmax(0,1fr)}
+    .mod{position:static;flex-direction:row;padding:16px 0}
+    .left .pin{flex-direction:row;border-right-width:1px;border-left-width:9px}
+    .left .nm{text-align:left}
+    .left .gp{margin-right:0;margin-left:auto}
+    .left .sidehd{text-align:left}
+  }
+
+  /* ── 아래 설명 ── */
+  .wires{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
+    margin-top:calc(26px * var(--scale))}
+  @media (max-width:700px){.wires{grid-template-columns:minmax(0,1fr)}}
+  .wire{display:flex;align-items:center;gap:14px;background:var(--panel);
+    border:1px solid var(--line);border-radius:13px;padding:14px 20px}
+  .dot{width:calc(23px * var(--scale));height:calc(23px * var(--scale));
+    border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,.22)}
+  .wire b{display:block;font-size:calc(19px * var(--scale));font-weight:900}
+  .wire small{display:block;font-size:calc(15px * var(--scale));color:var(--muted);font-weight:700}
+
+  .note{margin-top:calc(20px * var(--scale));background:var(--panel);
+    border:1px solid var(--line);border-top:5px solid var(--no);
+    border-radius:13px;padding:18px 24px;font-size:calc(18px * var(--scale));
+    font-weight:700;line-height:1.7}
+  .note b{color:var(--no)} .note .q{color:var(--today)}
+</style>
+
+<h1>ESP32 핀 지도</h1>
+<div class="sub">보드 실물 그대로 · 왼쪽 <b>NANO</b> · 가운데 모듈 · 오른쪽 <b>ESP32</b></div>
+
+<div class="bar">
+  <button class="f-today" data-f="today" aria-pressed="false">💡 오늘 쓰는 핀</button>
+  <button class="f-ok"   data-f="ok"   aria-pressed="false"><i style="background:#6BD98A"></i>마음껏</button>
+  <button class="f-in"   data-f="in"   aria-pressed="false"><i style="background:#5FB0FF"></i>입력만</button>
+  <button class="f-care" data-f="care" aria-pressed="false"><i style="background:#F0B441"></i>조심</button>
+  <button class="f-no"   data-f="no"   aria-pressed="false"><i style="background:#FF6F5E"></i>쓰면 안 됨</button>
+  <div class="spacer"></div>
+  <div class="zoom">
+    <span>글씨</span>
+    <button id="minus" aria-label="글씨 작게">−</button>
+    <button id="plus" aria-label="글씨 크게">+</button>
+  </div>
+</div>
+
+<div class="board">
+  <div class="side left">
+    <div class="sidehd">NANO PIN OUT<small>이번 수업에서는 쓰지 않습니다</small></div>
+    <div id="nano"></div>
+  </div>
+
+  <div class="mod">
+    <div class="usb"></div>
+    <div class="chip"><b>ESP32</b>WROOM-32E</div>
+    <div class="modcap">이 모듈이<br>가운데 꽂혀 있습니다</div>
+  </div>
+
+  <div class="side right">
+    <div class="sidehd">ESP32 PIN OUT<small>오늘 쓰는 핀은 이쪽</small></div>
+    <div id="esp"></div>
+  </div>
+</div>
+
+<div class="wires">
+  <div class="wire"><span class="dot" style="background:#E8C84A"></span>
+    <span><b>노랑 — 신호</b><small>코드가 켜고 끄는 선</small></span></div>
+  <div class="wire"><span class="dot" style="background:#E24B3C"></span>
+    <span><b>빨강 — 전원</b><small>부품에 힘을 주는 선</small></span></div>
+  <div class="wire"><span class="dot" style="background:#1A1A1A"></span>
+    <span><b>검정 — 접지</b><small>전기가 돌아 나가는 길</small></span></div>
+</div>
+
+<div class="note">
+  <span class="q">찾아보세요 —</span> 오른쪽 줄에서 IO6부터 IO11까지는 어디 있을까요?
+  <b>없습니다.</b> 그 자리에 CLK · SD0 · SD1 · CMD · SD3 · SD2가 적혀 있죠.
+  ESP32가 <b>자기 프로그램을 저장하는 메모리</b>와 연결된 선이라,
+  보드 만든 사람이 <b>일부러 번호를 안 붙였습니다.</b>
+</div>
+
+<script>
+  // 오른쪽 — ESP32 Pin OUT (보드 라벨 순서 그대로)
+  const ESP = [
+    ['CLK', 'no',   '내부 플래시',        'GPIO6'],
+    ['SD0', 'no',   '내부 플래시',        'GPIO7'],
+    ['SD1', 'no',   '내부 플래시',        'GPIO8'],
+    ['IO15','care', '부팅에 영향',        'GPIO15'],
+    ['IO2', 'care', '부팅에 영향',        'GPIO2'],
+    ['IO0', 'care', 'Boot 버튼과 연결',   'GPIO0'],
+    ['IO4', 'ok',   '마음껏',             'GPIO4'],
+    ['IO16','ok',   '마음껏',             'GPIO16'],
+    ['IO17','ok',   '마음껏',             'GPIO17'],
+    ['IO5', 'ok',   '💡 오늘의 LED',      'GPIO5',  true],
+    ['IO18','ok',   'LED 추가 실험',      'GPIO18'],
+    ['IO19','ok',   '마음껏',             'GPIO19'],
+    ['IO23','ok',   '마음껏',             'GPIO23'],
+    ['CMD', 'no',   '내부 플래시',        'GPIO11'],
+    ['SD3', 'no',   '내부 플래시',        'GPIO10'],
+    ['SD2', 'no',   '내부 플래시',        'GPIO9'],
+    ['IO13','ok',   '마음껏',             'GPIO13'],
+    ['IO12','care', '부팅에 영향',        'GPIO12'],
+    ['IO14','ok',   '마음껏',             'GPIO14'],
+    ['IO27','ok',   '🟢 신호등 초록',     'GPIO27', true],
+    ['IO26','ok',   '🟡 신호등 노랑',     'GPIO26', true],
+    ['IO25','ok',   '🔴 신호등 빨강',     'GPIO25', true],
+    ['IO33','ok',   '마음껏',             'GPIO33'],
+    ['IO32','ok',   '마음껏',             'GPIO32'],
+    ['IO35','in',   '입력만 · PWM 안 됨', 'GPIO35'],
+    ['IO34','in',   '입력만 · PWM 안 됨', 'GPIO34'],
+    ['SVN', 'in',   '입력만 · PWM 안 됨', 'GPIO39'],
+    ['SVP', 'in',   '입력만 · PWM 안 됨', 'GPIO36'],
+    ['EN',  'care', '리셋 · 건드리지 않기', '—'],
+  ];
+
+  // 왼쪽 — NANO Pin OUT (아두이노 나노용, 이번 수업 미사용)
+  const NANO = [
+    ['A0','아날로그'],['A1','아날로그'],['A2','아날로그'],['A3','아날로그'],
+    ['A4','아날로그'],['A5','아날로그'],['A6','아날로그'],['A7','아날로그'],
+    ['D13','디지털'],['D12','디지털'],['D11','디지털'],['D10','디지털'],
+    ['D9','디지털'],['D8','디지털'],['D7','디지털'],['D6','디지털'],
+    ['D5','디지털'],['D4','디지털'],['D3','디지털'],['D2','디지털'],
+    ['D1','디지털 · TX'],['D0','디지털 · RX'],
+  ];
+
+  const conn = '<span class="conn"><b class="s"></b><b class="v"></b><b class="g"></b></span>';
+
+  document.getElementById('esp').innerHTML = ESP.map(
+    ([nm, kind, use, gpio, today]) =>
+      `<div class="pin ${kind}${today ? ' today' : ''}" data-kind="${kind}"` +
+      `${today ? ' data-today="1"' : ''}>` +
+      `<span class="nm">${nm}</span><span class="us">${use}</span>` +
+      `<span class="gp">${gpio}</span>${conn}</div>`
+  ).join('');
+  document.getElementById('esp').className = 'maplist';
+
+  document.getElementById('nano').innerHTML = NANO.map(
+    ([nm, use]) =>
+      `<div class="pin nano" data-kind="nano">` +
+      `<span class="nm">${nm}</span><span class="us">${use}</span>${conn}</div>`
+  ).join('');
+
+  // 같은 세로 간격으로 쌓기
+  document.querySelectorAll('#esp,#nano').forEach(el => {
+    el.style.display = 'flex';
+    el.style.flexDirection = 'column';
+    el.style.gap = 'calc(6px * var(--scale))';
+  });
+
+  // 필터 — 같은 버튼 다시 누르면 전체 보기
+  let active = null;
+  document.querySelectorAll('[data-f]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const f = btn.dataset.f;
+      active = (active === f) ? null : f;
+      document.querySelectorAll('[data-f]').forEach(b =>
+        b.setAttribute('aria-pressed', String(b.dataset.f === active)));
+      document.querySelectorAll('.pin').forEach(p => {
+        const hit = !active ||
+          (active === 'today' ? p.dataset.today === '1' : p.dataset.kind === active);
+        p.classList.toggle('dim', !hit);
+      });
+    });
+  });
+
+  // 글씨 크기 — 교실 뒷자리까지 보이게
+  let scale = 1;
+  const setScale = v => {
+    scale = Math.min(1.7, Math.max(0.7, Math.round(v * 20) / 20));
+    document.documentElement.style.setProperty('--scale', scale);
+  };
+  document.getElementById('plus').addEventListener('click', () => setScale(scale + 0.1));
+  document.getElementById('minus').addEventListener('click', () => setScale(scale - 0.1));
+</script>
