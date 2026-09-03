@@ -1,0 +1,241 @@
+<title>Flow 프롬프트 생성기</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--paper:#F5F6FA;--card:#FFFFFF;--ink:#191D28;--ink-soft:#4A5063;--ink-faint:#7C8398;--line:#D6DAE6;--accent:#2F4BE0;--accent-ink:#FFFFFF;
+  --accent-soft:#E4E9FC;--ok:#0E6B45;--ok-soft:#E1F3EA;--warn:#A34A00;--warn-soft:#FCEFE0;--stop:#A0143C;--stop-soft:#FBE4EA;--field:#FBFBFE;
+  --prompt-bg:#20243A;--prompt-ink:#E8EBFA;--prompt-lab:#9AA6E8;--prompt-var:#FFD98A}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--paper:#14161F;--card:#1C1F2C;--ink:#EDEFF7;--ink-soft:#A8AEC4;--ink-faint:#858BA3;
+  --line:#333850;--accent:#8FA2FF;--accent-ink:#0E1020;--accent-soft:#252B4A;--ok:#6FCFA3;--ok-soft:#173226;--warn:#F2A25C;--warn-soft:#3A2A18;
+  --stop:#FF8FAC;--stop-soft:#3B1622;--field:#171A26;--prompt-bg:#0E1020;--prompt-ink:#DCE0F5;--prompt-lab:#8E9AE0;--prompt-var:#FFD98A}}
+:root[data-theme="dark"]{--paper:#14161F;--card:#1C1F2C;--ink:#EDEFF7;--ink-soft:#A8AEC4;--ink-faint:#858BA3;--line:#333850;--accent:#8FA2FF;
+  --accent-ink:#0E1020;--accent-soft:#252B4A;--ok:#6FCFA3;--ok-soft:#173226;--warn:#F2A25C;--warn-soft:#3A2A18;--stop:#FF8FAC;--stop-soft:#3B1622;
+  --field:#171A26;--prompt-bg:#0E1020;--prompt-ink:#DCE0F5;--prompt-lab:#8E9AE0;--prompt-var:#FFD98A}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans KR","Malgun Gothic",sans-serif;font-size:18px;line-height:1.7}
+.wrap{max-width:1180px;margin:0 auto;padding:36px 20px 120px}
+h1,h2,h3{font-family:"Do Hyeon","IBM Plex Sans KR",sans-serif;font-weight:400;line-height:1.25;margin:0;text-wrap:balance}
+h1{font-size:40px} h2{font-size:26px} h3{font-size:20px;margin-top:18px}
+p{margin:8px 0}
+.eyebrow{display:inline-block;color:var(--accent);font-weight:700;font-size:14px;letter-spacing:.16em;margin-bottom:8px}
+.lede{font-size:19px;color:var(--ink-soft);max-width:70ch}
+.cols{display:grid;grid-template-columns:460px 1fr;gap:26px;align-items:start;margin-top:26px}
+.panel{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:22px 24px}
+.sticky{position:sticky;top:16px}
+label{display:block;font-weight:600;font-size:15.5px;margin:14px 0 5px}
+label small{font-weight:400;color:var(--ink-faint);margin-left:6px}
+input[type=text],textarea,select{width:100%;font:inherit;font-size:16.5px;color:var(--ink);background:var(--field);border:1.5px solid var(--line);border-radius:9px;padding:9px 12px}
+textarea{min-height:60px;resize:vertical;line-height:1.5}
+input:focus,textarea:focus,select:focus{outline:3px solid var(--accent-soft);border-color:var(--accent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.hint{font-size:14px;color:var(--ink-faint);margin:3px 0 0}
+.judge{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.judge label{margin:0;background:var(--field);border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;cursor:pointer;font-weight:500;display:flex;gap:8px;align-items:center;font-size:15.5px}
+.judge label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.judge input{width:16px;height:16px;accent-color:var(--accent)}
+.verdict{border-radius:9px;padding:10px 14px;margin-top:8px;font-size:15.5px;display:none}
+.verdict.ok{display:block;background:var(--ok-soft);border-left:5px solid var(--ok)}
+.verdict.no{display:block;background:var(--warn-soft);border-left:5px solid var(--warn)}
+.step{margin-top:22px;padding-top:18px;border-top:1.5px solid var(--line)}
+.step:first-child{margin-top:0;padding-top:0;border-top:0}
+.step h2 .n{display:inline-block;color:var(--accent);margin-right:8px}
+.step .where{font-size:15px;color:var(--ink-soft);margin:4px 0 6px}
+.where .ui{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:0 8px;font-weight:700}
+.out{position:relative;background:var(--prompt-bg);color:var(--prompt-ink);border-radius:12px;padding:16px 18px 14px;margin:10px 0;
+  font-family:"IBM Plex Mono","IBM Plex Sans KR",monospace;font-size:15.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.out .lab{display:block;font-family:"IBM Plex Sans KR",sans-serif;font-size:13px;letter-spacing:.13em;color:var(--prompt-lab);font-weight:700;margin-bottom:8px;padding-right:80px}
+.out .v{color:var(--prompt-var)} .out .miss{color:var(--prompt-var);opacity:.55}
+.copy{position:absolute;top:11px;right:11px;font:inherit;font-family:"IBM Plex Sans KR",sans-serif;font-size:13.5px;font-weight:700;background:var(--prompt-lab);color:var(--prompt-bg);border:0;border-radius:7px;padding:5px 11px;cursor:pointer}
+.copy.done{background:#6FCFA3}
+.callout{border-left:5px solid var(--warn);background:var(--warn-soft);border-radius:0 10px 10px 0;padding:11px 16px;margin:12px 0;font-size:15.5px}
+.callout.ok{border-left-color:var(--ok);background:var(--ok-soft)} .callout.stop{border-left-color:var(--stop);background:var(--stop-soft)}
+.callout b:first-child{color:var(--warn)} .callout.ok b:first-child{color:var(--ok)} .callout.stop b:first-child{color:var(--stop)}
+.chk{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:6px}
+.chk label{margin:0;font-weight:500;display:flex;gap:9px;align-items:flex-start;background:var(--field);border:1.5px solid var(--line);border-radius:9px;padding:9px 12px;cursor:pointer;font-size:15.5px}
+.chk input{width:16px;height:16px;margin-top:4px;accent-color:var(--accent);flex:none}
+.chk label:has(input:checked){border-color:var(--ok);background:var(--ok-soft)}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.btn{font:inherit;font-weight:700;font-size:15px;border-radius:9px;padding:10px 16px;cursor:pointer;border:1.5px solid var(--accent);background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.save{font-size:14px;color:var(--ink-faint);margin-left:auto}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:99px;font-size:15px;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+@media (max-width:900px){.cols{grid-template-columns:1fr}.sticky{position:static}h1{font-size:32px}.grid2{grid-template-columns:1fr}}
+@media print{body{background:#fff;font-size:11.5pt}.copy,.btnrow,.toast{display:none!important}.cols{grid-template-columns:1fr}.panel{border-color:#999}.out{background:#eee;color:#000}.out .lab,.out .v{color:#000}}
+</style>
+
+<div class="wrap">
+<span class="eyebrow">사물 인터넷과 센서 제어 · AI 영상 특강 2</span>
+<h1>Flow 프롬프트 생성기</h1>
+<p class="lede">왼쪽 칸을 채우면 오른쪽에 <b>Flow 채팅창에 붙여넣을 문장</b>이 단계별로 만들어집니다. 2026년 9월 3일 실제로 실행해 본 클린봇 세션과 같은 순서입니다. 쓴 내용은 이 브라우저에 자동 저장됩니다.</p>
+
+<div class="cols">
+<!-- ───────── 입력 ───────── -->
+<div class="panel sticky">
+  <h2>내 제품 입력</h2>
+  <label for="kind">제품 종류</label>
+  <input type="text" id="kind" data-k="kind" placeholder="예: 로봇청소기, 스마트 조명, 공기청정기">
+  <div class="grid2">
+    <div><label for="brand">내가 지은 이름 <small>실제 브랜드 금지</small></label><input type="text" id="brand" data-k="brand" placeholder="예: 클린봇"></div>
+    <div><label for="real">참고한 실제 제품 <small>분석용, 영상엔 안 씀</small></label><input type="text" id="real" data-k="real" placeholder="예: ○○ 로봇청소기"></div>
+  </div>
+  <label for="feat">강조할 기능 하나 <small>문장 끝은 "~하는 기능"</small></label>
+  <input type="text" id="feat" data-k="feat" placeholder="예: 외출 중에 스마트폰 앱으로 청소를 시작하는 기능">
+  <div class="judge">
+    <label><input type="radio" name="wifi" value="dies" data-k="wifi"> 와이파이 끊으면 사라진다</label>
+    <label><input type="radio" name="wifi" value="lives" data-k="wifi"> 끊어도 그대로 된다</label>
+  </div>
+  <div class="verdict" id="verdict"></div>
+  <label for="visible">기능이 작동하는 게 눈에 보이는 장면 <small>3번 컷 수정에 씀</small></label>
+  <input type="text" id="visible" data-k="visible" placeholder="예: 밤거리에서 든 폰 화면과, 멀리 아파트 창문에 파란 LED가 켜지는 모습이 한 화면에">
+  <div class="grid2">
+    <div><label for="aud">보는 사람</label><input type="text" id="aud" data-k="aud" placeholder="예: 혼자 사는 20대"></div>
+    <div><label for="place">장소와 시간</label><input type="text" id="place" data-k="place" placeholder="예: 밤의 도시 아파트"></div>
+    <div><label for="mood">분위기</label><input type="text" id="mood" data-k="mood" placeholder="예: 차분하고 세련된"></div>
+    <div><label for="style">스타일</label><select id="style" data-k="style"><option>실사 광고 느낌</option><option>밝은 3D 애니메이션 느낌</option><option>손그림 애니메이션 느낌</option></select></div>
+    <div><label for="ratio">올릴 곳</label><select id="ratio" data-k="ratio"><option value="16:9">유튜브 (16:9 가로)</option><option value="9:16">쇼츠·릴스 (9:16 세로)</option></select></div>
+    <div><label for="len">길이</label><select id="len" data-k="len"><option value="15">15초 (3초 × 5컷)</option><option value="30">30초 (3초 × 10컷)</option></select></div>
+  </div>
+  <h3>제품을 캐릭터로</h3>
+  <label for="look">외형 <small>색 · 모양 · 재질 · 포인트</small></label>
+  <input type="text" id="look" data-k="look" placeholder="예: 흰색 원형, 윗면 가운데 파란 LED 링, 무광 재질, 범퍼는 진회색">
+  <label for="move">움직임·작동 <small>캐릭터 정보 칸에 들어감</small></label>
+  <input type="text" id="move" data-k="move" placeholder="예: 바닥을 미끄러지듯 조용히 움직인다. 작동할 때 LED 링이 켜진다.">
+  <label for="act">@로 부를 때 시킬 동작 하나</label>
+  <input type="text" id="act" data-k="act" placeholder="예: 어두운 거실 바닥을 왼쪽에서 오른쪽으로 미끄러지듯 지나간다">
+  <div class="btnrow">
+    <button class="btn ghost" id="exampleBtn">클린봇 예시 채우기</button>
+    <button class="btn ghost" id="resetBtn">비우기</button>
+    <span class="save" id="saveMsg"></span>
+  </div>
+</div>
+
+<!-- ───────── 출력 ───────── -->
+<div class="panel">
+  <div class="step">
+    <h2><span class="n">1</span>새 프로젝트 · <span class="n">2</span>설정</h2>
+    <p class="where">Flow 홈 <span class="ui">+ 새 프로젝트</span> → 채팅창 아래 슬라이더 아이콘 <span class="ui">에이전트 설정</span></p>
+    <ul class="chk">
+      <li><label><input type="checkbox" data-k="c1"> 생성하기 전에 확인 → <b>항상</b></label></li>
+      <li><label><input type="checkbox" data-k="c2"> 동영상 생성 기본값 비율 → <b id="ratioTxt">16:9</b></label></li>
+      <li><label><input type="checkbox" data-k="c3"> <b>저장</b> 눌렀다</label></li>
+    </ul>
+  </div>
+
+  <div class="step">
+    <h2><span class="n">3</span>첫 문장</h2>
+    <p class="where">채팅창에 붙여넣고 보내기 → 에이전트가 장면 <span id="cutN">5</span>개를 짜 온다</p>
+    <div class="out"><span class="lab">복사해서 붙여넣기</span><button class="copy" data-copy="p1">복사</button><span id="p1"></span></div>
+  </div>
+
+  <div class="step">
+    <h2><span class="n">4</span>3번 컷 수정 요청</h2>
+    <p class="where">바로 승인하지 말고 <b>기능 작동 컷</b>을 한 번 고친다</p>
+    <div class="out"><span class="lab">복사해서 붙여넣기</span><button class="copy" data-copy="p2">복사</button><span id="p2"></span></div>
+  </div>
+
+  <div class="step">
+    <h2><span class="n">5</span>스토리보드 먼저</h2>
+    <p class="where">이미지 1장 값으로 장면 전체 확인. 마음에 안 들면 여기서 고친다</p>
+    <div class="out"><span class="lab">복사해서 붙여넣기</span><button class="copy" data-copy="p3">복사</button><span id="p3"></span></div>
+    <div class="out"><span class="lab">스토리보드 한 칸만 고칠 때</span><button class="copy" data-copy="p3b">복사</button><span id="p3b"></span></div>
+  </div>
+
+  <div class="step">
+    <h2><span class="n">7</span>제품을 캐릭터로 등록</h2>
+    <p class="where">왼쪽 <span class="ui">캐릭터</span> → <span class="ui">신규 캐릭터</span> → 설명 → <span class="ui">만들기</span> → 연필로 이름 → 캐릭터 정보 → <span class="ui">완료</span></p>
+    <div class="out"><span class="lab">"캐릭터를 설명해 주세요" 칸</span><button class="copy" data-copy="p4">복사</button><span id="p4"></span></div>
+    <div class="out"><span class="lab">"캐릭터 정보(선택사항)" 칸</span><button class="copy" data-copy="p5">복사</button><span id="p5"></span></div>
+  </div>
+
+  <div class="step">
+    <h2><span class="n">6</span>·<span class="n">8</span>영상 클립 — @로 부르면서 한 클립씩</h2>
+    <p class="where">채팅창에 <b>@</b> → 캐릭터 선택 → 아래 문장. 확인 창에서 <b>승인</b>만 (다시 묻지 않음 ✕)</p>
+    <div class="out"><span class="lab">기능 작동 컷 (3번) 클립</span><button class="copy" data-copy="p6">복사</button><span id="p6"></span></div>
+    <div class="out"><span class="lab">제품이 움직이는 컷 (4번) 클립 — @ 선택 후 이어서</span><button class="copy" data-copy="p7">복사</button><span id="p7"></span></div>
+    <div class="out"><span class="lab">뒤 클립을 앞 클립과 이을 때 꼭 붙이는 문장</span><button class="copy" data-copy="p8">복사</button><span id="p8"></span></div>
+    <div class="callout"><b>크레딧.</b> 클립 1개 = 12 (캐릭터 포함 15). 5개면 60~75. 한 클립씩 승인하고, 마음에 안 들면 이미지로 돌아가서 고친다.</div>
+  </div>
+
+  <div class="step">
+    <h2><span class="n">9</span>다운로드 · 편집 · 업로드</h2>
+    <ul class="chk">
+      <li><label><input type="checkbox" data-k="c4"> 결과 화면 위쪽 <b>다운로드</b> 아이콘으로 클립 저장</label></li>
+      <li><label><input type="checkbox" data-k="c5"> 제품명·자막은 <b>캡컷 등 편집 앱</b>에서 얹었다 (Flow 안에 글자 ✕)</label></li>
+      <li><label><input type="checkbox" data-k="c6"> 실제 브랜드 이름·로고·실제 사람 얼굴이 없다</label></li>
+      <li><label><input type="checkbox" data-k="c7"> 쇼츠 업로드 설정에서 <b>변경되거나 합성된 콘텐츠</b> 켰다</label></li>
+    </ul>
+  </div>
+
+  <div class="step">
+    <h2>결과가 이상할 때 — 한 칸만 고친다</h2>
+    <div class="out"><span class="lab">고칠 때 (대괄호만 바꿔서)</span><button class="copy" data-copy="p9">복사</button><span id="p9"></span></div>
+    <div class="callout ok"><b>프롬프트를 더 다듬고 싶으면 제미나이(Gemini)에서.</b> 수업에서 쓰는 AI는 제미나이입니다. 아래 문장을 제미나이에 붙여넣으세요.</div>
+    <div class="out"><span class="lab">제미나이에 붙여넣기</span><button class="copy" data-copy="p10">복사</button><span id="p10"></span></div>
+  </div>
+
+  <div class="btnrow">
+    <button class="btn" id="exportBtn">전체 프롬프트 복사 (제출용)</button>
+    <button class="btn ghost" onclick="window.print()">인쇄</button>
+  </div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const KEY='flow-prompt-gen-v1';
+  const fields=[...document.querySelectorAll('[data-k]')];
+  const state={};
+  const $=id=>document.getElementById(id);
+  function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+  function v(k,hint){const x=(state[k]||'').toString().trim();return x?'<span class="v">'+esc(x)+'</span>':'<span class="miss">['+esc(hint)+']</span>';}
+  function g(k){return (state[k]||'').toString().trim();}
+
+  function load(){try{Object.assign(state,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){}
+    fields.forEach(f=>{const k=f.dataset.k;if(f.type==='checkbox')f.checked=!!state[k];else if(f.type==='radio')f.checked=(state[k]===f.value);else if(state[k]!=null)f.value=state[k];});}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(state));$('saveMsg').textContent='자동 저장됨';}catch(e){}}
+  function read(f){const k=f.dataset.k;if(f.type==='checkbox')state[k]=f.checked;else if(f.type==='radio'){if(f.checked)state[k]=f.value;}else state[k]=f.value;}
+
+  function verdict(){const el=$('verdict');
+    if(state.wifi==='dies'){el.className='verdict ok';el.innerHTML='<b>사물 인터넷 기능입니다.</b> 광고에 세우기 좋습니다.';}
+    else if(state.wifi==='lives'){el.className='verdict no';el.innerHTML='<b>자동화 기능입니다.</b> 앱 원격 제어·알림·데이터 기록처럼 연결이 필요한 기능으로 바꿔 보세요.';}
+    else{el.className='verdict';el.innerHTML='';}}
+
+  function render(){
+    const len=g('len')||'15', cuts=len==='30'?'10':'5', ratio=g('ratio')||'16:9';
+    $('ratioTxt').textContent=ratio+(ratio==='9:16'?' (쇼츠)':' (유튜브)'); $('cutN').textContent=cuts;
+    const style=g('style')||'실사 광고 느낌';
+    const tail='3초씩 '+cuts+'컷으로 장면을 제안해줘. 순서는 훅, 문제, 기능 작동, 증거, 제품명. 실제 브랜드 로고는 쓰지 말고, 영상 안에 글자는 넣지 마.';
+    $('p1').innerHTML=len+'초 '+v('kind','제품 종류')+' 광고를 만들고 싶어. 제품 이름은 '+v('brand','내가 지은 이름')+'(가상 브랜드). 강조할 기능은 딱 하나, '+v('feat','강조할 기능')+'. 보는 사람은 '+v('aud','보는 사람')+'. '+v('place','장소와 시간')+', '+v('mood','분위기')+' 분위기, '+esc(style)+'. '+tail;
+    $('p2').innerHTML='3번 장면을 고쳐줘. 지금 장면으로는 밖에서 기능을 썼다는 게 안 보여. '+v('visible','기능이 눈에 보이는 장면')+' 같이 보이게 바꿔줘. 나머지 장면은 그대로.';
+    $('p3').innerHTML='3x3 스토리보드 그리드 이미지를 먼저 하나 만들어줘. 영상 안에 글자는 넣지 마.';
+    $('p3b').innerHTML='스토리보드에서 [몇 번] 칸만 다시 그려줘. [바꿀 내용 한 가지]. 나머지 칸은 그대로.';
+    $('p4').innerHTML=v('look','외형: 색·모양·재질·포인트')+'. 로고나 글자 없음. 이름은 '+v('brand','내가 지은 이름')+'.';
+    $('p5').innerHTML=v('move','움직임·작동 설명')+' 스마트폰 앱으로 밖에서 '+v('feat','기능')+'.';
+    $('p6').innerHTML='스토리보드의 3번 장면을 영상 클립으로 만들어줘. '+v('visible','기능이 눈에 보이는 장면')+', 이 동작 하나만. 영상 안에 글자는 넣지 마.';
+    $('p7').innerHTML='@'+v('brand','이름')+' 이 '+v('act','시킬 동작 하나')+'. 카메라는 한 방향으로 천천히, '+v('place','장소와 시간')+', 같은 색감. 이 동작 하나만, 글자 없이.';
+    $('p8').innerHTML='앞 영상의 마지막 화면에서 그대로 이어지는 8초 영상. 앞 영상과 같은 장소, 같은 시간대, 같은 색감을 유지해줘.';
+    $('p9').innerHTML='[몇 번] 장면만 다시 만들어줘. [피사체/동작/배경/카메라/조명/스타일 중 한 칸]만 이렇게 바꿔: [바꿀 내용]. 나머지는 그대로.';
+    $('p10').innerHTML='아래 문장은 구글 Flow에 넣을 15초 광고 첫 프롬프트야. 내 제품은 '+v('kind','제품 종류')+' '+v('brand','이름')+'이고 강조할 기능은 '+v('feat','기능')+'이야. 문장 구조와 마지막 금지 조건은 그대로 두고, 장면이 더 구체적으로 그려지도록 다듬어 줘. 한국어로, 한 문단으로.\n\n'+$('p1').innerText;
+    bindCopy();
+  }
+  function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1500);}
+  function bindCopy(){document.querySelectorAll('.copy').forEach(b=>{if(b._b)return;b._b=true;b.addEventListener('click',()=>{
+    navigator.clipboard.writeText($(b.dataset.copy).innerText).then(()=>{b.textContent='복사됨';b.classList.add('done');setTimeout(()=>{b.textContent='복사';b.classList.remove('done');},1400);toast('복사됨 — Flow 채팅창에 붙여넣으세요');}).catch(()=>toast('복사가 막혔어요. 드래그해서 복사하세요.'));});});}
+  fields.forEach(f=>{f.addEventListener('input',()=>{read(f);save();verdict();render();});f.addEventListener('change',()=>{read(f);save();verdict();render();});});
+
+  const EX={kind:'로봇청소기',brand:'클린봇',real:'',feat:'외출 중에 스마트폰 앱으로 청소를 시작하는 기능',wifi:'dies',
+    visible:'밤거리에서 남성이 든 스마트폰 화면(청소 시작 버튼)과, 그 뒤 멀리 보이는 아파트 창문에 클린봇의 파란 LED 링이 켜지는 모습이 한 화면에',
+    aud:'혼자 사는 20대',place:'밤의 도시 아파트',mood:'차분하고 세련된',style:'실사 광고 느낌',ratio:'16:9',len:'15',
+    look:'흰색 원형 로봇청소기. 윗면 가운데에 파란 LED 링, 무광 매트 재질, 범퍼는 진회색',
+    move:'집 안 바닥을 미끄러지듯 조용히 움직인다. 작동할 때 윗면 파란 LED 링이 켜진다.',act:'어두운 거실 바닥을 왼쪽에서 오른쪽으로 미끄러지듯 지나간다'};
+  $('exampleBtn').addEventListener('click',()=>{Object.assign(state,EX);fields.forEach(f=>{const k=f.dataset.k;if(f.type==='radio')f.checked=(state[k]===f.value);else if(f.type!=='checkbox'&&state[k]!=null)f.value=state[k];});save();verdict();render();toast('클린봇 예시를 채웠어요. 내 제품으로 바꿔 보세요.');});
+  $('resetBtn').addEventListener('click',()=>{if(!confirm('입력을 모두 비울까요?'))return;Object.keys(state).forEach(k=>delete state[k]);try{localStorage.removeItem(KEY);}catch(e){}fields.forEach(f=>{if(f.type==='checkbox'||f.type==='radio')f.checked=false;else if(f.tagName==='SELECT')f.selectedIndex=0;else f.value='';});verdict();render();});
+  $('exportBtn').addEventListener('click',()=>{
+    const ids=[['3. 첫 문장','p1'],['4. 3번 컷 수정','p2'],['5. 스토리보드','p3'],['7. 캐릭터 설명','p4'],['7. 캐릭터 정보','p5'],['6. 3번 컷 클립','p6'],['8. @ 동작 클립','p7'],['8. 잇기 문장','p8']];
+    const L=['Flow 프롬프트 — '+g('brand')+' ('+g('kind')+')','참고 제품: '+g('real'),''];
+    ids.forEach(([t,id])=>{L.push('['+t+']');L.push($(id).innerText);L.push('');});
+    navigator.clipboard.writeText(L.join('\n')).then(()=>toast('전체 프롬프트가 복사됐어요.')).catch(()=>toast('복사가 막혔어요. 인쇄를 이용하세요.'));});
+  load();verdict();render();
+})();
+</script>

@@ -10,7 +10,7 @@ import os, re, glob, io, sys, shutil
 sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = r"G:/내 드라이브/2026년/올인원_사물"
-KIT = os.path.join(ROOT, "[배포용_교안]_ESP32 올인원 키트")
+KIT = os.path.join(ROOT, "ESP32 올인원 키트_교안")
 WEB = r"C:/Users/ai/iot-site"
 
 NOTICE = '''<section id="film">
@@ -49,6 +49,14 @@ pin = os.path.join(KIT, "ESP32_핀지도.html")
 if os.path.exists(pin):
     shutil.copyfile(pin, os.path.join(WEB, "pinmap.html"))
     print("  pinmap.html ← ESP32_핀지도.html")
+
+# ── AI 영상 특강 (Flow) 페이지 ──
+for src, dst in (("특강_Flow프롬프트생성기.html", "flow-prompt.html"),
+                 ("특강_Flow실전_프롬프트모음.html", "flow-prompts.html")):
+    fp = os.path.join(KIT, src)
+    if os.path.exists(fp):
+        shutil.copyfile(fp, os.path.join(WEB, dst))
+        print(f"  {dst} ← {src}")
 
 # ── 챕터 목록 (대본 없는 것도 이름은 보여줌) ──
 chapters = []
@@ -147,6 +155,8 @@ html = f'''<!doctype html>
   <div class="tools">
     <a href="pinmap.html">📍 ESP32 핀 지도</a>
     <a href="pwm.html">🎚 PWM 조작 실습</a>
+    <a href="flow-prompt.html">🎬 Flow 프롬프트 생성기</a>
+    <a href="flow-prompts.html">📋 Flow 실전 프롬프트 모음</a>
   </div>
 </header>
 

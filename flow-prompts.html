@@ -1,0 +1,158 @@
+<title>Flow 실전 프롬프트 모음</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--paper:#F6F7FB;--card:#FFFFFF;--ink:#191D28;--ink-soft:#4A5063;--ink-faint:#767D93;--line:#D9DDE8;
+  --accent:#2F4BE0;--accent-soft:#E4E9FC;--warn:#A34A00;--warn-soft:#FCEFE0;--ok:#0E6B45;--ok-soft:#E1F3EA;
+  --stop:#A0143C;--stop-soft:#FBE4EA;--prompt-bg:#20243A;--prompt-ink:#E8EBFA;--prompt-lab:#9AA6E8;--prompt-hi:#FFD98A}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--paper:#14161F;--card:#1C1F2C;--ink:#EDEFF7;--ink-soft:#A8AEC4;
+  --ink-faint:#858BA3;--line:#333850;--accent:#8FA2FF;--accent-soft:#252B4A;--warn:#F2A25C;--warn-soft:#3A2A18;--ok:#6FCFA3;--ok-soft:#173226;
+  --stop:#FF8FAC;--stop-soft:#3B1622;--prompt-bg:#0E1020;--prompt-ink:#DCE0F5;--prompt-lab:#8E9AE0;--prompt-hi:#FFD98A}}
+:root[data-theme="dark"]{--paper:#14161F;--card:#1C1F2C;--ink:#EDEFF7;--ink-soft:#A8AEC4;--ink-faint:#858BA3;--line:#333850;
+  --accent:#8FA2FF;--accent-soft:#252B4A;--warn:#F2A25C;--warn-soft:#3A2A18;--ok:#6FCFA3;--ok-soft:#173226;--stop:#FF8FAC;--stop-soft:#3B1622;
+  --prompt-bg:#0E1020;--prompt-ink:#DCE0F5;--prompt-lab:#8E9AE0;--prompt-hi:#FFD98A}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans KR","Malgun Gothic",sans-serif;font-size:19px;line-height:1.75}
+.wrap{max-width:900px;margin:0 auto;padding:44px 22px 100px}
+h1,h2,h3{font-family:"Do Hyeon","IBM Plex Sans KR",sans-serif;font-weight:400;line-height:1.28;text-wrap:balance;margin:0}
+h1{font-size:44px}
+h2{font-size:30px;margin-top:64px;padding-top:24px;border-top:3px solid var(--ink)}
+h3{font-size:23px;margin-top:32px}
+p{margin:12px 0;max-width:64ch}
+.eyebrow{display:inline-block;color:var(--accent);font-weight:700;font-size:15px;letter-spacing:.16em;margin-bottom:10px}
+.lede{font-size:20px;color:var(--ink-soft)}
+.prompt{position:relative;background:var(--prompt-bg);color:var(--prompt-ink);font-family:"IBM Plex Mono","IBM Plex Sans KR",monospace;
+  font-size:17px;line-height:1.75;border-radius:10px;padding:18px 22px 16px;margin:14px 0;white-space:pre-wrap;word-break:break-word}
+.prompt .lab{display:block;font-family:"IBM Plex Sans KR",sans-serif;font-size:13.5px;letter-spacing:.13em;color:var(--prompt-lab);font-weight:700;margin-bottom:8px;padding-right:80px}
+.prompt b{color:var(--prompt-hi);font-weight:600}
+.copy{position:absolute;top:12px;right:12px;font:inherit;font-family:"IBM Plex Sans KR",sans-serif;font-size:14px;font-weight:700;
+  background:var(--prompt-lab);color:var(--prompt-bg);border:0;border-radius:7px;padding:6px 12px;cursor:pointer}
+.copy.done{background:#6FCFA3}
+.step{display:grid;grid-template-columns:58px 1fr;gap:18px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:22px 26px;margin:18px 0}
+.step .no{font-family:"Do Hyeon",sans-serif;font-size:36px;color:var(--accent);line-height:1;padding-top:4px}
+.step h3{margin-top:0}
+.step p{margin:8px 0}
+.ui{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:1px 8px;font-weight:700;font-size:17px}
+.callout{border-left:6px solid var(--warn);background:var(--warn-soft);border-radius:0 10px 10px 0;padding:14px 20px;margin:16px 0;font-size:18px}
+.callout.ok{border-left-color:var(--ok);background:var(--ok-soft)}
+.callout.stop{border-left-color:var(--stop);background:var(--stop-soft)}
+.callout b:first-child{color:var(--warn)} .callout.ok b:first-child{color:var(--ok)} .callout.stop b:first-child{color:var(--stop)}
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:17.5px}
+th,td{border:1.5px solid var(--line);padding:11px 14px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft);font-size:16.5px;white-space:nowrap}
+.tablebox{overflow-x:auto}
+.src{font-size:16px;color:var(--ink-faint)}
+ul{padding-left:24px} li{margin:7px 0}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:99px;font-size:15px;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+@media (max-width:640px){h1{font-size:33px}.step{grid-template-columns:1fr}.step .no{padding-top:0}}
+@media print{body{background:#fff;font-size:12pt}.copy,.toast{display:none}.prompt{background:#eee;color:#000}.prompt .lab,.prompt b{color:#000}.step{page-break-inside:avoid}}
+</style>
+
+<div class="wrap">
+<span class="eyebrow">AI 영상 특강 2 · 학생 배포용</span>
+<h1>Flow 실전 프롬프트 모음</h1>
+<p class="lede">2026년 9월 3일, 구글 Flow에서 <b>실제로 실행한</b> 클린봇 15초 광고 세션의 프롬프트 원문과, 다른 제품에 바로 쓰는 사례집입니다. 각 프롬프트의 <b>복사</b> 버튼을 누르고 Flow 채팅창에 붙여넣으면 됩니다.</p>
+
+<div class="callout"><b>규칙 세 가지.</b> ① 실제 브랜드 이름·로고를 쓰지 않고 <b>내가 지은 이름</b>을 쓴다 ② 영상 안에 <b>글자를 넣지 않는다</b>(자막은 편집 앱에서) ③ 영상 생성 확인 창에서 <b>"승인, 다시 묻지 않음"은 누르지 않는다</b>.</div>
+<div class="callout ok"><b>프롬프트를 미리 다듬고 싶으면 제미나이(Gemini)에서.</b> 수업에서 쓸 수 있는 AI는 제미나이입니다. 아래 첫 문장을 제미나이에 붙여넣고 "내 제품 ○○에 맞게 바꿔 줘"라고 하면 초안이 나옵니다. 그 결과를 Flow에 붙여넣습니다.</div>
+
+<h2>아홉 단계 한눈에</h2>
+<div class="tablebox"><table>
+<tr><th>단계</th><th>어디서</th><th>무엇을</th></tr>
+<tr><td>1</td><td>Flow 홈</td><td><span class="ui">+ 새 프로젝트</span> → 왼쪽 메뉴(모든 미디어·캐릭터·장면·도구), 오른쪽 에이전트 채팅창</td></tr>
+<tr><td>2</td><td>채팅창 아래 슬라이더 아이콘</td><td><span class="ui">에이전트 설정</span> — 생성하기 전에 확인 <b>항상</b>, 동영상 비율 16:9(유튜브)/9:16(쇼츠), 모델 Omni 1.1 Flash, <span class="ui">저장</span></td></tr>
+<tr><td>3</td><td>채팅창</td><td><b>첫 문장</b>(아래 원문)을 붙여넣고 보내기 → 에이전트가 장면 5개를 짜 온다</td></tr>
+<tr><td>4</td><td>채팅창</td><td>바로 승인하지 말고 <b>3번 컷 수정 요청</b>(아래 원문)</td></tr>
+<tr><td>5</td><td>채팅창</td><td>"3x3 스토리보드 그리드 이미지를 먼저 하나 만들어줘" → 이미지 1장 값으로 5장면 확인</td></tr>
+<tr><td>6</td><td>채팅창</td><td>장면 하나를 영상으로 요청 → <b>"크레딧 12개를 사용할까요?"</b> 창 → <span class="ui">승인</span> (한 클립씩)</td></tr>
+<tr><td>7</td><td>왼쪽 캐릭터 → 신규 캐릭터</td><td>제품 설명(아래 원문) → <span class="ui">만들기</span> → 연필로 이름 <b>클린봇</b> → 캐릭터 정보 → <span class="ui">완료</span></td></tr>
+<tr><td>8</td><td>채팅창</td><td><b>@</b> 입력 → 클린봇 선택 → 동작 하나만 쓴 문장(아래 원문)</td></tr>
+<tr><td>9</td><td>결과 화면 위쪽</td><td>다운로드 아이콘 → 캡컷 등에서 제품명·자막 → 쇼츠 업로드 시 "변경되거나 합성된 콘텐츠" 켜기</td></tr>
+</table></div>
+
+<h2>실제 세션 프롬프트 — 클린봇 (로봇청소기)</h2>
+<p class="src">아래 문장은 전부 실제로 입력한 것이고, 그 아래 "에이전트 답"은 실제로 돌아온 내용을 요약한 것입니다.</p>
+
+<div class="step"><div class="no">3</div><div>
+<h3>첫 문장 — 한 번에 다 넣는다</h3>
+<div class="prompt"><span class="lab">채팅창에 붙여넣기</span><button class="copy">복사</button>15초 로봇청소기 광고를 만들고 싶어. 제품 이름은 <b>클린봇(가상 브랜드)</b>. 강조할 기능은 딱 하나, <b>외출 중에 스마트폰 앱으로 청소를 시작하는 기능</b>. 보는 사람은 혼자 사는 20대. 밤의 도시 아파트, 차분하고 세련된 분위기, 실사 광고 느낌. 3초씩 5컷으로 장면을 제안해줘. 순서는 훅, 문제, 기능 작동, 증거, 제품명. 실제 브랜드 로고는 쓰지 말고, 영상 안에 글자는 넣지 마.</div>
+<p><b>에이전트 답(실제):</b> 장면 1 훅 — 야경이 보이는 고층 아파트 거실, 팬 샷 · 장면 2 문제 — 밤거리에서 폰을 보는 20대 남성 · 장면 3 기능 작동 — 앱 '청소 시작' 버튼을 누르는 손가락 클로즈업 · 장면 4 증거 — LED 링이 켜진 로봇이 바닥을 미끄러진다 · 장면 5 제품명 — 가구 옆에 멈춘 클린봇. 그리고 "15초를 한 번에 만들기는 어려우니 3초 클립 5개로 각각 만들자"고 제안.</p>
+</div></div>
+
+<div class="step"><div class="no">4</div><div>
+<h3>3번 컷 수정 요청 — 기능이 눈에 보이게</h3>
+<div class="prompt"><span class="lab">채팅창에 붙여넣기</span><button class="copy">복사</button>3번 장면을 고쳐줘. 손가락 클로즈업만 있으면 밖에서 눌렀다는 게 안 보여. <b>밤거리에서 남성이 든 스마트폰 화면(청소 시작 버튼)</b>과, <b>그 뒤 멀리 보이는 아파트 창문에 클린봇의 파란 LED 링이 켜지는 모습</b>이 한 화면에 같이 보이게 바꿔줘. 나머지 장면은 그대로.</div>
+<p><b>에이전트 답(실제):</b> 장면 3 수정본 — 전경에 폰 화면, 배경 멀리 아파트 창문에서 파란 LED가 켜진다. 카메라는 딥 포커스, 폰에서 창문으로 초점 이동.</p>
+</div></div>
+
+<div class="step"><div class="no">5</div><div>
+<h3>스토리보드 먼저</h3>
+<div class="prompt"><span class="lab">채팅창에 붙여넣기</span><button class="copy">복사</button>3x3 스토리보드 그리드 이미지를 먼저 하나 만들어줘. 영상 안에 글자는 넣지 마.</div>
+<p>결과: 이미지 1장에 5장면(야경 거실 / 밤거리 남성 / 폰+창문 LED / 바닥의 로봇 / 의자 옆 로봇). 이미지를 누르면 편집 화면(모델 Nano Banana 2)이 열리고, 오른쪽에 Flow가 내부적으로 쓴 <b>영어 프롬프트</b>가 보입니다. 우리가 쓴 여섯 칸이 그대로 번역되어 있고, 마지막에 <code>NO TEXT, NO LOGOS, and NO CAPTIONS</code>가 들어 있습니다. 그래서 첫 문장에 "글자 금지·로고 금지"를 꼭 넣습니다.</p>
+</div></div>
+
+<div class="step"><div class="no">6</div><div>
+<h3>영상 클립 요청 → 크레딧 확인 창</h3>
+<div class="prompt"><span class="lab">채팅창에 붙여넣기</span><button class="copy">복사</button>스토리보드의 3번 장면(폰 화면과 창문 LED)을 영상 클립으로 만들어줘. 앱의 시작 버튼을 누르는 순간 멀리 창문에 파란 빛이 켜지는 동작 하나만. 영상 안에 글자는 넣지 마.</div>
+<p>보내면 채팅 안에 <b>"크레딧 12개를 사용하여 1개 동영상 생성을 시작할까요?"</b> 카드가 뜹니다. 선택지는 승인 / 승인, 다시 묻지 않음 / 거부. <b>승인</b>만 누릅니다. 클립 5개를 다 만들면 60크레딧이므로 한 클립씩 확인하고, 마음에 안 들면 이미지 단계로 돌아가서 고칩니다.</p>
+</div></div>
+
+<div class="step"><div class="no">7</div><div>
+<h3>제품을 캐릭터로 등록</h3>
+<p>왼쪽 <span class="ui">캐릭터</span> → <span class="ui">신규 캐릭터</span>. 화면의 "와일드 카드: 인간 외에도 무엇이든 캐릭터가 될 수 있습니다"가 근거입니다.</p>
+<div class="prompt"><span class="lab">"캐릭터를 설명해 주세요" 칸에 붙여넣기</span><button class="copy">복사</button>흰색 원형 로봇청소기. 윗면 가운데에 <b>파란 LED 링</b>, 무광 매트 재질, 범퍼는 진회색. 로고나 글자 없음. 이름은 클린봇.</div>
+<p>만들기 → 이미지가 나오면 제목 옆 연필로 이름을 <b>클린봇</b>으로 바꾸고, 아래 "캐릭터 정보(선택사항)"에 움직임을 적습니다.</p>
+<div class="prompt"><span class="lab">캐릭터 정보 칸에 붙여넣기</span><button class="copy">복사</button>집 안 바닥을 미끄러지듯 조용히 움직인다. 작동할 때 윗면 파란 LED 링이 켜진다. 스마트폰 앱으로 밖에서 청소를 시작할 수 있다.</div>
+<p>오른쪽 위 <span class="ui">완료</span>.</p>
+</div></div>
+
+<div class="step"><div class="no">8</div><div>
+<h3>@클린봇으로 부르기 — 동작 하나만</h3>
+<p>채팅창에 <b>@</b>를 치면 미디어 목록이 뜹니다. 캐릭터 <b>클린봇</b>을 고르면 입력칸에 칩이 붙습니다. 그 뒤에 이어서 씁니다.</p>
+<div class="prompt"><span class="lab">@클린봇 선택 후 이어서 입력</span><button class="copy">복사</button>이 어두운 거실 바닥을 왼쪽에서 오른쪽으로 미끄러지듯 지나간다. 바닥 높이 고정 카메라, 창밖 도시 야경, 파란 LED 링만 빛난다. 이 동작 하나만, 글자 없이.</div>
+<div class="prompt"><span class="lab">뒤 클립을 앞 클립과 이을 때 꼭 붙이는 문장</span><button class="copy">복사</button>앞 영상의 마지막 화면에서 그대로 이어지는 8초 영상. 앞 영상과 같은 장소, 같은 시간대, 같은 색감을 유지해줘.</div>
+</div></div>
+
+<h2>실전 사례집 — 첫 문장만 바꾼다</h2>
+<p>구조는 클린봇과 같습니다. <b>제품 이름 · 기능 하나 · 보는 사람 · 분위기</b> 네 곳만 바뀝니다. 나머지 단계(수정 요청, 스토리보드, 캐릭터, @)는 이름만 바꿔 그대로 씁니다.</p>
+
+<h3>① 스마트 조명 — 루미어</h3>
+<div class="prompt"><span class="lab">첫 문장</span><button class="copy">복사</button>15초 스마트 조명 광고를 만들고 싶어. 제품 이름은 <b>루미어(가상 브랜드)</b>. 강조할 기능은 딱 하나, <b>귀가 전에 앱으로 집 조명을 미리 켜는 기능</b>. 보는 사람은 야근이 잦은 직장인. 밤의 현관과 거실, 따뜻한 빛, 실사 광고 느낌. 3초씩 5컷으로 장면을 제안해줘. 순서는 훅, 문제, 기능 작동, 증거, 제품명. 실제 브랜드 로고는 쓰지 말고, 영상 안에 글자는 넣지 마.</div>
+<div class="prompt"><span class="lab">캐릭터 설명</span><button class="copy">복사</button>둥근 유리 갓의 스마트 전구형 조명. 켜지면 따뜻한 주황빛, 꺼지면 무광 흰색. 로고나 글자 없음. 이름은 루미어.</div>
+
+<h3>② 공기청정기 — 에어핏</h3>
+<div class="prompt"><span class="lab">첫 문장</span><button class="copy">복사</button>15초 공기청정기 광고를 만들고 싶어. 제품 이름은 <b>에어핏(가상 브랜드)</b>. 강조할 기능은 딱 하나, <b>미세먼지가 높아지면 앱 알림이 오고 밖에서 켜는 기능</b>. 보는 사람은 아이가 있는 부모. 낮의 거실, 밝고 깨끗한 톤, 실사 광고 느낌. 3초씩 5컷으로 장면을 제안해줘. 순서는 훅, 문제, 기능 작동, 증거, 제품명. 실제 브랜드 로고는 쓰지 말고, 영상 안에 글자는 넣지 마.</div>
+<div class="callout"><b>자주 실패하는 점.</b> 공기청정기는 움직이지 않아서 영상이 정지 화면처럼 심심하게 나옵니다. 동작 칸에 눈에 보이는 움직임을 하나 넣습니다.</div>
+<div class="prompt"><span class="lab">한 줄 추가 (수정 요청)</span><button class="copy">복사</button>기능 작동 컷에는 바람에 얇은 커튼이 살짝 흔들리는 움직임을 넣어줘. 나머지는 그대로.</div>
+
+<h3>③ 스마트 도어벨 — 도어아이</h3>
+<div class="prompt"><span class="lab">첫 문장</span><button class="copy">복사</button>15초 스마트 도어벨 광고를 만들고 싶어. 제품 이름은 <b>도어아이(가상 브랜드)</b>. 강조할 기능은 딱 하나, <b>누군가 문 앞에 서면 폰으로 화면이 뜨는 기능</b>. 보는 사람은 혼자 사는 대학생. 저녁 아파트 복도, 조금 긴장감 있는 분위기, 실사 광고 느낌. 3초씩 5컷으로 장면을 제안해줘. 순서는 훅, 문제, 기능 작동, 증거, 제품명. 실제 브랜드 로고는 쓰지 말고, 영상 안에 글자는 넣지 마.</div>
+<div class="callout stop"><b>실패 사례.</b> 첫 결과에 택배 기사 얼굴이 크게 나와 실제 사람처럼 보였습니다. 실제 사람 얼굴은 넣지 않습니다. 한 줄만 추가해 다시 만듭니다.</div>
+<div class="prompt"><span class="lab">한 줄 추가 (수정 요청)</span><button class="copy">복사</button>인물은 뒷모습만, 얼굴 없이. 나머지는 그대로.</div>
+
+<h2>내 제품용 빈칸 문장</h2>
+<div class="prompt"><span class="lab">대괄호만 바꿔서 쓰기</span><button class="copy">복사</button>15초 [제품 종류] 광고를 만들고 싶어. 제품 이름은 [내가 지은 이름](가상 브랜드). 강조할 기능은 딱 하나, [와이파이를 끊으면 사라지는 기능 하나]. 보는 사람은 [누구]. [장소와 시간], [분위기], 실사 광고 느낌. 3초씩 5컷으로 장면을 제안해줘. 순서는 훅, 문제, 기능 작동, 증거, 제품명. 실제 브랜드 로고는 쓰지 말고, 영상 안에 글자는 넣지 마.</div>
+<div class="callout ok"><b>고칠 땐 한 칸만.</b> 결과가 이상하면 여섯 칸(피사체·동작·배경·카메라·조명·스타일) 중 한 칸만 바꿔서 다시 만듭니다. 두 칸을 동시에 바꾸면 무엇 때문에 좋아졌는지 알 수 없습니다.</div>
+
+<h2>크레딧 실측</h2>
+<ul>
+<li>스토리보드 이미지 1장, 캐릭터 이미지 1장: 이미지 크레딧만 사용 (적음)</li>
+<li>동영상 1클립: <b>크레딧 12개</b> (확인 창에 표시). 5클립 = 60.</li>
+<li>설정에서 "생성하기 전에 확인: 항상"을 켜 두면 크레딧이 빠지기 전에 반드시 물어봅니다.</li>
+</ul>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+  const t=document.getElementById('toast');
+  function toast(m){t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1500);}
+  document.querySelectorAll('.copy').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const box=b.parentElement; const lab=box.querySelector('.lab');
+      const txt=Array.from(box.childNodes).filter(n=>n!==lab&&n!==b).map(n=>n.textContent).join('').trim();
+      navigator.clipboard.writeText(txt).then(()=>{b.textContent='복사됨';b.classList.add('done');setTimeout(()=>{b.textContent='복사';b.classList.remove('done');},1400);toast('복사됨 — Flow 채팅창에 붙여넣으세요');})
+      .catch(()=>toast('복사가 막혔어요. 드래그해서 복사하세요.'));
+    });
+  });
+})();
+</script>

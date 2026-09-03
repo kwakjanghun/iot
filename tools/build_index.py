@@ -8,7 +8,7 @@ def g(pattern_dir, pat):
     return glob.glob(os.path.join(glob.escape(pattern_dir), pat))
 
 ROOT = r"G:/내 드라이브/2026년/올인원_사물"
-KIT = os.path.join(ROOT, "[배포용_교안]_ESP32 올인원 키트")
+KIT = os.path.join(ROOT, "ESP32 올인원 키트_교안")
 VID = os.path.join(ROOT, "사물영상")
 
 def url(p):
