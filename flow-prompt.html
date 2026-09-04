@@ -61,6 +61,13 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
 .chk label{margin:0;font-weight:500;display:flex;gap:9px;align-items:flex-start;background:var(--card);border:1.5px solid var(--line);border-radius:9px;padding:9px 12px;cursor:pointer;font-size:16px}
 .chk input{width:16px;height:16px;margin-top:4px;accent-color:var(--accent);flex:none}
 .chk label:has(input:checked){border-color:var(--ok);background:var(--ok-soft)}
+.bar15{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:10px 0 4px}
+.bar15 span{display:block;text-align:center;font-size:13.5px;font-weight:700;padding:8px 4px;border-radius:7px;background:var(--field);border:1.5px dashed var(--line);color:var(--ink-faint)}
+.bar15 span.on{background:var(--ok-soft);border:1.5px solid var(--ok);color:var(--ok)}
+.cut{margin:18px 0;padding:14px 16px;border:1.5px solid var(--line);border-radius:12px;background:var(--card)}
+.cut label.done{margin:0 0 6px;display:flex;gap:9px;align-items:center;font-weight:500;font-size:16px;cursor:pointer}
+.cut label.done input{width:17px;height:17px;accent-color:var(--ok)}
+.cut:has(input:checked){border-color:var(--ok);background:var(--ok-soft)}
 .topbar{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1.5px solid var(--line);padding:8px 0;margin:0 0 6px;display:flex;gap:10px;align-items:center;font-size:15px;color:var(--ink-soft)}
 .topbar b{color:var(--ink)} .topbar a{margin-left:auto;color:var(--accent);font-weight:700;text-decoration:none}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:99px;font-size:15px;opacity:0;transition:opacity .25s;pointer-events:none}
@@ -173,16 +180,32 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
 
 <!-- 6 -->
 <div class="step" id="s6">
-  <h2><span class="n">6</span>영상 생성 — 크레딧 확인 창에서 '승인'만</h2>
-  <p class="where">클립은 <b>한 컷씩</b> 요청하고 한 번씩 승인. 문장 끝에 "이 컷 하나만"이 붙어 있다. 확인 창에 <b>"N개 동영상"</b>이라고 나오면 <b>거부</b>하고 다시 하나만 요청한다.</p>
-  <div class="callout ok"><b>저예산 코스 (크레딧 30 안팎).</b> 스토리보드 1장(이미지) + <b>3번 컷</b>(기능 작동, 12) + <b>4번 컷</b>(제품 반응, @캐릭터 15) = 27. 두 클립(각 10초)만으로도 편집에서 8초 + 7초 = 15초 광고가 된다. 훅·문제·제품명은 스토리보드 이미지를 잘라 정지 컷으로 넣는다.</div>
-  <div class="out"><span class="lab">1번 컷 · 훅</span><button class="copy" data-copy="pc1">복사</button><span id="pc1"></span></div>
-  <div class="out"><span class="lab">2번 컷 · 문제</span><button class="copy" data-copy="pc2">복사</button><span id="pc2"></span></div>
-  <div class="out"><span class="lab">3번 컷 · 기능 작동 (핵심 — 연결이 한 화면에)</span><button class="copy" data-copy="p6">복사</button><span id="p6"></span></div>
-  <div class="out"><span class="lab">4번 컷 · 증거 (@캐릭터 선택 후)</span><button class="copy" data-copy="pc4">복사</button><span id="pc4"></span></div>
-  <div class="out"><span class="lab">5번 컷 · 제품명 (@캐릭터 선택 후)</span><button class="copy" data-copy="pc5">복사</button><span id="pc5"></span></div>
-  <figure><img src="flow-shots/08_credit_dialog.jpg" alt="크레딧 확인 창"><span class="hl am" data-box="1562,490,330,56"><i>크레딧 12개?</i></span><span class="hl ok" data-box="1570,550,312,46"><i>승인</i></span><span class="hl err" data-box="1570,600,312,46"><i>누르지 말 것</i></span><span class="hl below" data-box="1570,650,312,46"><i>거부</i></span><figcaption>"크레딧 12개를 사용하여 <b>1개</b> 동영상 생성을 시작할까요?" — 1개일 때만 승인. "4개", "5개"라고 나오면 거부하고 한 컷만 다시 요청한다. 캐릭터(@)가 들어간 클립은 15.</figcaption></figure>
-  <div class="callout"><b>크레딧.</b> 클립 1개 = 12 (캐릭터 포함 15). 5개면 60~75. 한 클립씩 승인하고, 마음에 안 들면 이미지 단계로 돌아가서 고친다.</div>
+  <h2><span class="n">6</span>클립은 한 번에 하나 — 만들 때마다 완성본이 한 칸씩 찬다</h2>
+  <p class="where">핵심부터 만든다. <b>하나 만들고 → 확인 창에 '1개'인지 보고 승인 → 다음</b>. 크레딧이 모자라면 중간에 멈춰도 그때까지 만든 컷으로 완성본을 만든다.</p>
+  <div class="bar15" id="bar15"><span data-cut="1">훅 0–3</span><span data-cut="2">문제 3–6</span><span data-cut="3">기능 6–9</span><span data-cut="4">반응 9–12</span><span data-cut="5">제품 12–15</span></div>
+  <p class="where" id="barMsg"></p>
+  <div class="cut">
+    <label class="done"><input type="checkbox" data-k="d3"> <b>① 3번 컷 · 기능 작동</b> — 완성본의 심장 (6–9초). 크레딧 12</label>
+    <div class="out"><span class="lab">채팅창에 붙여넣기</span><button class="copy" data-copy="p6">복사</button><span id="p6"></span></div>
+  </div>
+  <div class="cut">
+    <label class="done"><input type="checkbox" data-k="d4"> <b>② 4번 컷 · 제품 반응</b> (9–12초). @캐릭터 선택 후. 크레딧 15</label>
+    <div class="out"><span class="lab">@캐릭터 선택 후 이어서 입력</span><button class="copy" data-copy="pc4">복사</button><span id="pc4"></span></div>
+    <div class="callout ok"><b>여기까지 2개(27 크레딧)면</b> 이미 광고의 핵심(기능 → 반응)이 완성된 것. 크레딧이 없으면 여기서 끝내도 된다.</div>
+  </div>
+  <div class="cut">
+    <label class="done"><input type="checkbox" data-k="d5"> <b>③ 5번 컷 · 제품명</b> (12–15초). @캐릭터 선택 후. 크레딧 15</label>
+    <div class="out"><span class="lab">@캐릭터 선택 후 이어서 입력</span><button class="copy" data-copy="pc5">복사</button><span id="pc5"></span></div>
+  </div>
+  <div class="cut">
+    <label class="done"><input type="checkbox" data-k="d2"> <b>④ 2번 컷 · 문제</b> (3–6초). 크레딧 12</label>
+    <div class="out"><span class="lab">채팅창에 붙여넣기</span><button class="copy" data-copy="pc2">복사</button><span id="pc2"></span></div>
+  </div>
+  <div class="cut">
+    <label class="done"><input type="checkbox" data-k="d1"> <b>⑤ 1번 컷 · 훅</b> (0–3초). 크레딧 12</label>
+    <div class="out"><span class="lab">채팅창에 붙여넣기</span><button class="copy" data-copy="pc1">복사</button><span id="pc1"></span></div>
+  </div>
+  <figure><img src="flow-shots/08_credit_dialog.jpg" alt="크레딧 확인 창"><span class="hl am" data-box="1562,490,330,56"><i>1개인지 확인</i></span><span class="hl ok" data-box="1570,550,312,46"><i>승인</i></span><span class="hl err" data-box="1570,600,312,46"><i>누르지 말 것</i></span><span class="hl below" data-box="1570,650,312,46"><i>N개면 거부</i></span><figcaption>"크레딧 12개를 사용하여 <b>1개</b> 동영상 생성을 시작할까요?" — 1개일 때만 승인. "4개", "5개"라고 나오면 거부하고 한 컷만 다시 요청한다. 캐릭터(@)가 들어간 클립은 15.</figcaption></figure>
 </div>
 
 <!-- 7 -->
@@ -205,20 +228,27 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
   <figure><img src="flow-shots/15_mention_picker.jpg" alt="@ 목록"><span class="hl" data-box="1040,64,856,640"><i>@ 목록</i></span><span class="hl ok" data-box="1192,122,280,60"><i>캐릭터 선택</i></span></figure>
   <div class="out"><span class="lab">@캐릭터 선택 후 이어서 입력</span><button class="copy" data-copy="p7">복사</button><span id="p7"></span></div>
   <figure><img src="flow-shots/16_mention_prompt.jpg" alt="@ 문장"><span class="hl am" data-box="1566,582,330,236"><i>칩 + 문장</i></span><figcaption>입력칸에 캐릭터 칩이 붙고, 그 뒤에 동작 하나만 쓴다.</figcaption></figure>
-  <div class="out"><span class="lab">뒤 클립을 앞 클립과 이을 때 꼭 붙이는 문장</span><button class="copy" data-copy="p8">복사</button><span id="p8"></span></div>
+  <div class="out"><span class="lab">새 클립을 만들 때 앞 클립과 색감을 맞추는 문장 (문장 끝에 덧붙이기)</span><button class="copy" data-copy="p8">복사</button><span id="p8"></span></div>
 </div>
 
 <!-- 9 -->
 <div class="step" id="s9">
-  <h2><span class="n">9</span>다운로드 → 편집 앱에서 자막 → 업로드 표시</h2>
-  <figure><img src="flow-shots/19_clip_editor.jpg" alt="클립 편집 화면"><span class="hl ok" data-box="1588,18,44,44"><i>다운로드</i></span><span class="hl am" data-box="626,12,160,44"><i>클립 바꾸기</i></span><figcaption>왼쪽 '동영상' 메뉴에서 클립을 열면 편집 화면. 위쪽 다운로드 아이콘으로 저장(크롬이 위치를 물어본다). 상단 썸네일로 다른 클립 이동.</figcaption></figure>
-  <ul class="chk">
-    <li><label><input type="checkbox" data-k="c4"> 클립 5개를 내려받았다</label></li>
-    <li><label><input type="checkbox" data-k="c5"> 제품명·자막은 <b>캡컷 등 편집 앱</b>에서 얹었다 (Flow 안에 글자 ✕)</label></li>
-    <li><label><input type="checkbox" data-k="c6"> 실제 브랜드 이름·로고·실제 사람 얼굴이 없다</label></li>
-    <li><label><input type="checkbox" data-k="c7"> 쇼츠 업로드 설정에서 <b>변경되거나 합성된 콘텐츠</b>를 켰다</label></li>
+  <h2><span class="n">9</span>Flow 안에서 이어 붙여 완성 → 다운로드 → 업로드</h2>
+  <p class="where">편집 앱은 쓰지 않는다. 만든 클립을 <b>Flow 안에서</b> 순서대로 이어 붙여 하나의 영상으로 만든다. 두 가지 방법 중 되는 것을 쓴다.</p>
+  <ul class="do">
+    <li><b>방법 A · 채팅으로</b> — 아래 문장을 붙여넣는다. 에이전트가 있는 클립만 이어 붙인다(새 생성 없음 → 크레딧 0). 확인 창에 크레딧이 뜨면 거부한다.</li>
+    <li><b>방법 B · 장면 메뉴로</b> — 왼쪽 <span class="ui">장면</span> → 클립 하나를 열면 아래 타임라인이 보인다 → 타임라인 끝 <span class="ui">+</span> 로 다음 클립을 추가해 3 → 4 → 5 → (2 → 1) 순서로 놓는다 → 위쪽 <span class="ui">다운로드</span>.</li>
   </ul>
-  <div class="callout ok"><b>편집 팁 (속도감).</b> 3초 × 5컷보다 <b>1~2초 × 9컷</b>이 광고답다. 같은 클립을 두 구간으로 나눠 쓰고, 클립을 1.25배속으로, 컷마다 살짝 밀고 들어가는 줌, 핵심 컷(버튼 누름·제품 반응)에는 짧은 플래시, 자막은 두세 단어로 크게. 완성 예: 클린봇 15초 광고(v2).</div>
+  <div class="out"><span class="lab">방법 A · 채팅창에 붙여넣기 (만든 컷 번호만 남기기)</span><button class="copy" data-copy="pjoin">복사</button><span id="pjoin"></span></div>
+  <figure><img src="flow-shots/19_clip_editor.jpg" alt="클립 편집 화면"><span class="hl ok" data-box="1588,18,44,44"><i>다운로드</i></span><span class="hl am" data-box="626,12,160,44"><i>클립 바꾸기</i></span><span class="hl" data-box="20,470,1100,120"><i>타임라인 — 끝의 + 로 다음 클립 추가</i></span><figcaption>클립을 열면 나오는 편집 화면. 아래 타임라인에 클립이 놓이고, 끝의 +로 다음 클립을 이어 붙인다. 다 붙였으면 위쪽 다운로드 아이콘.</figcaption></figure>
+  <div class="callout"><b>제품 이름과 자막은?</b> 영상 안에 글자를 넣지 않았으니 <b>유튜브 제목·설명</b>에 쓴다. 예: "클린봇 — 밖에서 누르면, 집이 청소된다 (AI 제작 가상 브랜드, 수업용)". 마지막 5번 컷에서 폰 화면에 '완료' 알림이 뜨는 것으로 이야기가 끝난다.</div>
+  <ul class="chk">
+    <li><label><input type="checkbox" data-k="c4"> 만든 클립을 3 → 4 → 5 (→ 2 → 1) 순서로 이어 붙였다</label></li>
+    <li><label><input type="checkbox" data-k="c5"> 이어 붙인 완성본을 <b>다운로드</b>했다 (크롬이 저장 위치를 물으면 내 폴더)</label></li>
+    <li><label><input type="checkbox" data-k="c6"> 실제 브랜드 이름·로고·실제 사람 얼굴이 없다</label></li>
+    <li><label><input type="checkbox" data-k="c7"> 업로드 제목에 제품명·카피를 쓰고, 설정에서 <b>변경되거나 합성된 콘텐츠</b>를 켰다</label></li>
+  </ul>
+  <div class="callout ok"><b>속도감은 순서와 길이로.</b> 이어 붙일 때 핵심 컷(3·4)을 앞에 두고, 각 클립은 타임라인에서 앞뒤를 잘라 3~4초만 남기면 15초 안에 들어오고 빨라 보인다. 클립 자르기가 안 되면 그대로 이어도 된다(5클립 = 50초).</div>
 </div>
 
 <!-- fix -->
@@ -258,7 +288,7 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
     $('ratioTxt').textContent=ratio+(ratio==='9:16'?' (쇼츠)':' (유튜브)'); $('cutN').textContent=cuts;
     $('nowBrand').textContent=g('brand')||'—'; $('nowKind').textContent=g('kind')?'('+g('kind')+')':'';
     const style=g('style')||'실사 광고 느낌';
-    const tail='3초씩 '+cuts+'컷으로 장면을 제안해줘. 순서는 훅, 문제, 기능 작동, 증거, 제품명. 컷마다 눈에 보이는 움직임을 하나씩 넣고(카메라가 밀고 들어가거나 옆으로 따라가기), 정지 화면처럼 보이는 컷은 없게 해줘. 사물인터넷이 보이게: 스마트폰 앱 화면('+(g('app')||'버튼·알림')+'), 제품이 반응하는 모습('+(g('react')||'불빛·소리·움직임')+'), 그리고 폰과 제품이 연결됐다는 게 한 화면에서 보이는 장면을 꼭 넣어줘. 실제 브랜드 로고는 쓰지 말고, 영상 안에 글자는 넣지 마.';
+    const tail='3초씩 '+cuts+'컷으로 장면을 제안해줘. 순서는 훅, 문제, 기능 작동, 증거, 제품명. 컷마다 눈에 보이는 움직임을 하나씩 넣고(카메라가 밀고 들어가거나 옆으로 따라가기), 정지 화면처럼 보이는 컷은 없게 해줘. 사물인터넷이 보이게: 스마트폰 앱 화면('+(g('app')||'버튼·알림')+'), 제품이 반응하는 모습('+(g('react')||'불빛·소리·움직임')+'), 그리고 폰과 제품이 연결됐다는 게 한 화면에서 보이는 장면을 꼭 넣어줘. 실제 브랜드 로고는 쓰지 말고, 영상 안에 글자는 넣지 마. 지금은 장면 계획만 세우고 영상은 아직 만들지 마.';
     $('p1').innerHTML=len+'초 '+v('kind','제품 종류')+' 광고를 만들고 싶어. 제품 이름은 '+v('brand','내가 지은 이름')+'(가상 브랜드). 강조할 기능은 딱 하나, '+v('feat','강조할 기능')+'. 보는 사람은 '+v('aud','보는 사람')+'. '+v('place','장소와 시간')+', '+v('mood','분위기')+' 분위기, '+esc(style)+'. '+tail;
     $('p2').innerHTML='3번 장면을 고쳐줘. 지금 장면으로는 밖에서 기능을 썼다는 게 안 보여. '+v('visible','기능이 눈에 보이는 장면')+' 같이 보이게 바꿔줘. 나머지 장면은 그대로.';
     $('pno').innerHTML='아니, 지금은 영상을 만들지 마. 먼저 3x3 스토리보드 그리드 이미지를 하나 만들고, 영상은 내가 컷 번호를 말할 때 한 번에 하나씩만 만들어줘.';
@@ -273,8 +303,15 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
     $('pc5').innerHTML='5번 컷(제품) 영상 클립: @'+v('brand','이름')+' 클로즈업으로 카메라가 천천히 밀고 들어가고, 옆에 놓인 스마트폰 화면에 '+v('done','완료 알림')+'이(가) 뜬다. 스튜디오 조명, 제품 재질이 반짝인다. 글자 없이. 이 컷 하나만 만들고 다른 장면은 만들지 마.';
     $('p7').innerHTML='@'+v('brand','이름')+' 이 '+v('act','시킬 동작 하나')+'. 카메라는 한 방향으로 천천히, '+v('place','장소와 시간')+', 같은 색감. 이 동작 하나만, 글자 없이.';
     $('p8').innerHTML='앞 영상의 마지막 화면에서 그대로 이어지는 8초 영상. 앞 영상과 같은 장소, 같은 시간대, 같은 색감을 유지해줘.';
+    const made=[3,4,5,2,1].filter(n=>state['d'+n]);
+    const order=(made.length?made:[3,4,5]).join('번, ')+'번';
+    $('pjoin').innerHTML='지금까지 만든 클립을 '+order+' 순서로 이어서 하나의 영상(장면)으로 만들어줘. 새 영상은 생성하지 말고, 있는 클립만 이어 붙여줘. 각 클립은 앞뒤를 조금 잘라 3~4초씩만 써서 전체 15초 안에 맞춰줘.';
     $('p9').innerHTML='[몇 번] 장면만 다시 만들어줘. [피사체/동작/배경/카메라/조명/스타일 중 한 칸]만 이렇게 바꿔: [바꿀 내용]. 나머지는 그대로.';
     $('p10').innerHTML='아래 문장은 구글 Flow에 넣을 15초 광고 첫 프롬프트야. 내 제품은 '+v('kind','제품 종류')+' '+v('brand','이름')+'이고 강조할 기능은 '+v('feat','기능')+'이야. 문장 구조와 마지막 금지 조건은 그대로 두고, 장면이 더 구체적으로 그려지도록 다듬어 줘. 한국어로, 한 문단으로.\n\n'+$('p1').innerText;
+    const on=['d1','d2','d3','d4','d5'].map(k=>!!state[k]);
+    document.querySelectorAll('#bar15 span').forEach(el=>el.classList.toggle('on',on[Number(el.dataset.cut)-1]));
+    const n=on.filter(Boolean).length;
+    $('barMsg').innerHTML=n===0?'아직 만든 컷 없음. ①부터.':n<5?('완성본 '+n+'/5 채워짐 — 지금 멈춰도 만든 컷을 Flow 장면에서 이어 붙이면 광고가 된다.'):'다섯 컷 모두 완성. 9단계로.';
     bindCopy();
   }
   function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1500);}
@@ -289,7 +326,7 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
   $('exampleBtn').addEventListener('click',()=>{Object.assign(state,EX);fields.forEach(f=>{const k=f.dataset.k;if(f.type==='radio')f.checked=(state[k]===f.value);else if(f.type!=='checkbox'&&state[k]!=null)f.value=state[k];});save();verdict();render();toast('클린봇 예시를 채웠어요. 내 제품으로 바꿔 보세요.');});
   $('resetBtn').addEventListener('click',()=>{if(!confirm('입력을 모두 비울까요?'))return;Object.keys(state).forEach(k=>delete state[k]);try{localStorage.removeItem(KEY);}catch(e){}fields.forEach(f=>{if(f.type==='checkbox'||f.type==='radio')f.checked=false;else if(f.tagName==='SELECT')f.selectedIndex=0;else f.value='';});verdict();render();});
   $('exportBtn').addEventListener('click',()=>{
-    const ids=[['3. 첫 문장','p1'],['3. 클립 만들까요? 에 답','pno'],['4. 3번 컷 수정','p2'],['5. 스토리보드','p3'],['6. 1번 컷','pc1'],['6. 2번 컷','pc2'],['6. 3번 컷','p6'],['6. 4번 컷','pc4'],['6. 5번 컷','pc5'],['7. 캐릭터 설명','p4'],['7. 캐릭터 정보','p5'],['8. 잇기 문장','p8']];
+    const ids=[['3. 첫 문장','p1'],['3. 클립 만들까요? 에 답','pno'],['4. 3번 컷 수정','p2'],['5. 스토리보드','p3'],['6. 1번 컷','pc1'],['6. 2번 컷','pc2'],['6. 3번 컷','p6'],['6. 4번 컷','pc4'],['6. 5번 컷','pc5'],['7. 캐릭터 설명','p4'],['7. 캐릭터 정보','p5'],['8. 잇기 문장','p8'],['9. 이어 붙이기','pjoin']];
     const L=['Flow 프롬프트 — '+g('brand')+' ('+g('kind')+')','참고 제품: '+g('real'),''];
     ids.forEach(([t,id])=>{L.push('['+t+']');L.push($(id).innerText);L.push('');});
     navigator.clipboard.writeText(L.join('\n')).then(()=>toast('전체 프롬프트가 복사됐어요.')).catch(()=>toast('복사가 막혔어요. 인쇄를 이용하세요.'));});
