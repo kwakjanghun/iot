@@ -1,4 +1,4 @@
-<title>Flow 따라하기 프롬프트 생성기</title>
+<title>Flow 완성형 광고 생성기</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root{--paper:#F5F6FA;--card:#FFFFFF;--ink:#191D28;--ink-soft:#4A5063;--ink-faint:#7C8398;--line:#D6DAE6;--accent:#2F4BE0;--accent-ink:#FFFFFF;
@@ -61,7 +61,7 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
 .chk label{margin:0;font-weight:500;display:flex;gap:9px;align-items:flex-start;background:var(--card);border:1.5px solid var(--line);border-radius:9px;padding:9px 12px;cursor:pointer;font-size:16px}
 .chk input{width:16px;height:16px;margin-top:4px;accent-color:var(--accent);flex:none}
 .chk label:has(input:checked){border-color:var(--ok);background:var(--ok-soft)}
-.bar15{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:10px 0 4px}
+.bar15{display:grid;grid-template-columns:1fr 1fr 2fr 1fr;gap:4px;margin:10px 0 4px}
 .bar15 span{display:block;text-align:center;font-size:13.5px;font-weight:700;padding:8px 4px;border-radius:7px;background:var(--field);border:1.5px dashed var(--line);color:var(--ink-faint)}
 .bar15 span.on{background:var(--ok-soft);border:1.5px solid var(--ok);color:var(--ok)}
 .cut{margin:18px 0;padding:14px 16px;border:1.5px solid var(--line);border-radius:12px;background:var(--card)}
@@ -78,8 +78,8 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
 
 <div class="wrap">
 <span class="eyebrow">사물 인터넷과 센서 제어 · AI 영상 특강 2</span>
-<h1>Flow 따라하기 프롬프트 생성기</h1>
-<p class="lede">아래 <b>내 제품</b> 칸을 채우면, 각 단계의 <b>실제 Flow 화면</b> 아래에 그 화면에서 <b>붙여넣을 문장</b>이 내 제품으로 완성되어 나옵니다. 화면은 2026년 9월 3일 실제 세션(클린봇)을 그대로 캡처한 것입니다. 쓴 내용은 이 브라우저에 자동 저장됩니다.</p>
+<h1>Flow 완성형 광고 생성기</h1>
+<p class="lede"><b>한 번 생성(12~15 크레딧)으로 10초 광고 한 편이 완성</b>되게 만듭니다. 컷을 여러 개 만들어 이어 붙이지 않고, 한 컷(끊김 없는 카메라 움직임) 안에 <b>문제 → 앱 버튼 → 제품 반응 → 제품 클로즈업</b>이 다 들어가게 프롬프트를 짭니다. 아래 칸을 채우면 각 단계의 실제 Flow 화면 아래에 붙여넣을 문장이 내 제품으로 완성됩니다.</p>
 
 <div class="panel" id="inputs">
   <h2>내 제품</h2>
@@ -95,30 +95,26 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
     <label><input type="radio" name="wifi" value="lives" data-k="wifi"> 끊어도 그대로 된다</label>
   </div>
   <div class="verdict" id="verdict"></div>
-  <label for="visible">기능이 작동하는 게 <b>눈에 보이는</b> 장면 <small>4단계 수정 요청에 씀</small></label>
-  <input type="text" id="visible" data-k="visible" placeholder="예: 밤거리에서 든 폰 화면과, 멀리 아파트 창문에 파란 LED가 켜지는 모습이 한 화면에">
-  <h3>사물인터넷이 <b>보이게</b> — 세 가지</h3>
-  <div class="g3">
-    <div><label for="app">폰 화면에 뜨는 것 <small>버튼·알림</small></label><input type="text" id="app" data-k="app" placeholder="예: '청소 시작' 버튼 / '먼지 농도 높음' 알림"></div>
-    <div><label for="react">제품이 반응하는 모습 <small>불빛·소리·움직임</small></label><input type="text" id="react" data-k="react" placeholder="예: 파란 LED 링이 켜지며 바닥을 미끄러진다"></div>
-    <div><label for="done">끝나면 폰에 뜨는 것</label><input type="text" id="done" data-k="done" placeholder="예: '청소 완료' 알림과 청소 지도"></div>
+  <h3>10초 안에 들어갈 네 장면</h3>
+  <div class="g2">
+    <div><label for="app">② 폰 화면에서 누르는 것 <small>버튼·알림</small></label><input type="text" id="app" data-k="app" placeholder="예: '청소 시작' 버튼"></div>
+    <div><label for="react">③ 제품이 반응하는 모습 <small>불빛·소리·움직임</small></label><input type="text" id="react" data-k="react" placeholder="예: 파란 LED 링이 켜지며 바닥을 미끄러지듯 달린다"></div>
+    <div><label for="visible">③ 폰과 제품이 <b>한 화면에</b> 보이는 방법</label><input type="text" id="visible" data-k="visible" placeholder="예: 전경의 폰 화면 뒤로, 창문 너머 집 안의 클린봇이 움직이는 게 보인다"></div>
+    <div><label for="done">④ 끝나면 폰에 뜨는 것</label><input type="text" id="done" data-k="done" placeholder="예: '청소 완료' 알림과 청소한 지도"></div>
   </div>
-  <div class="callout ok"><b>이 세 칸이 비면 영상이 밋밋해집니다.</b> 앱 화면 · 제품 반응 · 둘이 연결된 장면, 이 셋이 있어야 "사물인터넷 광고"로 보입니다.</div>
+  <div class="callout ok"><b>이 네 칸이 곧 광고의 뼈대입니다.</b> ① 문제(밖에서 폰을 본다) → ② 버튼 → ③ 제품 반응(연결이 보이게) → ④ 완료. 10초 한 컷에 다 들어갑니다.</div>
   <div class="g3">
-    <div><label for="aud">보는 사람</label><input type="text" id="aud" data-k="aud" placeholder="예: 혼자 사는 20대"></div>
+    <div><label for="aud">보는 사람 <small>= 영상 속 인물</small></label><input type="text" id="aud" data-k="aud" placeholder="예: 혼자 사는 20대"></div>
     <div><label for="place">장소와 시간</label><input type="text" id="place" data-k="place" placeholder="예: 밤의 도시 아파트"></div>
     <div><label for="mood">분위기</label><input type="text" id="mood" data-k="mood" placeholder="예: 차분하고 세련된"></div>
     <div><label for="style">스타일</label><select id="style" data-k="style"><option>실사 광고 느낌</option><option>밝은 3D 애니메이션 느낌</option><option>손그림 애니메이션 느낌</option></select></div>
     <div><label for="ratio">올릴 곳</label><select id="ratio" data-k="ratio"><option value="16:9">유튜브 (16:9 가로)</option><option value="9:16">쇼츠·릴스 (9:16 세로)</option></select></div>
-    <div><label for="len">길이</label><select id="len" data-k="len"><option value="15">15초 (3초 × 5컷)</option><option value="30">30초 (3초 × 10컷)</option></select></div>
   </div>
-  <h3>제품을 캐릭터로 (7단계에 씀)</h3>
+  <h3>제품을 캐릭터로 (3단계에 씀)</h3>
   <div class="g2">
     <div><label for="look">외형 <small>색 · 모양 · 재질 · 포인트</small></label><input type="text" id="look" data-k="look" placeholder="예: 흰색 원형 로봇청소기. 윗면 가운데에 파란 LED 링, 무광 매트 재질, 범퍼는 진회색"></div>
     <div><label for="move">움직임·작동</label><input type="text" id="move" data-k="move" placeholder="예: 집 안 바닥을 미끄러지듯 조용히 움직인다. 작동할 때 윗면 파란 LED 링이 켜진다."></div>
   </div>
-  <label for="act">@로 부를 때 시킬 동작 하나 (8단계)</label>
-  <input type="text" id="act" data-k="act" placeholder="예: 어두운 거실 바닥을 왼쪽에서 오른쪽으로 미끄러지듯 지나간다">
   <div class="btnrow">
     <button class="btn ghost" id="exampleBtn">클린봇 예시 채우기</button>
     <button class="btn ghost" id="resetBtn">비우기</button>
@@ -139,79 +135,21 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
 
 <!-- 2 -->
 <div class="step" id="s2">
-  <h2><span class="n">2</span>에이전트 설정 — 확인은 '항상', 비율은 목적대로</h2>
+  <h2><span class="n">2</span>에이전트 설정 — 확인은 '항상', 개수는 x1</h2>
   <p class="where">채팅창 아래 <span class="ui">슬라이더 아이콘</span> → 에이전트 설정 → <span class="ui">저장</span></p>
-  <figure><img src="flow-shots/17_agent_settings.jpg" alt="에이전트 설정"><span class="hl ok" data-box="1566,162,336,66"><i>항상</i></span><span class="hl" data-box="1566,528,340,72"><i>동영상 비율</i></span><span class="hl am" data-box="1566,644,340,48"><i>모델</i></span><span class="hl ok below" data-box="1566,782,340,58"><i>저장</i></span><figcaption>생성하기 전에 확인은 반드시 항상. '안 함'으로 두면 크레딧이 자동으로 빠진다.</figcaption></figure>
+  <figure><img src="flow-shots/17_agent_settings.jpg" alt="에이전트 설정"><span class="hl ok" data-box="1566,162,336,66"><i>항상</i></span><span class="hl" data-box="1566,528,340,72"><i>동영상 비율</i></span><span class="hl am" data-box="1566,644,340,48"><i>모델</i></span><span class="hl ok below" data-box="1566,782,340,58"><i>저장</i></span><figcaption>생성하기 전에 확인은 반드시 항상. 동영상 개수는 x1. '안 함'이나 x2 이상이면 크레딧이 한 번에 여러 개 빠진다.</figcaption></figure>
   <ul class="chk">
     <li><label><input type="checkbox" data-k="c1"> 생성하기 전에 확인 → <b>항상</b></label></li>
     <li><label><input type="checkbox" data-k="c2"> 동영상 생성 기본값 비율 → <b id="ratioTxt">16:9</b></label></li>
-    <li><label><input type="checkbox" data-k="c3b"> 동영상 생성 <b>개수 x1</b> (x2~x4면 한 번에 여러 개가 나간다)</label></li>
+    <li><label><input type="checkbox" data-k="c3b"> 동영상 생성 <b>개수 x1</b></label></li>
     <li><label><input type="checkbox" data-k="c3"> 모델 Omni 1.1 Flash 그대로 · <b>저장</b></label></li>
   </ul>
 </div>
 
 <!-- 3 -->
 <div class="step" id="s3">
-  <h2><span class="n">3</span>첫 문장 — 한 번에 다 넣는다</h2>
-  <p class="where">채팅창에 아래 문장을 붙여넣고 보내기 → 에이전트가 장면 <span id="cutN">5</span>개를 짜 온다</p>
-  <div class="out"><span class="lab">채팅창에 붙여넣기</span><button class="copy" data-copy="p1">복사</button><span id="p1"></span></div>
-  <figure><img src="flow-shots/03_prompt_typed.jpg" alt="첫 문장 입력"><span class="hl" data-box="1578,522,300,250"><i>붙여넣은 모습</i></span><figcaption>실제 세션에서 첫 문장을 붙여넣은 화면.</figcaption></figure>
-  <div class="callout stop"><b>크레딧 주의.</b> 에이전트가 답 끝에 "각 장면을 3초 클립으로 만들어 볼까요?"라고 묻는다. 여기에 <b>"네"라고 하면 5개가 한 번에</b>(60~75 크레딧) 나간다. 아래 문장으로 답한다.</div>
-  <div class="out"><span class="lab">에이전트가 "클립을 만들까요?"라고 물으면</span><button class="copy" data-copy="pno">복사</button><span id="pno"></span></div>
-  <figure><img src="flow-shots/04_reply_top.jpg" alt="에이전트 답"><span class="hl ok" data-box="1560,300,350,500"><i>장면 1~5</i></span><figcaption>에이전트가 짜 온 다섯 장면(내용·카메라·조명·시간). "15초는 3초 클립 5개로"라고 제안한다.</figcaption></figure>
-</div>
-
-<!-- 4 -->
-<div class="step" id="s4">
-  <h2><span class="n">4</span>바로 승인하지 않는다 — 3번 컷 고치기</h2>
-  <p class="where">기능이 작동하는 컷(3번)이 <b>눈에 보이게</b> 한 번 고친다</p>
-  <div class="out"><span class="lab">채팅창에 붙여넣기</span><button class="copy" data-copy="p2">복사</button><span id="p2"></span></div>
-  <figure><img src="flow-shots/05_revised_scene3.jpg" alt="수정된 장면 3"><span class="hl ok" data-box="1560,186,350,250"><i>장면 3 수정됨</i></span><figcaption>실제 결과: 폰 화면(전경)과 창문의 파란 LED(배경)가 한 화면에 — 딥 포커스 샷으로 다시 짜 왔다.</figcaption></figure>
-</div>
-
-<!-- 5 -->
-<div class="step" id="s5">
-  <h2><span class="n">5</span>스토리보드 먼저 — 이미지 한 장 값</h2>
-  <div class="out"><span class="lab">채팅창에 붙여넣기</span><button class="copy" data-copy="p3">복사</button><span id="p3"></span></div>
-  <figure><img src="flow-shots/06_storyboard.jpg" alt="스토리보드 결과"><span class="hl" data-box="268,80,782,440"><i>3×3 그리드 결과</i></span><figcaption>이미지 한 장에 다섯 장면. 마음에 안 들면 여기서(이미지 값으로) 고친다.</figcaption></figure>
-  <figure><img src="flow-shots/07_storyboard_editor.jpg" alt="이미지 편집 화면"><span class="hl ok" data-box="1585,76,44,48"><i>다운로드</i></span><span class="hl am" data-box="1608,718,290,116"><i>Flow가 쓴 영어 프롬프트</i></span><figcaption>이미지를 누르면 편집 화면. 오른쪽에 Flow가 내부적으로 쓴 영어 프롬프트가 보인다 — NO TEXT, NO LOGOS까지 우리가 쓴 대로.</figcaption></figure>
-  <div class="out"><span class="lab">스토리보드 한 칸만 고칠 때</span><button class="copy" data-copy="p3b">복사</button><span id="p3b"></span></div>
-</div>
-
-<!-- 6 -->
-<div class="step" id="s6">
-  <h2><span class="n">6</span>클립은 한 번에 하나 — 만들 때마다 완성본이 한 칸씩 찬다</h2>
-  <p class="where">핵심부터 만든다. <b>하나 만들고 → 확인 창에 '1개'인지 보고 승인 → 다음</b>. 크레딧이 모자라면 중간에 멈춰도 그때까지 만든 컷으로 완성본을 만든다.</p>
-  <div class="bar15" id="bar15"><span data-cut="1">훅 0–3</span><span data-cut="2">문제 3–6</span><span data-cut="3">기능 6–9</span><span data-cut="4">반응 9–12</span><span data-cut="5">제품 12–15</span></div>
-  <p class="where" id="barMsg"></p>
-  <div class="cut">
-    <label class="done"><input type="checkbox" data-k="d3"> <b>① 3번 컷 · 기능 작동</b> — 완성본의 심장 (6–9초). 크레딧 12</label>
-    <div class="out"><span class="lab">채팅창에 붙여넣기</span><button class="copy" data-copy="p6">복사</button><span id="p6"></span></div>
-  </div>
-  <div class="cut">
-    <label class="done"><input type="checkbox" data-k="d4"> <b>② 4번 컷 · 제품 반응</b> (9–12초). @캐릭터 선택 후. 크레딧 15</label>
-    <div class="out"><span class="lab">@캐릭터 선택 후 이어서 입력</span><button class="copy" data-copy="pc4">복사</button><span id="pc4"></span></div>
-    <div class="callout ok"><b>여기까지 2개(27 크레딧)면</b> 이미 광고의 핵심(기능 → 반응)이 완성된 것. 크레딧이 없으면 여기서 끝내도 된다.</div>
-  </div>
-  <div class="cut">
-    <label class="done"><input type="checkbox" data-k="d5"> <b>③ 5번 컷 · 제품명</b> (12–15초). @캐릭터 선택 후. 크레딧 15</label>
-    <div class="out"><span class="lab">@캐릭터 선택 후 이어서 입력</span><button class="copy" data-copy="pc5">복사</button><span id="pc5"></span></div>
-  </div>
-  <div class="cut">
-    <label class="done"><input type="checkbox" data-k="d2"> <b>④ 2번 컷 · 문제</b> (3–6초). 크레딧 12</label>
-    <div class="out"><span class="lab">채팅창에 붙여넣기</span><button class="copy" data-copy="pc2">복사</button><span id="pc2"></span></div>
-  </div>
-  <div class="cut">
-    <label class="done"><input type="checkbox" data-k="d1"> <b>⑤ 1번 컷 · 훅</b> (0–3초). 크레딧 12</label>
-    <div class="out"><span class="lab">채팅창에 붙여넣기</span><button class="copy" data-copy="pc1">복사</button><span id="pc1"></span></div>
-  </div>
-  <figure><img src="flow-shots/08_credit_dialog.jpg" alt="크레딧 확인 창"><span class="hl am" data-box="1562,490,330,56"><i>1개인지 확인</i></span><span class="hl ok" data-box="1570,550,312,46"><i>승인</i></span><span class="hl err" data-box="1570,600,312,46"><i>누르지 말 것</i></span><span class="hl below" data-box="1570,650,312,46"><i>N개면 거부</i></span><figcaption>"크레딧 12개를 사용하여 <b>1개</b> 동영상 생성을 시작할까요?" — 1개일 때만 승인. "4개", "5개"라고 나오면 거부하고 한 컷만 다시 요청한다. 캐릭터(@)가 들어간 클립은 15.</figcaption></figure>
-</div>
-
-<!-- 7 -->
-<div class="step" id="s7">
-  <h2><span class="n">7</span>제품을 캐릭터로 등록한다</h2>
-  <p class="where">왼쪽 <span class="ui">캐릭터</span> → <span class="ui">신규 캐릭터</span></p>
+  <h2><span class="n">3</span>제품을 캐릭터로 등록한다 (영상 만들기 전에)</h2>
+  <p class="where">왼쪽 <span class="ui">캐릭터</span> → <span class="ui">신규 캐릭터</span>. 이미지 1장 값. 이걸 먼저 해야 영상 속 제품이 내가 정한 모양으로 나온다.</p>
   <figure><img src="flow-shots/09_character_menu.jpg" alt="캐릭터 메뉴"><span class="hl" data-box="14,190,240,60"><i>캐릭터</i></span><span class="hl ok" data-box="264,80,306,300"><i>신규 캐릭터</i></span></figure>
   <figure><img src="flow-shots/10_new_character_empty.jpg" alt="신규 캐릭터"><span class="hl am" data-box="1128,250,314,130"><i>와일드 카드 = 사물도 됨</i></span><figcaption>"인간 외에도 무엇이든 캐릭터가 될 수 있습니다" — 제품을 캐릭터로 만든다.</figcaption></figure>
   <div class="out"><span class="lab">"캐릭터를 설명해 주세요" 칸에 붙여넣기 → 만들기</span><button class="copy" data-copy="p4">복사</button><span id="p4"></span></div>
@@ -221,41 +159,70 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
   <div class="out"><span class="lab">"캐릭터 정보(선택사항)" 칸에 붙여넣기 → 완료</span><button class="copy" data-copy="p5">복사</button><span id="p5"></span></div>
 </div>
 
+<!-- 4 -->
+<div class="step" id="s4">
+  <h2><span class="n">4</span>첫 문장 — 10초 한 컷 완성 광고 계획</h2>
+  <p class="where">채팅창에 붙여넣고 보내기. <b>계획만</b> 받는다(영상은 아직).</p>
+  <div class="bar15" id="bar15"><span>① 문제 0–2</span><span>② 버튼 2–4</span><span>③ 제품 반응 4–8</span><span>④ 완료 8–10</span></div>
+  <div class="out"><span class="lab">채팅창에 붙여넣기</span><button class="copy" data-copy="p1">복사</button><span id="p1"></span></div>
+  <div class="callout stop"><b>크레딧 주의.</b> 에이전트가 답 끝에 "바로 영상을 만들까요?"라고 물으면 <b>아직</b>이라고 답한다. 계획을 확인하고 7단계에서 한 번만 만든다.</div>
+  <div class="out"><span class="lab">에이전트가 "영상을 만들까요?"라고 물으면</span><button class="copy" data-copy="pno">복사</button><span id="pno"></span></div>
+  <figure><img src="flow-shots/03_prompt_typed.jpg" alt="첫 문장 입력"><span class="hl" data-box="1578,522,300,250"><i>붙여넣은 모습</i></span><figcaption>실제 세션에서 첫 문장을 붙여넣은 화면.</figcaption></figure>
+  <figure><img src="flow-shots/04_reply_top.jpg" alt="에이전트 답"><span class="hl ok" data-box="1560,300,350,500"><i>계획</i></span><figcaption>에이전트가 장면 계획(내용·카메라·조명·시간)을 글로 짜 온다.</figcaption></figure>
+</div>
+
+<!-- 5 -->
+<div class="step" id="s5">
+  <h2><span class="n">5</span>계획 고치기 — 연결이 한 화면에 보이는가</h2>
+  <p class="where">계획에서 "폰 버튼 누르는 순간"과 "제품이 반응하는 모습"이 <b>따로 떨어져</b> 있으면 고친다. 이게 사물인터넷 광고의 핵심 장면.</p>
+  <div class="out"><span class="lab">채팅창에 붙여넣기</span><button class="copy" data-copy="p2">복사</button><span id="p2"></span></div>
+  <figure><img src="flow-shots/05_revised_scene3.jpg" alt="수정된 장면"><span class="hl ok" data-box="1560,186,350,250"><i>수정됨</i></span><figcaption>실제 결과: 폰 화면(전경)과 창문의 파란 LED(배경)가 한 화면에 — 딥 포커스로 다시 짜 왔다.</figcaption></figure>
+</div>
+
+<!-- 6 -->
+<div class="step" id="s6">
+  <h2><span class="n">6</span>(선택) 스토리보드 한 장으로 미리 보기</h2>
+  <p class="where">이미지 1장 값. 영상(12~15)보다 싸니, 크레딧이 애매하면 이걸로 먼저 확인하고 영상은 한 번만.</p>
+  <div class="out"><span class="lab">채팅창에 붙여넣기</span><button class="copy" data-copy="p3">복사</button><span id="p3"></span></div>
+  <figure><img src="flow-shots/06_storyboard.jpg" alt="스토리보드 결과"><span class="hl" data-box="268,80,782,440"><i>그리드 결과</i></span><figcaption>이미지 한 장에 장면들. 마음에 안 들면 여기서(이미지 값으로) 고친다.</figcaption></figure>
+  <figure><img src="flow-shots/07_storyboard_editor.jpg" alt="이미지 편집 화면"><span class="hl am" data-box="1608,718,290,116"><i>Flow가 쓴 영어 프롬프트</i></span><figcaption>이미지를 누르면 편집 화면. 오른쪽에 Flow가 내부적으로 쓴 영어 프롬프트 — NO TEXT, NO LOGOS까지 우리가 쓴 대로.</figcaption></figure>
+</div>
+
+<!-- 7 -->
+<div class="step" id="s7">
+  <h2><span class="n">7</span>완성 영상 생성 — 한 번, 1개</h2>
+  <p class="where">채팅창에 <b>@</b> → 내 캐릭터 선택 → 아래 문장. 확인 창에 <b>"1개 동영상"</b>일 때만 승인.</p>
+  <div class="out"><span class="lab">@캐릭터 선택 후 이어서 입력</span><button class="copy" data-copy="pgen">복사</button><span id="pgen"></span></div>
+  <figure><img src="flow-shots/15_mention_picker.jpg" alt="@ 목록"><span class="hl" data-box="1040,64,856,640"><i>@ 목록</i></span><span class="hl ok" data-box="1192,122,280,60"><i>캐릭터 선택</i></span></figure>
+  <figure><img src="flow-shots/08_credit_dialog.jpg" alt="크레딧 확인 창"><span class="hl am" data-box="1562,490,330,56"><i>1개인지 확인</i></span><span class="hl ok" data-box="1570,550,312,46"><i>승인</i></span><span class="hl err" data-box="1570,600,312,46"><i>누르지 말 것</i></span><span class="hl below" data-box="1570,650,312,46"><i>N개면 거부</i></span><figcaption>"크레딧 N개를 사용하여 <b>1개</b> 동영상 생성을 시작할까요?" — 1개일 때만 승인. 캐릭터(@)가 들어간 영상은 15. "4개", "5개"라고 나오면 거부하고 다시 요청한다.</figcaption></figure>
+  <div class="callout ok"><b>이 한 번으로 끝.</b> 10초짜리 완성 광고 한 편이 나온다(1~3분 대기). 소리도 함께 생성된다. 이어 붙이기·편집 없음.</div>
+</div>
+
 <!-- 8 -->
 <div class="step" id="s8">
-  <h2><span class="n">8</span>@로 부르기 — 어느 클립에서든 같은 제품</h2>
-  <p class="where">채팅창에 <b>@</b> 입력 → 목록에서 내 캐릭터 선택 → 이어서 문장</p>
-  <figure><img src="flow-shots/15_mention_picker.jpg" alt="@ 목록"><span class="hl" data-box="1040,64,856,640"><i>@ 목록</i></span><span class="hl ok" data-box="1192,122,280,60"><i>캐릭터 선택</i></span></figure>
-  <div class="out"><span class="lab">@캐릭터 선택 후 이어서 입력</span><button class="copy" data-copy="p7">복사</button><span id="p7"></span></div>
-  <figure><img src="flow-shots/16_mention_prompt.jpg" alt="@ 문장"><span class="hl am" data-box="1566,582,330,236"><i>칩 + 문장</i></span><figcaption>입력칸에 캐릭터 칩이 붙고, 그 뒤에 동작 하나만 쓴다.</figcaption></figure>
-  <div class="out"><span class="lab">새 클립을 만들 때 앞 클립과 색감을 맞추는 문장 (문장 끝에 덧붙이기)</span><button class="copy" data-copy="p8">복사</button><span id="p8"></span></div>
+  <h2><span class="n">8</span>결과가 아쉬우면 — 한 칸만 고쳐서 다시 (선택)</h2>
+  <p class="where">한 번에 두 가지를 바꾸지 않는다. 바꾼 칸이 하나여야 무엇 때문에 좋아졌는지 안다. 재생성도 12~15 크레딧.</p>
+  <div class="out"><span class="lab">대괄호만 바꿔서</span><button class="copy" data-copy="p9">복사</button><span id="p9"></span></div>
+  <div class="callout"><b>더 길게(15~18초)가 꼭 필요하면.</b> 완성 영상을 열고 <span class="ui">확장</span>(이어서 만들기)을 쓴다. 앞 영상 끝에서 그대로 이어지는 8초가 붙는다(크레딧 추가). 아래 문장을 쓴다.</div>
+  <div class="out"><span class="lab">확장할 때</span><button class="copy" data-copy="pext">복사</button><span id="pext"></span></div>
 </div>
 
 <!-- 9 -->
 <div class="step" id="s9">
-  <h2><span class="n">9</span>Flow 안에서 이어 붙여 완성 → 다운로드 → 업로드</h2>
-  <p class="where">편집 앱은 쓰지 않는다. 만든 클립을 <b>Flow 안에서</b> 순서대로 이어 붙여 하나의 영상으로 만든다. 두 가지 방법 중 되는 것을 쓴다.</p>
-  <ul class="do">
-    <li><b>방법 A · 채팅으로</b> — 아래 문장을 붙여넣는다. 에이전트가 있는 클립만 이어 붙인다(새 생성 없음 → 크레딧 0). 확인 창에 크레딧이 뜨면 거부한다.</li>
-    <li><b>방법 B · 장면 메뉴로</b> — 왼쪽 <span class="ui">장면</span> → 클립 하나를 열면 아래 타임라인이 보인다 → 타임라인 끝 <span class="ui">+</span> 로 다음 클립을 추가해 3 → 4 → 5 → (2 → 1) 순서로 놓는다 → 위쪽 <span class="ui">다운로드</span>.</li>
-  </ul>
-  <div class="out"><span class="lab">방법 A · 채팅창에 붙여넣기 (만든 컷 번호만 남기기)</span><button class="copy" data-copy="pjoin">복사</button><span id="pjoin"></span></div>
-  <figure><img src="flow-shots/19_clip_editor.jpg" alt="클립 편집 화면"><span class="hl ok" data-box="1588,18,44,44"><i>다운로드</i></span><span class="hl am" data-box="626,12,160,44"><i>클립 바꾸기</i></span><span class="hl" data-box="20,470,1100,120"><i>타임라인 — 끝의 + 로 다음 클립 추가</i></span><figcaption>클립을 열면 나오는 편집 화면. 아래 타임라인에 클립이 놓이고, 끝의 +로 다음 클립을 이어 붙인다. 다 붙였으면 위쪽 다운로드 아이콘.</figcaption></figure>
-  <div class="callout"><b>제품 이름과 자막은?</b> 영상 안에 글자를 넣지 않았으니 <b>유튜브 제목·설명</b>에 쓴다. 예: "클린봇 — 밖에서 누르면, 집이 청소된다 (AI 제작 가상 브랜드, 수업용)". 마지막 5번 컷에서 폰 화면에 '완료' 알림이 뜨는 것으로 이야기가 끝난다.</div>
+  <h2><span class="n">9</span>다운로드 → 업로드</h2>
+  <figure><img src="flow-shots/19_clip_editor.jpg" alt="클립 편집 화면"><span class="hl ok" data-box="1588,18,44,44"><i>다운로드</i></span><figcaption>영상을 열면 편집 화면. 위쪽 다운로드 아이콘으로 저장(크롬이 위치를 물어본다).</figcaption></figure>
+  <div class="callout"><b>제품 이름과 카피는 유튜브 제목·설명에.</b> 영상 안에 글자를 넣지 않았다. 예: "클린봇 — 밖에서 누르면, 집이 청소된다 (AI 제작 가상 브랜드 · 수업용)".</div>
   <ul class="chk">
-    <li><label><input type="checkbox" data-k="c4"> 만든 클립을 3 → 4 → 5 (→ 2 → 1) 순서로 이어 붙였다</label></li>
-    <li><label><input type="checkbox" data-k="c5"> 이어 붙인 완성본을 <b>다운로드</b>했다 (크롬이 저장 위치를 물으면 내 폴더)</label></li>
+    <li><label><input type="checkbox" data-k="c4"> 완성 영상을 <b>다운로드</b>했다</label></li>
     <li><label><input type="checkbox" data-k="c6"> 실제 브랜드 이름·로고·실제 사람 얼굴이 없다</label></li>
-    <li><label><input type="checkbox" data-k="c7"> 업로드 제목에 제품명·카피를 쓰고, 설정에서 <b>변경되거나 합성된 콘텐츠</b>를 켰다</label></li>
+    <li><label><input type="checkbox" data-k="c7"> 제목에 제품명·카피, 설정에서 <b>변경되거나 합성된 콘텐츠</b>를 켰다</label></li>
   </ul>
-  <div class="callout ok"><b>속도감은 순서와 길이로.</b> 이어 붙일 때 핵심 컷(3·4)을 앞에 두고, 각 클립은 타임라인에서 앞뒤를 잘라 3~4초만 남기면 15초 안에 들어오고 빨라 보인다. 클립 자르기가 안 되면 그대로 이어도 된다(5클립 = 50초).</div>
 </div>
 
 <!-- fix -->
 <div class="step" id="s10">
-  <h2>결과가 이상할 때 — 한 칸만 고친다</h2>
-  <div class="out"><span class="lab">대괄호만 바꿔서</span><button class="copy" data-copy="p9">복사</button><span id="p9"></span></div>
-  <div class="callout ok"><b>프롬프트를 더 다듬고 싶으면 제미나이(Gemini)에서.</b> 수업에서 쓰는 AI는 제미나이입니다. 아래 문장을 제미나이에 붙여넣으세요.</div>
+  <h2>프롬프트를 더 다듬고 싶으면 — 제미나이에서</h2>
+  <div class="callout ok"><b>수업에서 쓰는 AI는 제미나이(Gemini)입니다.</b> 아래 문장을 제미나이에 붙여넣고, 나온 결과를 4단계 첫 문장 자리에 넣습니다.</div>
   <div class="out"><span class="lab">제미나이에 붙여넣기</span><button class="copy" data-copy="p10">복사</button><span id="p10"></span></div>
 </div>
 </div>
@@ -263,12 +230,11 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
 
 <script>
 (function(){
-  // 강조 상자: 캡처 원본(1920×852) 좌표 → 퍼센트
   document.querySelectorAll('figure .hl[data-box]').forEach(el=>{
     const [x,y,w,h]=el.dataset.box.split(',').map(Number);
     el.style.left=(x/1920*100)+'%';el.style.top=(y/852*100)+'%';el.style.width=(w/1920*100)+'%';el.style.height=(h/852*100)+'%';
   });
-  const KEY='flow-prompt-gen-v2';
+  const KEY='flow-prompt-gen-v3';
   const fields=[...document.querySelectorAll('[data-k]')];
   const state={};
   const $=id=>document.getElementById(id);
@@ -284,34 +250,22 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
     else if(state.wifi==='lives'){el.className='verdict no';el.innerHTML='<b>자동화 기능입니다.</b> 앱 원격 제어·알림·데이터 기록처럼 연결이 필요한 기능으로 바꿔 보세요.';}
     else{el.className='verdict';el.innerHTML='';}}
   function render(){
-    const len=g('len')||'15', cuts=len==='30'?'10':'5', ratio=g('ratio')||'16:9';
-    $('ratioTxt').textContent=ratio+(ratio==='9:16'?' (쇼츠)':' (유튜브)'); $('cutN').textContent=cuts;
+    const ratio=g('ratio')||'16:9';
+    $('ratioTxt').textContent=ratio+(ratio==='9:16'?' (쇼츠)':' (유튜브)');
     $('nowBrand').textContent=g('brand')||'—'; $('nowKind').textContent=g('kind')?'('+g('kind')+')':'';
     const style=g('style')||'실사 광고 느낌';
-    const tail='3초씩 '+cuts+'컷으로 장면을 제안해줘. 순서는 훅, 문제, 기능 작동, 증거, 제품명. 컷마다 눈에 보이는 움직임을 하나씩 넣고(카메라가 밀고 들어가거나 옆으로 따라가기), 정지 화면처럼 보이는 컷은 없게 해줘. 사물인터넷이 보이게: 스마트폰 앱 화면('+(g('app')||'버튼·알림')+'), 제품이 반응하는 모습('+(g('react')||'불빛·소리·움직임')+'), 그리고 폰과 제품이 연결됐다는 게 한 화면에서 보이는 장면을 꼭 넣어줘. 실제 브랜드 로고는 쓰지 말고, 영상 안에 글자는 넣지 마. 지금은 장면 계획만 세우고 영상은 아직 만들지 마.';
-    $('p1').innerHTML=len+'초 '+v('kind','제품 종류')+' 광고를 만들고 싶어. 제품 이름은 '+v('brand','내가 지은 이름')+'(가상 브랜드). 강조할 기능은 딱 하나, '+v('feat','강조할 기능')+'. 보는 사람은 '+v('aud','보는 사람')+'. '+v('place','장소와 시간')+', '+v('mood','분위기')+' 분위기, '+esc(style)+'. '+tail;
-    $('p2').innerHTML='3번 장면을 고쳐줘. 지금 장면으로는 밖에서 기능을 썼다는 게 안 보여. '+v('visible','기능이 눈에 보이는 장면')+' 같이 보이게 바꿔줘. 나머지 장면은 그대로.';
-    $('pno').innerHTML='아니, 지금은 영상을 만들지 마. 먼저 3x3 스토리보드 그리드 이미지를 하나 만들고, 영상은 내가 컷 번호를 말할 때 한 번에 하나씩만 만들어줘.';
-    $('p3').innerHTML='3x3 스토리보드 그리드 이미지를 먼저 하나 만들어줘. 각 칸은 움직임이 느껴지는 순간(카메라가 다가가는 중, 제품이 반응하는 중)으로 그리고, 폰 화면과 제품이 함께 보이는 칸을 꼭 넣어줘. 영상 안에 글자는 넣지 마.';
-    $('p3b').innerHTML='스토리보드에서 [몇 번] 칸만 다시 그려줘. [바꿀 내용 한 가지]. 나머지 칸은 그대로.';
-    $('p4').innerHTML=v('look','외형: 색·모양·재질·포인트')+'. 로고나 글자 없음. 이름은 '+v('brand','내가 지은 이름')+'.';
+    const B=v('brand','내가 지은 이름'), A=v('aud','보는 사람'), P=v('place','장소와 시간'), M=v('mood','분위기');
+    const APP=v('app','폰에서 누르는 것'), RE=v('react','제품 반응'), VIS=v('visible','폰과 제품이 한 화면에 보이는 방법'), DN=v('done','완료 알림');
+    $('p1').innerHTML='10초짜리 '+v('kind','제품 종류')+' 광고를 한 번의 생성으로 완성하고 싶어. 제품 이름은 '+B+'(가상 브랜드). 강조할 기능은 딱 하나, '+v('feat','강조할 기능')+'. 보는 사람은 '+A+'. '+P+', '+M+' 분위기, '+esc(style)+'. 컷을 나누지 말고 끊김 없는 한 번의 카메라 움직임 안에서 이야기가 끝나야 해: 0~2초 '+A+'이(가) 밖에서 스마트폰을 보는 문제 상황 → 2~4초 폰 화면의 '+APP+'을(를) 누르는 손 → 4~8초 같은 화면 안에서 '+B+'이(가) '+RE+' ('+VIS+') → 8~10초 '+B+' 클로즈업, 폰 화면에 '+DN+'. 카메라는 폰에서 제품 쪽으로 밀고 들어가는 한 번의 움직임. 스마트폰 앱 화면, 제품의 반응, 둘이 연결됐다는 장면이 모두 보여야 해. 실제 브랜드 로고는 쓰지 말고, 영상 안에 글자는 넣지 마. 먼저 이 계획을 글로 보여주고, 영상은 아직 만들지 마.';
+    $('pno').innerHTML='아니, 아직 영상은 만들지 마. 계획만 다듬자. 영상은 내가 말할 때 한 개만 만들어줘.';
+    $('p2').innerHTML='계획을 고쳐줘. 폰 버튼을 누르는 순간과 '+B+'이(가) 반응하는 모습이 한 화면에 같이 보여야 해: '+VIS+'. 컷을 나누지 말고 한 번의 카메라 움직임으로. 나머지는 그대로. 영상은 아직 만들지 마.';
+    $('p3').innerHTML='이 계획을 3x3 스토리보드 그리드 이미지 한 장으로 먼저 보여줘. 칸마다 카메라가 움직이는 중인 순간으로, 폰 화면과 '+B+'이(가) 함께 보이는 칸을 꼭 넣어줘. 영상 안에 글자는 넣지 마.';
+    $('p4').innerHTML=v('look','외형: 색·모양·재질·포인트')+'. 로고나 글자 없음. 이름은 '+B+'.';
     $('p5').innerHTML=v('move','움직임·작동 설명')+' 스마트폰 앱으로 밖에서 '+v('feat','기능')+'.';
-    $('pc1').innerHTML='1번 컷(훅) 영상 클립: '+v('place','장소와 시간')+'. 카메라가 '+v('brand','제품')+'을(를) 향해 빠르게 밀고 들어간다. 화면 한쪽에서 제품이 막 반응하기 시작한다: '+v('react','제품 반응')+'. '+v('mood','분위기')+' 분위기, '+esc(style)+'. 동작 하나만, 글자 없이. 이 컷 하나만 만들고 다른 장면은 만들지 마.';
-    $('pc2').innerHTML='2번 컷(문제) 영상 클립: '+v('aud','보는 사람')+'이(가) 밖에서 걷다 멈춰 스마트폰을 꺼내 본다. 폰 화면에 '+v('app','앱 화면·알림')+'. 옆으로 따라가는 카메라, 배경은 흐린 불빛. '+esc(style)+'. 글자 없이. 이 컷 하나만 만들고 다른 장면은 만들지 마.';
-    $('p6').innerHTML='3번 컷(기능 작동) 영상 클립: 전경에 스마트폰 화면의 '+v('app','앱 버튼')+'을(를) 누르는 손, 같은 화면의 배경에 '+v('brand','제품')+'이(가) '+v('react','반응하는 모습')+'. '+v('visible','연결이 눈에 보이는 장면')+'. 폰에서 제품 쪽으로 초점이 옮겨 가는 딥 포커스. 폰과 제품이 연결됐다는 게 보여야 한다. 글자 없이. 이 컷 하나만 만들고 다른 장면은 만들지 마.';
-    $('pc4').innerHTML='4번 컷(증거) 영상 클립: @'+v('brand','이름')+' 이 '+v('react','반응하는 모습')+'. 제품 높이에서 옆으로 따라가는 카메라, 제품의 움직임과 불빛이 화면을 가로지른다. '+v('place','장소와 시간')+', 같은 색감. 동작 하나만, 글자 없이. 이 컷 하나만 만들고 다른 장면은 만들지 마.';
-    $('pc5').innerHTML='5번 컷(제품) 영상 클립: @'+v('brand','이름')+' 클로즈업으로 카메라가 천천히 밀고 들어가고, 옆에 놓인 스마트폰 화면에 '+v('done','완료 알림')+'이(가) 뜬다. 스튜디오 조명, 제품 재질이 반짝인다. 글자 없이. 이 컷 하나만 만들고 다른 장면은 만들지 마.';
-    $('p7').innerHTML='@'+v('brand','이름')+' 이 '+v('act','시킬 동작 하나')+'. 카메라는 한 방향으로 천천히, '+v('place','장소와 시간')+', 같은 색감. 이 동작 하나만, 글자 없이.';
-    $('p8').innerHTML='앞 영상의 마지막 화면에서 그대로 이어지는 8초 영상. 앞 영상과 같은 장소, 같은 시간대, 같은 색감을 유지해줘.';
-    const made=[3,4,5,2,1].filter(n=>state['d'+n]);
-    const order=(made.length?made:[3,4,5]).join('번, ')+'번';
-    $('pjoin').innerHTML='지금까지 만든 클립을 '+order+' 순서로 이어서 하나의 영상(장면)으로 만들어줘. 새 영상은 생성하지 말고, 있는 클립만 이어 붙여줘. 각 클립은 앞뒤를 조금 잘라 3~4초씩만 써서 전체 15초 안에 맞춰줘.';
-    $('p9').innerHTML='[몇 번] 장면만 다시 만들어줘. [피사체/동작/배경/카메라/조명/스타일 중 한 칸]만 이렇게 바꿔: [바꿀 내용]. 나머지는 그대로.';
-    $('p10').innerHTML='아래 문장은 구글 Flow에 넣을 15초 광고 첫 프롬프트야. 내 제품은 '+v('kind','제품 종류')+' '+v('brand','이름')+'이고 강조할 기능은 '+v('feat','기능')+'이야. 문장 구조와 마지막 금지 조건은 그대로 두고, 장면이 더 구체적으로 그려지도록 다듬어 줘. 한국어로, 한 문단으로.\n\n'+$('p1').innerText;
-    const on=['d1','d2','d3','d4','d5'].map(k=>!!state[k]);
-    document.querySelectorAll('#bar15 span').forEach(el=>el.classList.toggle('on',on[Number(el.dataset.cut)-1]));
-    const n=on.filter(Boolean).length;
-    $('barMsg').innerHTML=n===0?'아직 만든 컷 없음. ①부터.':n<5?('완성본 '+n+'/5 채워짐 — 지금 멈춰도 만든 컷을 Flow 장면에서 이어 붙이면 광고가 된다.'):'다섯 컷 모두 완성. 9단계로.';
+    $('pgen').innerHTML='@'+B+' 이 계획대로 10초 영상 한 개만 만들어줘. 한 컷, 끊김 없는 카메라 움직임: '+A+'이(가) 폰의 '+APP+'을(를) 누르면 같은 화면에서 '+B+'이(가) '+RE+' ('+VIS+'), 마지막에 '+B+' 클로즈업과 폰 화면의 '+DN+'. '+P+', '+M+', '+esc(style)+'. 글자 없이. 영상은 1개만.';
+    $('p9').innerHTML='다시 만들어줘. [피사체/동작/배경/카메라/조명/스타일 중 한 칸]만 이렇게 바꿔: [바꿀 내용]. 나머지는 그대로. 영상은 1개만.';
+    $('pext').innerHTML='방금 만든 영상을 이어서 확장해줘. 마지막 장면에서 그대로 이어지며 '+B+' 클로즈업으로 천천히 밀고 들어가고, 폰 화면에 '+DN+'. 같은 장소, 같은 색감, 글자 없이. 영상은 1개만.';
+    $('p10').innerHTML='아래 문장은 구글 Flow에 넣을 10초 광고 프롬프트야. 내 제품은 '+v('kind','제품 종류')+' '+B+'이고 강조할 기능은 '+v('feat','기능')+'이야. 한 컷 안에 문제→버튼→제품 반응→완료가 다 들어가는 구조와 마지막 금지 조건은 그대로 두고, 장면이 더 구체적으로 그려지도록 다듬어 줘. 한국어로, 한 문단으로.\n\n'+$('p1').innerText;
     bindCopy();
   }
   function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1500);}
@@ -319,15 +273,16 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
     navigator.clipboard.writeText($(b.dataset.copy).innerText).then(()=>{b.textContent='복사됨';b.classList.add('done');setTimeout(()=>{b.textContent='복사';b.classList.remove('done');},1400);toast('복사됨 — Flow 채팅창에 붙여넣으세요');}).catch(()=>toast('복사가 막혔어요. 드래그해서 복사하세요.'));});});}
   fields.forEach(f=>{f.addEventListener('input',()=>{read(f);save();verdict();render();});f.addEventListener('change',()=>{read(f);save();verdict();render();});});
   const EX={kind:'로봇청소기',brand:'클린봇',real:'',feat:'외출 중에 스마트폰 앱으로 청소를 시작하는 기능',wifi:'dies',
-    visible:'밤거리에서 남성이 든 스마트폰 화면(청소 시작 버튼)과, 그 뒤 멀리 보이는 아파트 창문에 클린봇의 파란 LED 링이 켜지는 모습이 한 화면에',app:"'청소 시작' 버튼",react:'파란 LED 링이 켜지며 바닥을 미끄러지듯 달린다',done:"'청소 완료' 알림과 청소한 지도",
-    aud:'혼자 사는 20대',place:'밤의 도시 아파트',mood:'차분하고 세련된',style:'실사 광고 느낌',ratio:'16:9',len:'15',
+    app:"'청소 시작' 버튼",react:'파란 LED 링이 켜지며 바닥을 미끄러지듯 달린다',
+    visible:'전경의 폰 화면 뒤로, 창문 너머 집 안의 클린봇이 움직이는 게 보인다',done:"'청소 완료' 알림과 청소한 지도",
+    aud:'혼자 사는 20대',place:'밤의 도시 아파트',mood:'차분하고 세련된',style:'실사 광고 느낌',ratio:'16:9',
     look:'흰색 원형 로봇청소기. 윗면 가운데에 파란 LED 링, 무광 매트 재질, 범퍼는 진회색',
-    move:'집 안 바닥을 미끄러지듯 조용히 움직인다. 작동할 때 윗면 파란 LED 링이 켜진다.',act:'어두운 거실 바닥을 왼쪽에서 오른쪽으로 미끄러지듯 지나간다'};
+    move:'집 안 바닥을 미끄러지듯 조용히 움직인다. 작동할 때 윗면 파란 LED 링이 켜진다.'};
   $('exampleBtn').addEventListener('click',()=>{Object.assign(state,EX);fields.forEach(f=>{const k=f.dataset.k;if(f.type==='radio')f.checked=(state[k]===f.value);else if(f.type!=='checkbox'&&state[k]!=null)f.value=state[k];});save();verdict();render();toast('클린봇 예시를 채웠어요. 내 제품으로 바꿔 보세요.');});
   $('resetBtn').addEventListener('click',()=>{if(!confirm('입력을 모두 비울까요?'))return;Object.keys(state).forEach(k=>delete state[k]);try{localStorage.removeItem(KEY);}catch(e){}fields.forEach(f=>{if(f.type==='checkbox'||f.type==='radio')f.checked=false;else if(f.tagName==='SELECT')f.selectedIndex=0;else f.value='';});verdict();render();});
   $('exportBtn').addEventListener('click',()=>{
-    const ids=[['3. 첫 문장','p1'],['3. 클립 만들까요? 에 답','pno'],['4. 3번 컷 수정','p2'],['5. 스토리보드','p3'],['6. 1번 컷','pc1'],['6. 2번 컷','pc2'],['6. 3번 컷','p6'],['6. 4번 컷','pc4'],['6. 5번 컷','pc5'],['7. 캐릭터 설명','p4'],['7. 캐릭터 정보','p5'],['8. 잇기 문장','p8'],['9. 이어 붙이기','pjoin']];
-    const L=['Flow 프롬프트 — '+g('brand')+' ('+g('kind')+')','참고 제품: '+g('real'),''];
+    const ids=[['3. 캐릭터 설명','p4'],['3. 캐릭터 정보','p5'],['4. 첫 문장(계획)','p1'],['4. 아직 만들지 마','pno'],['5. 계획 고치기','p2'],['6. 스토리보드','p3'],['7. 완성 영상 생성','pgen'],['8. 한 칸 고치기','p9'],['8. 확장','pext']];
+    const L=['Flow 완성형 광고 프롬프트 — '+g('brand')+' ('+g('kind')+')','참고 제품: '+g('real'),''];
     ids.forEach(([t,id])=>{L.push('['+t+']');L.push($(id).innerText);L.push('');});
     navigator.clipboard.writeText(L.join('\n')).then(()=>toast('전체 프롬프트가 복사됐어요.')).catch(()=>toast('복사가 막혔어요. 인쇄를 이용하세요.'));});
   load();verdict();render();
