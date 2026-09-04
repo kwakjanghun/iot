@@ -57,6 +57,13 @@ for src, dst in (("특강_Flow프롬프트생성기.html", "flow-prompt.html"),
     if os.path.exists(fp):
         shutil.copyfile(fp, os.path.join(WEB, dst))
         print(f"  {dst} ← {src}")
+shots = os.path.join(KIT, "flow-shots")
+if os.path.isdir(shots):
+    dst_dir = os.path.join(WEB, "flow-shots"); os.makedirs(dst_dir, exist_ok=True)
+    for fn in os.listdir(shots):
+        if fn.lower().endswith(".jpg"):
+            shutil.copyfile(os.path.join(shots, fn), os.path.join(dst_dir, fn))
+    print("  flow-shots/ 복사")
 
 # ── 챕터 목록 (대본 없는 것도 이름은 보여줌) ──
 chapters = []
