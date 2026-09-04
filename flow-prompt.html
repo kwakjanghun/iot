@@ -95,14 +95,15 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
     <label><input type="radio" name="wifi" value="lives" data-k="wifi"> 끊어도 그대로 된다</label>
   </div>
   <div class="verdict" id="verdict"></div>
-  <h3>10초 안에 들어갈 네 장면</h3>
+  <h3>10초 안에 들어갈 네 장면 <small style="font-weight:400;color:var(--ink-faint)">— 실제 광고(LG STEM 30초)와 같은 문법: 인물 한마디 → 기능 → 히어로</small></h3>
   <div class="g2">
+    <div><label for="line">① 인물이 카메라를 보고 하는 한마디 <small>대사, 10자 안쪽</small></label><input type="text" id="line" data-k="line" placeholder="예: 퇴근길에 청소 걱정? 저는 안 해요."></div>
     <div><label for="app">② 폰 화면에서 누르는 것 <small>버튼·알림</small></label><input type="text" id="app" data-k="app" placeholder="예: '청소 시작' 버튼"></div>
     <div><label for="react">③ 제품이 반응하는 모습 <small>불빛·소리·움직임</small></label><input type="text" id="react" data-k="react" placeholder="예: 파란 LED 링이 켜지며 바닥을 미끄러지듯 달린다"></div>
     <div><label for="visible">③ 폰과 제품이 <b>한 화면에</b> 보이는 방법</label><input type="text" id="visible" data-k="visible" placeholder="예: 전경의 폰 화면 뒤로, 창문 너머 집 안의 클린봇이 움직이는 게 보인다"></div>
     <div><label for="done">④ 끝나면 폰에 뜨는 것</label><input type="text" id="done" data-k="done" placeholder="예: '청소 완료' 알림과 청소한 지도"></div>
   </div>
-  <div class="callout ok"><b>이 네 칸이 곧 광고의 뼈대입니다.</b> ① 문제(밖에서 폰을 본다) → ② 버튼 → ③ 제품 반응(연결이 보이게) → ④ 완료. 10초 한 컷에 다 들어갑니다.</div>
+  <div class="callout ok"><b>이 칸들이 곧 광고의 뼈대입니다.</b> ① 인물이 카메라를 보고 한마디(대사가 함께 생성된다) → ② 폰 버튼 → ③ 제품 반응을 가까이서(연결이 보이게) → ④ 제품 히어로 샷 + 폰 완료. 실제 광고가 "인물 인터뷰 → 기능 클로즈업 → 제품 히어로"로 가는 것과 같은 순서입니다.</div>
   <div class="g3">
     <div><label for="aud">보는 사람 <small>= 영상 속 인물</small></label><input type="text" id="aud" data-k="aud" placeholder="예: 혼자 사는 20대"></div>
     <div><label for="place">장소와 시간</label><input type="text" id="place" data-k="place" placeholder="예: 밤의 도시 아파트"></div>
@@ -162,8 +163,8 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
 <!-- 4 -->
 <div class="step" id="s4">
   <h2><span class="n">4</span>첫 문장 — 10초 한 컷 완성 광고 계획</h2>
-  <p class="where">채팅창에 붙여넣고 보내기. <b>계획만</b> 받는다(영상은 아직).</p>
-  <div class="bar15" id="bar15"><span>① 문제 0–2</span><span>② 버튼 2–4</span><span>③ 제품 반응 4–8</span><span>④ 완료 8–10</span></div>
+  <p class="where">채팅창에 붙여넣고 보내기. <b>계획만</b> 받는다(영상은 아직). 순서는 실제 가전 광고(LG STEM 30초)에서 가져왔다: <b>인물이 카메라를 보고 한마디 → 기능 클로즈업 → 제품 히어로</b>. 광고의 자막 자리는 Flow에서 글자를 못 넣으니 <b>인물의 대사</b>로 대신한다.</p>
+  <div class="bar15" id="bar15"><span>① 한마디 0–2</span><span>② 버튼 2–4</span><span>③ 제품 반응 4–8</span><span>④ 히어로 8–10</span></div>
   <div class="out"><span class="lab">채팅창에 붙여넣기</span><button class="copy" data-copy="p1">복사</button><span id="p1"></span></div>
   <div class="callout stop"><b>크레딧 주의.</b> 에이전트가 답 끝에 "바로 영상을 만들까요?"라고 물으면 <b>아직</b>이라고 답한다. 계획을 확인하고 7단계에서 한 번만 만든다.</div>
   <div class="out"><span class="lab">에이전트가 "영상을 만들까요?"라고 물으면</span><button class="copy" data-copy="pno">복사</button><span id="pno"></span></div>
@@ -256,13 +257,13 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
     const style=g('style')||'실사 광고 느낌';
     const B=v('brand','내가 지은 이름'), A=v('aud','보는 사람'), P=v('place','장소와 시간'), M=v('mood','분위기');
     const APP=v('app','폰에서 누르는 것'), RE=v('react','제품 반응'), VIS=v('visible','폰과 제품이 한 화면에 보이는 방법'), DN=v('done','완료 알림');
-    $('p1').innerHTML='10초짜리 '+v('kind','제품 종류')+' 광고를 한 번의 생성으로 완성하고 싶어. 제품 이름은 '+B+'(가상 브랜드). 강조할 기능은 딱 하나, '+v('feat','강조할 기능')+'. 보는 사람은 '+A+'. '+P+', '+M+' 분위기, '+esc(style)+'. 컷을 나누지 말고 끊김 없는 한 번의 카메라 움직임 안에서 이야기가 끝나야 해: 0~2초 '+A+'이(가) 밖에서 스마트폰을 보는 문제 상황 → 2~4초 폰 화면의 '+APP+'을(를) 누르는 손 → 4~8초 같은 화면 안에서 '+B+'이(가) '+RE+' ('+VIS+') → 8~10초 '+B+' 클로즈업, 폰 화면에 '+DN+'. 카메라는 폰에서 제품 쪽으로 밀고 들어가는 한 번의 움직임. 스마트폰 앱 화면, 제품의 반응, 둘이 연결됐다는 장면이 모두 보여야 해. 실제 브랜드 로고는 쓰지 말고, 영상 안에 글자는 넣지 마. 먼저 이 계획을 글로 보여주고, 영상은 아직 만들지 마.';
+    $('p1').innerHTML='10초짜리 '+v('kind','제품 종류')+' 광고를 한 번의 생성으로 완성하고 싶어. 제품 이름은 '+B+'(가상 브랜드). 강조할 기능은 딱 하나, '+v('feat','강조할 기능')+'. '+P+', '+M+' 분위기, '+esc(style)+'. 실제 가전 광고처럼 인물 한마디 → 기능 → 제품 히어로 순서로 가되, 컷을 나누지 말고 끊김 없는 한 번의 카메라 움직임 안에서 끝나야 해: 0~2초 '+A+'이(가) 밖에서 카메라를 보며 말한다 "'+v('line','인물의 한마디')+'" → 2~4초 손에 든 폰 화면의 '+APP+'을(를) 누른다 → 4~8초 카메라가 폰에서 제품 쪽으로 밀고 들어가 '+B+'이(가) '+RE+'을(를) 가까이서 보여준다 ('+VIS+') → 8~10초 '+B+' 제품 히어로 샷(제품이 화면 가운데, 깨끗한 배경)과 그 옆 폰 화면의 '+DN+'. 스마트폰 앱 화면, 제품의 반응, 둘이 연결됐다는 장면이 모두 보여야 해. 대사는 자연스러운 한국어로. 실제 브랜드 로고는 쓰지 말고, 영상 안에 글자는 넣지 마. 먼저 이 계획을 글로 보여주고, 영상은 아직 만들지 마.';
     $('pno').innerHTML='아니, 아직 영상은 만들지 마. 계획만 다듬자. 영상은 내가 말할 때 한 개만 만들어줘.';
     $('p2').innerHTML='계획을 고쳐줘. 폰 버튼을 누르는 순간과 '+B+'이(가) 반응하는 모습이 한 화면에 같이 보여야 해: '+VIS+'. 컷을 나누지 말고 한 번의 카메라 움직임으로. 나머지는 그대로. 영상은 아직 만들지 마.';
     $('p3').innerHTML='이 계획을 3x3 스토리보드 그리드 이미지 한 장으로 먼저 보여줘. 칸마다 카메라가 움직이는 중인 순간으로, 폰 화면과 '+B+'이(가) 함께 보이는 칸을 꼭 넣어줘. 영상 안에 글자는 넣지 마.';
     $('p4').innerHTML=v('look','외형: 색·모양·재질·포인트')+'. 로고나 글자 없음. 이름은 '+B+'.';
     $('p5').innerHTML=v('move','움직임·작동 설명')+' 스마트폰 앱으로 밖에서 '+v('feat','기능')+'.';
-    $('pgen').innerHTML='@'+B+' 이 계획대로 10초 영상 한 개만 만들어줘. 한 컷, 끊김 없는 카메라 움직임: '+A+'이(가) 폰의 '+APP+'을(를) 누르면 같은 화면에서 '+B+'이(가) '+RE+' ('+VIS+'), 마지막에 '+B+' 클로즈업과 폰 화면의 '+DN+'. '+P+', '+M+', '+esc(style)+'. 글자 없이. 영상은 1개만.';
+    $('pgen').innerHTML='@'+B+' 이 계획대로 10초 영상 한 개만 만들어줘. 한 컷, 끊김 없는 카메라 움직임: '+A+'이(가) 카메라를 보며 "'+v('line','인물의 한마디')+'"라고 말하고, 손에 든 폰의 '+APP+'을(를) 누르면 카메라가 폰에서 제품으로 밀고 들어가 '+B+'이(가) '+RE+'을(를) 가까이서 보여준다 ('+VIS+'). 마지막은 '+B+' 히어로 샷과 폰 화면의 '+DN+'. '+P+', '+M+', '+esc(style)+'. 대사는 자연스러운 한국어, 화면에 글자는 없이. 영상은 1개만.';
     $('p9').innerHTML='다시 만들어줘. [피사체/동작/배경/카메라/조명/스타일 중 한 칸]만 이렇게 바꿔: [바꿀 내용]. 나머지는 그대로. 영상은 1개만.';
     $('pext').innerHTML='방금 만든 영상을 이어서 확장해줘. 마지막 장면에서 그대로 이어지며 '+B+' 클로즈업으로 천천히 밀고 들어가고, 폰 화면에 '+DN+'. 같은 장소, 같은 색감, 글자 없이. 영상은 1개만.';
     $('p10').innerHTML='아래 문장은 구글 Flow에 넣을 10초 광고 프롬프트야. 내 제품은 '+v('kind','제품 종류')+' '+B+'이고 강조할 기능은 '+v('feat','기능')+'이야. 한 컷 안에 문제→버튼→제품 반응→완료가 다 들어가는 구조와 마지막 금지 조건은 그대로 두고, 장면이 더 구체적으로 그려지도록 다듬어 줘. 한국어로, 한 문단으로.\n\n'+$('p1').innerText;
@@ -273,7 +274,7 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
     navigator.clipboard.writeText($(b.dataset.copy).innerText).then(()=>{b.textContent='복사됨';b.classList.add('done');setTimeout(()=>{b.textContent='복사';b.classList.remove('done');},1400);toast('복사됨 — Flow 채팅창에 붙여넣으세요');}).catch(()=>toast('복사가 막혔어요. 드래그해서 복사하세요.'));});});}
   fields.forEach(f=>{f.addEventListener('input',()=>{read(f);save();verdict();render();});f.addEventListener('change',()=>{read(f);save();verdict();render();});});
   const EX={kind:'로봇청소기',brand:'클린봇',real:'',feat:'외출 중에 스마트폰 앱으로 청소를 시작하는 기능',wifi:'dies',
-    app:"'청소 시작' 버튼",react:'파란 LED 링이 켜지며 바닥을 미끄러지듯 달린다',
+    line:'퇴근길에 청소 걱정? 저는 안 해요.',app:"'청소 시작' 버튼",react:'파란 LED 링이 켜지며 바닥을 미끄러지듯 달린다',
     visible:'전경의 폰 화면 뒤로, 창문 너머 집 안의 클린봇이 움직이는 게 보인다',done:"'청소 완료' 알림과 청소한 지도",
     aud:'혼자 사는 20대',place:'밤의 도시 아파트',mood:'차분하고 세련된',style:'실사 광고 느낌',ratio:'16:9',
     look:'흰색 원형 로봇청소기. 윗면 가운데에 파란 LED 링, 무광 매트 재질, 범퍼는 진회색',
