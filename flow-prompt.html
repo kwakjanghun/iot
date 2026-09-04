@@ -138,6 +138,7 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
   <ul class="chk">
     <li><label><input type="checkbox" data-k="c1"> 생성하기 전에 확인 → <b>항상</b></label></li>
     <li><label><input type="checkbox" data-k="c2"> 동영상 생성 기본값 비율 → <b id="ratioTxt">16:9</b></label></li>
+    <li><label><input type="checkbox" data-k="c3b"> 동영상 생성 <b>개수 x1</b> (x2~x4면 한 번에 여러 개가 나간다)</label></li>
     <li><label><input type="checkbox" data-k="c3"> 모델 Omni 1.1 Flash 그대로 · <b>저장</b></label></li>
   </ul>
 </div>
@@ -148,6 +149,8 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
   <p class="where">채팅창에 아래 문장을 붙여넣고 보내기 → 에이전트가 장면 <span id="cutN">5</span>개를 짜 온다</p>
   <div class="out"><span class="lab">채팅창에 붙여넣기</span><button class="copy" data-copy="p1">복사</button><span id="p1"></span></div>
   <figure><img src="flow-shots/03_prompt_typed.jpg" alt="첫 문장 입력"><span class="hl" data-box="1578,522,300,250"><i>붙여넣은 모습</i></span><figcaption>실제 세션에서 첫 문장을 붙여넣은 화면.</figcaption></figure>
+  <div class="callout stop"><b>크레딧 주의.</b> 에이전트가 답 끝에 "각 장면을 3초 클립으로 만들어 볼까요?"라고 묻는다. 여기에 <b>"네"라고 하면 5개가 한 번에</b>(60~75 크레딧) 나간다. 아래 문장으로 답한다.</div>
+  <div class="out"><span class="lab">에이전트가 "클립을 만들까요?"라고 물으면</span><button class="copy" data-copy="pno">복사</button><span id="pno"></span></div>
   <figure><img src="flow-shots/04_reply_top.jpg" alt="에이전트 답"><span class="hl ok" data-box="1560,300,350,500"><i>장면 1~5</i></span><figcaption>에이전트가 짜 온 다섯 장면(내용·카메라·조명·시간). "15초는 3초 클립 5개로"라고 제안한다.</figcaption></figure>
 </div>
 
@@ -171,13 +174,14 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
 <!-- 6 -->
 <div class="step" id="s6">
   <h2><span class="n">6</span>영상 생성 — 크레딧 확인 창에서 '승인'만</h2>
-  <p class="where">클립은 <b>한 컷씩</b> 요청하고 한 번씩 승인. 아래 다섯 문장은 모두 "카메라 움직임 + 제품 반응 + 폰과 제품의 연결"이 들어가 있다.</p>
+  <p class="where">클립은 <b>한 컷씩</b> 요청하고 한 번씩 승인. 문장 끝에 "이 컷 하나만"이 붙어 있다. 확인 창에 <b>"N개 동영상"</b>이라고 나오면 <b>거부</b>하고 다시 하나만 요청한다.</p>
+  <div class="callout ok"><b>저예산 코스 (크레딧 30 안팎).</b> 스토리보드 1장(이미지) + <b>3번 컷</b>(기능 작동, 12) + <b>4번 컷</b>(제품 반응, @캐릭터 15) = 27. 두 클립(각 10초)만으로도 편집에서 8초 + 7초 = 15초 광고가 된다. 훅·문제·제품명은 스토리보드 이미지를 잘라 정지 컷으로 넣는다.</div>
   <div class="out"><span class="lab">1번 컷 · 훅</span><button class="copy" data-copy="pc1">복사</button><span id="pc1"></span></div>
   <div class="out"><span class="lab">2번 컷 · 문제</span><button class="copy" data-copy="pc2">복사</button><span id="pc2"></span></div>
   <div class="out"><span class="lab">3번 컷 · 기능 작동 (핵심 — 연결이 한 화면에)</span><button class="copy" data-copy="p6">복사</button><span id="p6"></span></div>
   <div class="out"><span class="lab">4번 컷 · 증거 (@캐릭터 선택 후)</span><button class="copy" data-copy="pc4">복사</button><span id="pc4"></span></div>
   <div class="out"><span class="lab">5번 컷 · 제품명 (@캐릭터 선택 후)</span><button class="copy" data-copy="pc5">복사</button><span id="pc5"></span></div>
-  <figure><img src="flow-shots/08_credit_dialog.jpg" alt="크레딧 확인 창"><span class="hl am" data-box="1562,490,330,56"><i>크레딧 12개?</i></span><span class="hl ok" data-box="1570,550,312,46"><i>승인</i></span><span class="hl err" data-box="1570,600,312,46"><i>누르지 말 것</i></span><span class="hl below" data-box="1570,650,312,46"><i>거부</i></span><figcaption>"크레딧 12개를 사용하여 1개 동영상 생성을 시작할까요?" — 승인만 누른다. 캐릭터(@)가 들어간 클립은 15.</figcaption></figure>
+  <figure><img src="flow-shots/08_credit_dialog.jpg" alt="크레딧 확인 창"><span class="hl am" data-box="1562,490,330,56"><i>크레딧 12개?</i></span><span class="hl ok" data-box="1570,550,312,46"><i>승인</i></span><span class="hl err" data-box="1570,600,312,46"><i>누르지 말 것</i></span><span class="hl below" data-box="1570,650,312,46"><i>거부</i></span><figcaption>"크레딧 12개를 사용하여 <b>1개</b> 동영상 생성을 시작할까요?" — 1개일 때만 승인. "4개", "5개"라고 나오면 거부하고 한 컷만 다시 요청한다. 캐릭터(@)가 들어간 클립은 15.</figcaption></figure>
   <div class="callout"><b>크레딧.</b> 클립 1개 = 12 (캐릭터 포함 15). 5개면 60~75. 한 클립씩 승인하고, 마음에 안 들면 이미지 단계로 돌아가서 고친다.</div>
 </div>
 
@@ -257,15 +261,16 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
     const tail='3초씩 '+cuts+'컷으로 장면을 제안해줘. 순서는 훅, 문제, 기능 작동, 증거, 제품명. 컷마다 눈에 보이는 움직임을 하나씩 넣고(카메라가 밀고 들어가거나 옆으로 따라가기), 정지 화면처럼 보이는 컷은 없게 해줘. 사물인터넷이 보이게: 스마트폰 앱 화면('+(g('app')||'버튼·알림')+'), 제품이 반응하는 모습('+(g('react')||'불빛·소리·움직임')+'), 그리고 폰과 제품이 연결됐다는 게 한 화면에서 보이는 장면을 꼭 넣어줘. 실제 브랜드 로고는 쓰지 말고, 영상 안에 글자는 넣지 마.';
     $('p1').innerHTML=len+'초 '+v('kind','제품 종류')+' 광고를 만들고 싶어. 제품 이름은 '+v('brand','내가 지은 이름')+'(가상 브랜드). 강조할 기능은 딱 하나, '+v('feat','강조할 기능')+'. 보는 사람은 '+v('aud','보는 사람')+'. '+v('place','장소와 시간')+', '+v('mood','분위기')+' 분위기, '+esc(style)+'. '+tail;
     $('p2').innerHTML='3번 장면을 고쳐줘. 지금 장면으로는 밖에서 기능을 썼다는 게 안 보여. '+v('visible','기능이 눈에 보이는 장면')+' 같이 보이게 바꿔줘. 나머지 장면은 그대로.';
+    $('pno').innerHTML='아니, 지금은 영상을 만들지 마. 먼저 3x3 스토리보드 그리드 이미지를 하나 만들고, 영상은 내가 컷 번호를 말할 때 한 번에 하나씩만 만들어줘.';
     $('p3').innerHTML='3x3 스토리보드 그리드 이미지를 먼저 하나 만들어줘. 각 칸은 움직임이 느껴지는 순간(카메라가 다가가는 중, 제품이 반응하는 중)으로 그리고, 폰 화면과 제품이 함께 보이는 칸을 꼭 넣어줘. 영상 안에 글자는 넣지 마.';
     $('p3b').innerHTML='스토리보드에서 [몇 번] 칸만 다시 그려줘. [바꿀 내용 한 가지]. 나머지 칸은 그대로.';
     $('p4').innerHTML=v('look','외형: 색·모양·재질·포인트')+'. 로고나 글자 없음. 이름은 '+v('brand','내가 지은 이름')+'.';
     $('p5').innerHTML=v('move','움직임·작동 설명')+' 스마트폰 앱으로 밖에서 '+v('feat','기능')+'.';
-    $('pc1').innerHTML='1번 컷(훅) 영상 클립: '+v('place','장소와 시간')+'. 카메라가 '+v('brand','제품')+'을(를) 향해 빠르게 밀고 들어간다. 화면 한쪽에서 제품이 막 반응하기 시작한다: '+v('react','제품 반응')+'. '+v('mood','분위기')+' 분위기, '+esc(style)+'. 동작 하나만, 글자 없이.';
-    $('pc2').innerHTML='2번 컷(문제) 영상 클립: '+v('aud','보는 사람')+'이(가) 밖에서 걷다 멈춰 스마트폰을 꺼내 본다. 폰 화면에 '+v('app','앱 화면·알림')+'. 옆으로 따라가는 카메라, 배경은 흐린 불빛. '+esc(style)+'. 글자 없이.';
-    $('p6').innerHTML='3번 컷(기능 작동) 영상 클립: 전경에 스마트폰 화면의 '+v('app','앱 버튼')+'을(를) 누르는 손, 같은 화면의 배경에 '+v('brand','제품')+'이(가) '+v('react','반응하는 모습')+'. '+v('visible','연결이 눈에 보이는 장면')+'. 폰에서 제품 쪽으로 초점이 옮겨 가는 딥 포커스. 폰과 제품이 연결됐다는 게 보여야 한다. 글자 없이.';
-    $('pc4').innerHTML='4번 컷(증거) 영상 클립: @'+v('brand','이름')+' 이 '+v('react','반응하는 모습')+'. 제품 높이에서 옆으로 따라가는 카메라, 제품의 움직임과 불빛이 화면을 가로지른다. '+v('place','장소와 시간')+', 같은 색감. 동작 하나만, 글자 없이.';
-    $('pc5').innerHTML='5번 컷(제품) 영상 클립: @'+v('brand','이름')+' 클로즈업으로 카메라가 천천히 밀고 들어가고, 옆에 놓인 스마트폰 화면에 '+v('done','완료 알림')+'이(가) 뜬다. 스튜디오 조명, 제품 재질이 반짝인다. 글자 없이.';
+    $('pc1').innerHTML='1번 컷(훅) 영상 클립: '+v('place','장소와 시간')+'. 카메라가 '+v('brand','제품')+'을(를) 향해 빠르게 밀고 들어간다. 화면 한쪽에서 제품이 막 반응하기 시작한다: '+v('react','제품 반응')+'. '+v('mood','분위기')+' 분위기, '+esc(style)+'. 동작 하나만, 글자 없이. 이 컷 하나만 만들고 다른 장면은 만들지 마.';
+    $('pc2').innerHTML='2번 컷(문제) 영상 클립: '+v('aud','보는 사람')+'이(가) 밖에서 걷다 멈춰 스마트폰을 꺼내 본다. 폰 화면에 '+v('app','앱 화면·알림')+'. 옆으로 따라가는 카메라, 배경은 흐린 불빛. '+esc(style)+'. 글자 없이. 이 컷 하나만 만들고 다른 장면은 만들지 마.';
+    $('p6').innerHTML='3번 컷(기능 작동) 영상 클립: 전경에 스마트폰 화면의 '+v('app','앱 버튼')+'을(를) 누르는 손, 같은 화면의 배경에 '+v('brand','제품')+'이(가) '+v('react','반응하는 모습')+'. '+v('visible','연결이 눈에 보이는 장면')+'. 폰에서 제품 쪽으로 초점이 옮겨 가는 딥 포커스. 폰과 제품이 연결됐다는 게 보여야 한다. 글자 없이. 이 컷 하나만 만들고 다른 장면은 만들지 마.';
+    $('pc4').innerHTML='4번 컷(증거) 영상 클립: @'+v('brand','이름')+' 이 '+v('react','반응하는 모습')+'. 제품 높이에서 옆으로 따라가는 카메라, 제품의 움직임과 불빛이 화면을 가로지른다. '+v('place','장소와 시간')+', 같은 색감. 동작 하나만, 글자 없이. 이 컷 하나만 만들고 다른 장면은 만들지 마.';
+    $('pc5').innerHTML='5번 컷(제품) 영상 클립: @'+v('brand','이름')+' 클로즈업으로 카메라가 천천히 밀고 들어가고, 옆에 놓인 스마트폰 화면에 '+v('done','완료 알림')+'이(가) 뜬다. 스튜디오 조명, 제품 재질이 반짝인다. 글자 없이. 이 컷 하나만 만들고 다른 장면은 만들지 마.';
     $('p7').innerHTML='@'+v('brand','이름')+' 이 '+v('act','시킬 동작 하나')+'. 카메라는 한 방향으로 천천히, '+v('place','장소와 시간')+', 같은 색감. 이 동작 하나만, 글자 없이.';
     $('p8').innerHTML='앞 영상의 마지막 화면에서 그대로 이어지는 8초 영상. 앞 영상과 같은 장소, 같은 시간대, 같은 색감을 유지해줘.';
     $('p9').innerHTML='[몇 번] 장면만 다시 만들어줘. [피사체/동작/배경/카메라/조명/스타일 중 한 칸]만 이렇게 바꿔: [바꿀 내용]. 나머지는 그대로.';
@@ -284,7 +289,7 @@ figcaption{font-size:14.5px;color:var(--ink-faint);padding:8px 12px;line-height:
   $('exampleBtn').addEventListener('click',()=>{Object.assign(state,EX);fields.forEach(f=>{const k=f.dataset.k;if(f.type==='radio')f.checked=(state[k]===f.value);else if(f.type!=='checkbox'&&state[k]!=null)f.value=state[k];});save();verdict();render();toast('클린봇 예시를 채웠어요. 내 제품으로 바꿔 보세요.');});
   $('resetBtn').addEventListener('click',()=>{if(!confirm('입력을 모두 비울까요?'))return;Object.keys(state).forEach(k=>delete state[k]);try{localStorage.removeItem(KEY);}catch(e){}fields.forEach(f=>{if(f.type==='checkbox'||f.type==='radio')f.checked=false;else if(f.tagName==='SELECT')f.selectedIndex=0;else f.value='';});verdict();render();});
   $('exportBtn').addEventListener('click',()=>{
-    const ids=[['3. 첫 문장','p1'],['4. 3번 컷 수정','p2'],['5. 스토리보드','p3'],['6. 1번 컷','pc1'],['6. 2번 컷','pc2'],['6. 3번 컷','p6'],['6. 4번 컷','pc4'],['6. 5번 컷','pc5'],['7. 캐릭터 설명','p4'],['7. 캐릭터 정보','p5'],['8. 잇기 문장','p8']];
+    const ids=[['3. 첫 문장','p1'],['3. 클립 만들까요? 에 답','pno'],['4. 3번 컷 수정','p2'],['5. 스토리보드','p3'],['6. 1번 컷','pc1'],['6. 2번 컷','pc2'],['6. 3번 컷','p6'],['6. 4번 컷','pc4'],['6. 5번 컷','pc5'],['7. 캐릭터 설명','p4'],['7. 캐릭터 정보','p5'],['8. 잇기 문장','p8']];
     const L=['Flow 프롬프트 — '+g('brand')+' ('+g('kind')+')','참고 제품: '+g('real'),''];
     ids.forEach(([t,id])=>{L.push('['+t+']');L.push($(id).innerText);L.push('');});
     navigator.clipboard.writeText(L.join('\n')).then(()=>toast('전체 프롬프트가 복사됐어요.')).catch(()=>toast('복사가 막혔어요. 인쇄를 이용하세요.'));});
