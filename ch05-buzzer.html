@@ -1,0 +1,1428 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<!--ART-->
+<title>05장 소리 소스 실행기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Nanum+Gothic+Coding:wght@400;700&family=Sunflower:wght@300;500;700&display=swap">
+<style>
+/* D2Coding — 설치되어 있으면 그것을 쓰고, 없으면 내려받아 씁니다.
+   학교 PC처럼 폰트가 없는 곳에서도 같은 화면이 나오게 하려는 것입니다. */
+@font-face{
+  font-family:'D2Coding';font-style:normal;font-weight:400;font-display:swap;
+  src:local('D2Coding'),local('D2Coding Regular'),
+      url('https://cdn.jsdelivr.net/gh/wan2land/d2coding@master/fonts/d2coding-full.woff2') format('woff2');
+}
+@font-face{
+  font-family:'D2Coding';font-style:normal;font-weight:700;font-display:swap;
+  src:local('D2Coding Bold'),
+      url('https://cdn.jsdelivr.net/gh/wan2land/d2coding@master/fonts/d2coding-bold-full.woff2') format('woff2');
+}
+</style>
+<style>
+:root{
+  --paper:#E4EEF0; --card:#FFFFFF; --card-2:#F4F7FA;
+  --ink:#121822; --ink-2:#3D4757; --muted:#79838F;
+  --rule:#D3DAE3; --rule-2:#E5EAF0;
+  --led:#E23B1E; --led-off:#39424F;
+  --ok:#17795F; --warn:#B26A00; --edit:#1D6FD0;
+  --accent:#0E7C7B; --accent-2:#0A5C5B;
+  --soft:rgba(14,124,123,.10);
+  --code-bg:#1A2130; --code-fg:#C9D4E3; --code-dim:#6C7B90;
+  /* 설명 창 전용 색 — 장 색(청록/자주)과 구분되는 파랑 */
+  --note:#2F6FD0; --note-soft:rgba(47,111,208,.11); --note-bg:#F8FBFF; --note-line:#D5E3F7;
+  --font-disp:"Do Hyeon","Malgun Gothic",sans-serif;
+  --font-ui:"Sunflower","Malgun Gothic",system-ui,sans-serif;
+  --font-code:"D2Coding","D2Coding ligature","Nanum Gothic Coding",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1518; --card:#171E2B; --card-2:#1D2534;
+    --ink:#E7ECF3; --ink-2:#B3BECD; --muted:#7C8797;
+    --rule:#28313F; --rule-2:#1F2836;
+    --led:#FF5C3E; --led-off:#39424F;
+    --ok:#4FC49E; --warn:#E0A245; --edit:#66A8F0;
+    --accent:#3FC4C2; --accent-2:#63D6D4; --soft:rgba(63,196,194,.13);
+    --code-bg:#131A26; --code-fg:#C9D4E3; --code-dim:#68768B;
+    --note:#7FB2FF; --note-soft:rgba(127,178,255,.13); --note-bg:#151E2E; --note-line:#2B3A52;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1518; --card:#171E2B; --card-2:#1D2534;
+  --ink:#E7ECF3; --ink-2:#B3BECD; --muted:#7C8797;
+  --rule:#28313F; --rule-2:#1F2836;
+  --led:#FF5C3E; --led-off:#39424F;
+  --ok:#4FC49E; --warn:#E0A245; --edit:#66A8F0;
+  --accent:#3FC4C2; --accent-2:#63D6D4; --soft:rgba(63,196,194,.13);
+  --code-bg:#131A26; --code-fg:#C9D4E3; --code-dim:#68768B;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-ui);font-weight:300;font-size:15.5px;line-height:1.7;-webkit-font-smoothing:antialiased}
+h1,h2,h3,p,dl,dd,ul,pre{margin:0}
+ul{padding:0;list-style:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 18px 50px;zoom:var(--zoom,1)}
+.zoomctl{display:flex;align-items:center;gap:7px;background:var(--card);border:1.5px solid var(--rule);border-radius:10px;padding:6px 13px}
+.zoomctl .lb{font-size:14px;color:var(--muted);margin-right:3px}
+.zoomctl .mini{font-family:var(--font-disp);font-size:12px;color:var(--muted);line-height:1}
+.zoomctl .maxi{font-family:var(--font-disp);font-size:21px;color:var(--muted);line-height:1}
+.zoomctl input[type=range]{width:152px;flex:none}
+.zoomctl b{font-family:var(--font-code);font-size:15px;color:var(--accent);min-width:52px;text-align:right}
+
+
+/* ── 장 머리띠 : 장마다 색이 통째로 달라 한눈에 구분된다 ── */
+.chband{display:flex;align-items:center;gap:18px;flex-wrap:wrap;background:var(--accent);margin:0 -18px 15px;padding:17px 30px}
+.chband .num{font-family:var(--font-disp);font-size:50px;line-height:.9;color:#fff;opacity:.5;flex:none}
+.chband .ttl h1{font-family:var(--font-disp);font-size:29px;color:#fff;line-height:1.15}
+.chband .ttl p{font-size:15px;color:#fff;opacity:.85;line-height:1.35}
+.ctlrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+
+/* ── 오른쪽 설명 패널 ── */
+#sideMain{display:flex;flex-direction:column;gap:13px}
+/* 설명은 오른쪽 카드들 "위에 덮이는" 레이어다. 밑의 카드는 그대로 남는다. */
+.card.sidenote{
+  padding:0 !important;overflow:hidden;
+  border:1.5px solid var(--note-line) !important;border-left:6px solid var(--note) !important;
+  background:var(--note-bg) !important;
+  position:absolute;left:0;right:0;top:0;z-index:6;
+  min-height:100%;                       /* 설명이 짧아도 밑의 카드를 전부 가린다 */
+  max-height:calc((100vh - 104px) / var(--zoom,1));overflow-y:auto;overscroll-behavior:contain;
+  box-shadow:0 18px 46px -14px rgba(15,22,32,.5), 0 0 0 1px rgba(15,22,32,.06);
+}
+:root:not([data-theme="light"]) .sidenote{box-shadow:0 18px 46px -12px rgba(0,0,0,.72), 0 0 0 1px rgba(255,255,255,.06)}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) .sidenote{box-shadow:0 18px 46px -14px rgba(15,22,32,.5), 0 0 0 1px rgba(15,22,32,.06)}
+}
+.sidenote .nhead{display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding:13px 16px;background:var(--note-soft);border-bottom:1.5px solid var(--note-line)}
+.sidenote .nno{font-family:var(--font-disp);font-size:19px;color:var(--note)}
+.sidenote .ntag{font-size:13px;color:var(--muted)}
+.sidenote .nclose{margin-left:auto;font-size:13.5px;color:var(--note);border:1.5px solid var(--note);border-radius:7px;padding:4px 12px;background:var(--card)}
+.sidenote .nclose:hover{background:var(--note);color:#fff}
+.sidenote .ncode{display:block;margin:12px 16px 0;font-family:var(--font-code);font-size:15px;color:var(--ink);background:var(--card-2);border:1px solid var(--rule);border-radius:7px;padding:8px 11px;overflow-x:auto;white-space:pre}
+.sidenote .ntext{padding:13px 16px 4px;font-size:17.5px;color:var(--ink);line-height:1.75}
+.sidenote .nsub{display:flex;flex-direction:column;gap:10px;padding:11px 16px 17px}
+.btn.noteon{background:var(--note);border-color:var(--note);color:#fff}
+
+/* 이름 뜻풀이 — 한 단어 한 줄 */
+.words{padding:11px 16px 2px;display:flex;flex-direction:column;gap:2px}
+.wd{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;padding:4px 0;border-bottom:1px dotted var(--rule-2)}
+.wd:last-child{border-bottom:0}
+.wd b{font-family:var(--font-code);font-size:16.5px;color:var(--note);flex:none}
+.wd span{font-size:14.5px;color:var(--muted);flex:none}
+.wd em{font-style:normal;font-size:16px;color:var(--ink)}
+.btn.dim{opacity:.42}
+
+/* { } 범위 */
+.brace{margin:11px 16px 0;padding:12px 15px;border-radius:10px;background:var(--card-2);border-left:4px solid var(--warn)}
+.brace b.hd{display:block;font-family:var(--font-disp);font-size:15px;color:var(--warn);margin-bottom:4px}
+.brace p{font-size:16px;line-height:1.8;color:var(--ink-2)}
+.brace code{font-family:var(--font-code);font-size:15px;color:var(--ink);background:var(--card);border:1px solid var(--rule);border-radius:5px;padding:0 5px}
+.brace b{color:var(--ink);font-weight:700}
+
+/* 문법 색 — 아두이노 IDE 의 분류를 그대로, 어두운 바탕에 맞게 밝기만 올림 */
+.ln .s-ty {color:#FF9E64}                 /* 자료형  int void byte const   (IDE #CC6600) */
+.ln .s-st {color:#A3D977}                 /* 구조    setup loop for if     (IDE #5E6D03) */
+.ln .s-fn {color:#4EC9D9}                 /* 내장함수 pinMode delay tone   (IDE #00979C) */
+.ln .s-con{color:#6FA8F5;font-weight:700} /* 상수    HIGH LOW OUTPUT       (IDE #006699) */
+.ln .s-str{color:#C3E88D}
+.ln .s-num{color:#F2C48A}
+.ln .s-pre{color:#C792EA}                 /* #include #define */
+.ln .s-cmt{color:#8A97A8}
+.ln.live .s-cmt{color:#A6B2C2}
+
+/* 기본값으로 되돌리는 단추 */
+.editor .defbtn{
+  display:inline-block;margin-top:4px;font-family:var(--font-code);font-size:14.5px;
+  color:var(--note);border:1.5px solid var(--note-line);border-radius:8px;
+  padding:6px 13px;background:var(--card);transition:all .16s;
+}
+.editor .defbtn b{color:var(--ink);font-weight:700}
+.editor .defbtn:hover:not(:disabled){background:var(--note-soft);border-color:var(--note)}
+.editor .defbtn:disabled{opacity:.45;cursor:default;color:var(--muted);border-color:var(--rule)}
+.editor .defbtn:disabled b{color:var(--muted)}
+
+/* 반복 단계 배지 */
+.ln .iter.ph-init{color:#A3D977}
+.ln .iter.ph-cond{color:#7FB2FF}
+.ln .iter.ph-body{color:#F0C674}
+.ln .iter.ph-inc{color:#FF9E64}
+.ln .iter.ph-warn{color:#FF6B6B}
+
+/* 반복 추적표 */
+.trace{width:100%;border-collapse:collapse;font-family:var(--font-code);font-size:15px}
+.trace th{font-family:var(--font-ui);font-size:13px;font-weight:400;color:var(--muted);
+  text-align:left;padding:4px 8px;border-bottom:1.5px solid var(--rule)}
+.trace td{padding:5px 8px;border-bottom:1px dotted var(--rule-2)}
+.trace tr.no td{color:var(--muted)}
+.trace td.ok{color:var(--ok);font-weight:700}
+.trace td.no{color:var(--led);font-weight:700}
+.trace td.iv{color:var(--accent);font-weight:700}
+.tracewrap{max-height:230px;overflow-y:auto}
+.tracehint{font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.6}
+
+/* 학생이 직접 만져 보는 하드웨어 */
+.buzzer{cursor:pointer}
+.buzzer:hover{border-color:var(--accent)}
+.kk{cursor:pointer}
+.hwtip{font-size:14px;color:var(--muted);text-align:center;line-height:1.6;margin-top:2px}
+.hwtip b{color:var(--accent)}
+
+/* 머리 */
+.top{padding:20px 0 0}
+.brandrow{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-bottom:14px}
+.mark{width:32px;height:32px;border-radius:9px;background:var(--accent);flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--font-disp);font-size:16px;color:#fff}
+:root:not([data-theme="light"]) .mark{color:#0F141D}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .mark{color:#fff}}
+.brand h1{font-family:var(--font-disp);font-size:24px;font-weight:400;line-height:1.2}
+.brand p{font-size:14px;color:var(--muted);line-height:1.35}
+.sound{margin-left:auto;display:flex;align-items:center;gap:10px;white-space:nowrap;flex-wrap:wrap}
+.sound > input[type=range]{width:96px;flex:none}
+
+.picker{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.pick{
+  display:flex;align-items:center;gap:9px;padding:8px 14px 8px 10px;border:1.5px solid var(--rule);
+  border-radius:11px;background:var(--card);transition:all .18s;
+}
+.pick .ch{font-family:var(--font-disp);font-size:14px;line-height:1;color:#fff;background:var(--muted);border-radius:7px;padding:5px 7px;flex:none}
+:root:not([data-theme="light"]) .pick .ch{color:#0F141D}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .pick .ch{color:#fff}}
+.pick .tx b{display:block;font-family:var(--font-disp);font-size:17px;font-weight:400;line-height:1.25}
+.pick .tx span{display:block;font-family:var(--font-code);font-size:13px;color:var(--muted);line-height:1.35}
+.pick[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 4px 13px -8px var(--accent)}
+.pick[aria-pressed="true"] .ch{background:var(--accent)}
+
+/* 본문 */
+.stage{display:grid;grid-template-columns:1fr 372px;gap:16px;align-items:start}
+
+/* 코드 */
+.codewrap{background:var(--code-bg);border-radius:14px;overflow:hidden;border:1px solid var(--rule)}
+.codebar{display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.07)}
+.codebar .fn{font-family:var(--font-code);font-size:15px;color:#8FA0B8;margin-right:auto}
+.codebar .st{font-size:14px;color:#8FA0B8;font-family:var(--font-code)}
+.codebar .btn{padding:5px 13px;font-size:13.5px;border-radius:7px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.17);color:#D5DEEA}
+.codebar .btn:hover{border-color:var(--note);color:#fff;background:rgba(47,111,208,.25)}
+.codebar .btn.noteon{background:var(--note);border-color:var(--note);color:#fff}
+.codebar .st b{color:#F0C674}
+pre.src{font-family:var(--font-code);font-size:15.5px;line-height:1.9;padding:12px 0 18px;overflow-x:auto;color:var(--code-fg)}
+.ln{display:flex;gap:13px;padding:0 18px;position:relative}
+.ln > i{width:24px;flex:none;text-align:right;color:#5A6A80;font-style:normal;font-variant-numeric:tabular-nums;user-select:none}
+.ln > code{white-space:pre;font-family:inherit}
+.ln.cmt > code{color:var(--code-dim)}
+.ln.live{background:rgba(240,198,116,.13)}
+.ln.live > i{color:#F0C674;font-weight:700}
+.ln.live::before{content:"▸";position:absolute;left:4px;color:#F0C674;font-size:11px}
+.ln .iter{color:#F0C674;font-size:14px;margin-left:12px;font-weight:700}
+
+.ed{
+  font-family:inherit;font-size:inherit;color:#8DD9D7;background:rgba(141,217,215,.13);
+  border:1px dashed rgba(141,217,215,.5);border-radius:4px;padding:0 4px;line-height:1.35;
+  cursor:pointer;transition:all .14s;
+}
+.ed:hover{background:rgba(141,217,215,.26);border-style:solid}
+.ed.chg{color:#FFD479;background:rgba(255,212,121,.16);border-color:rgba(255,212,121,.6);font-weight:700}
+.ed.sel{outline:2px solid #F0C674;outline-offset:1px}
+.ln .nnm.exact{color:var(--code-dim)}
+.ln .nnm.near{color:#E8C36A}
+.ln .nnm.off{color:#FF9366;font-weight:700}
+.ln .nnm.rest{color:var(--code-dim)}
+.nrow{margin-top:4px;font-size:16px;color:var(--ink-2)}
+.nrow b{font-family:var(--font-disp);font-size:21px;color:var(--ink);margin-left:6px}
+.nrow em{font-style:normal;font-size:14px;color:var(--muted);margin-left:6px}
+.nrow.off b{color:var(--led)}
+.nrow.off em{color:var(--led)}
+.nrow.near b{color:var(--warn)}
+
+/* 실행 바 */
+.runbar{
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:12px 14px;
+  background:var(--card);border:1.5px solid var(--rule);border-radius:12px;margin-bottom:12px;
+  position:sticky;top:8px;z-index:20;box-shadow:0 6px 18px -12px rgba(15,22,32,.5);
+}
+.btn{padding:10px 18px;border:1.5px solid var(--rule);border-radius:9px;background:var(--card);font-size:15px;font-weight:500;transition:all .16s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.solid:hover{background:var(--accent-2);border-color:var(--accent-2);color:#fff}
+:root:not([data-theme="light"]) .btn.solid,:root:not([data-theme="light"]) .btn.solid:hover{color:#0F141D}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) .btn.solid,:root:not([data-theme="dark"]) .btn.solid:hover{color:#fff}
+}
+.btn.sm{padding:7px 13px;font-size:13.5px;border-radius:7px}
+.runbar .sp{margin-left:auto;display:flex;align-items:center;gap:9px;font-size:14px;color:var(--muted)}
+.runbar .sp b{font-family:var(--font-code);color:var(--ink-2);min-width:42px;display:inline-block;font-size:16px}
+
+/* 오른쪽 */
+.side{display:flex;flex-direction:column;gap:13px;position:sticky;top:86px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:13px;padding:15px 16px}
+.card > h2{font-family:var(--font-disp);font-size:19px;font-weight:400;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card > h2 em{font-style:normal;font-size:13.5px;color:var(--muted);font-family:var(--font-ui);margin-left:auto}
+
+.hw{display:flex;flex-direction:column;align-items:center;gap:11px}
+.buzzer{width:96px;height:96px;border-radius:50%;background:var(--card-2);border:3px solid var(--rule);display:flex;align-items:center;justify-content:center;font-size:34px;transition:all .1s;position:relative}
+.buzzer.on{background:var(--led);border-color:var(--led);box-shadow:0 0 0 8px rgba(226,59,30,.16)}
+.buzzer .rip{position:absolute;inset:-12px;border-radius:50%;border:2px solid var(--led);opacity:0;animation:none}
+.buzzer.on .rip{animation:rip 1s ease-out infinite}
+@keyframes rip{0%{transform:scale(.85);opacity:.7}100%{transform:scale(1.35);opacity:0}}
+.hwlab{font-family:var(--font-code);font-size:17px;color:var(--ink-2);text-align:center}
+.hwlab b{color:var(--accent);font-weight:700}
+
+.matrix{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;padding:10px;background:#1A2130;border-radius:11px;width:100%;max-width:222px;aspect-ratio:1}
+.matrix button{border-radius:50%;background:var(--led-off);border:0;padding:0;transition:background .07s}
+.matrix button:hover{background:#6B4038}
+.matrix button.on{background:var(--led);box-shadow:0 0 8px rgba(226,59,30,.55)}
+.matrix button.wr{outline:2px solid #F0C674;outline-offset:1px}
+
+.seg7{display:flex;gap:9px;justify-content:center;padding:14px;background:#1A2130;border-radius:11px}
+.digit{width:40px;height:70px;position:relative}
+.digit i{position:absolute;background:var(--led-off);border-radius:2px;transition:background .1s}
+.digit i.on{background:var(--led);box-shadow:0 0 7px rgba(226,59,30,.5)}
+.digit .a{left:7px;top:2px;width:26px;height:5px}
+.digit .b{right:2px;top:7px;width:5px;height:25px}
+.digit .c{right:2px;top:37px;width:5px;height:25px}
+.digit .d{left:7px;bottom:2px;width:26px;height:5px}
+.digit .e{left:2px;top:37px;width:5px;height:25px}
+.digit .f{left:2px;top:7px;width:5px;height:25px}
+.digit .g{left:7px;top:33px;width:26px;height:5px}
+
+.seqg{display:grid;gap:2px;width:100%}
+.sqc{height:16px;border-radius:3px;background:var(--card-2);border:1px solid var(--rule-2);padding:0;transition:background .1s}
+.sqc:hover{background:var(--soft)}
+.sqc.on{background:var(--accent);border-color:var(--accent)}
+.sqc.now{box-shadow:0 0 0 2px #F0C674}
+.sqr{font-family:var(--font-disp);font-size:10.5px;color:var(--muted);display:flex;align-items:center;justify-content:flex-end;padding-right:5px}
+.chz{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.chz button{padding:5px 10px;border:1.5px solid var(--rule);border-radius:7px;font-family:var(--font-code);font-size:11.5px;transition:all .14s}
+.chz button:hover{border-color:var(--accent);color:var(--accent)}
+.chz button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+:root:not([data-theme="light"]) .chz button.on{color:#0F141D}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .chz button.on{color:#fff}}
+.pick .tag{font-size:9.5px;background:var(--soft);color:var(--accent);border-radius:5px;padding:1px 5px;margin-left:5px;font-family:var(--font-ui)}
+
+.keys{display:flex;gap:4px;width:100%}
+.kk{flex:1;padding:11px 2px 8px;border:1.5px solid var(--rule);border-radius:8px;background:var(--card-2);text-align:center;font-family:var(--font-disp);font-size:13px;transition:all .1s}
+.kk.on{background:var(--accent);border-color:var(--accent);color:#fff;transform:translateY(2px)}
+:root:not([data-theme="light"]) .kk.on{color:#0F141D}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .kk.on{color:#fff}}
+.kk span{display:block;font-family:var(--font-code);font-size:9px;color:var(--muted);margin-top:2px}
+.kk.on span{color:inherit;opacity:.75}
+
+/* 값 편집 */
+.editor .none{font-size:15px;color:var(--muted);line-height:1.7}
+.edrow{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.editor .vn{font-family:var(--font-code);font-size:21px;color:var(--edit);font-weight:700}
+.editor .vl{font-size:16px;color:var(--ink-2)}
+.editor .cur{font-family:var(--font-code);font-size:34px;font-weight:700;color:var(--accent);line-height:1.1;margin-left:auto}
+.editor .cur small{font-size:15px;color:var(--muted);margin-left:3px;font-weight:400}
+.editor .def{font-family:var(--font-code);font-size:14px;color:var(--muted)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:none;cursor:pointer;display:block}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--rule);border-radius:4px}
+input[type=range]::-moz-range-track{height:4px;background:var(--rule);border-radius:4px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-6px;border-radius:50%;background:var(--accent);border:3px solid var(--card);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--accent);border:3px solid var(--card);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+
+.watch{display:flex;flex-wrap:wrap;gap:9px}
+.watch div{flex:1;min-width:132px;background:var(--card-2);border-radius:9px;padding:9px 13px}
+.watch .k{display:block;font-size:13px;color:var(--muted);line-height:1.4}
+.watch .v{display:block;font-family:var(--font-code);font-size:25px;font-weight:700;color:var(--ink);line-height:1.25}
+.watch .v.hot{color:var(--led)}
+
+.notebox{margin-top:12px;border-radius:12px;background:var(--card);border:1.5px solid var(--rule);border-left:5px solid var(--accent);overflow:hidden}
+.notebox .nhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 17px;background:var(--soft);border-bottom:1px solid var(--rule-2)}
+.notebox .nno{font-family:var(--font-disp);font-size:17px;color:var(--accent);flex:none}
+.notebox .ncode{font-family:var(--font-code);font-size:15px;color:var(--ink);background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:3px 10px;overflow-x:auto;max-width:100%}
+.notebox .ntag{margin-left:auto;font-size:13px;color:var(--muted);flex:none}
+.notebox .ntext{padding:15px 18px 4px;font-size:18px;color:var(--ink);line-height:1.75}
+.notebox .ntext b{font-weight:500}
+.nsub{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:11px;padding:12px 18px 18px}
+.nb{border-radius:10px;padding:12px 15px;background:var(--card-2);border:1px solid var(--rule-2)}
+.nb b{display:block;font-family:var(--font-disp);font-size:15px;font-weight:400;margin-bottom:5px}
+.nb p{font-size:16px;line-height:1.78;color:var(--ink-2)}
+.nb.why{border-left:4px solid var(--note)} .nb.why b{color:var(--note)}
+.nb.try{border-left:4px solid var(--ok)} .nb.try b{color:var(--ok)}
+.nb.oops{border-left:4px solid var(--led)} .nb.oops b{color:var(--led)}
+.nb code{font-family:var(--font-code);font-size:15px;background:var(--card);border:1px solid var(--rule);border-radius:5px;padding:1px 6px}
+
+.note{margin-top:12px;padding:14px 17px;border-radius:10px;background:var(--soft);border-left:4px solid var(--accent);font-size:16px;color:var(--ink-2);line-height:1.75}
+.ln.sel{background:rgba(109,178,255,.15);box-shadow:inset 4px 0 0 #6DA8E8}
+.ln.sel > i{color:#8DC4F5;font-weight:700}
+.ln{cursor:pointer}
+.ln:hover{background:rgba(255,255,255,.045)}
+.note b{font-weight:500;color:var(--ink)}
+.note code{font-family:var(--font-code);color:var(--accent)}
+
+.hint{font-size:14px;color:var(--muted);margin-top:10px;line-height:1.7}
+.hint b{color:var(--edit);font-weight:500}
+
+@media (max-width:980px){
+  /* 좁은 화면에서는 겹치지 않고 자리를 차지한다 */
+  .sidenote{position:static;max-height:none;box-shadow:none}
+  .stage{grid-template-columns:1fr}
+  .side{position:static;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start}
+}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms !important;animation:none !important}}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="chband">
+      <span class="num">05</span>
+      <span class="ttl"><h1 id="hTitle">소리</h1><p id="hSub"></p></span>
+    </div>
+    <div class="ctlrow">
+      <span class="zoomctl">
+        <span class="lb">글자 크기</span><span class="mini">가</span>
+        <input type="range" id="zoomR" min="100" max="230" step="5" value="140" aria-label="글자 크기">
+        <span class="maxi">가</span><b id="zoomV">140%</b>
+      </span>
+      <button class="btn sm" id="muteBtn">🔇 소리 켜기</button>
+      <input type="range" id="vol" min="0" max="100" value="18" aria-label="음량" style="width:96px">
+    </div>
+    <div class="picker" id="picker"></div>
+  </div>
+
+  <div class="stage">
+    <div>
+      <div class="runbar">
+        <button class="btn solid" id="playBtn">▶ 실행</button>
+        <button class="btn" id="stepBtn">한 줄 →</button>
+        <button class="btn" id="resetBtn">처음부터</button>
+        <button class="btn sm" id="revertBtn">원래 소스로</button>
+        <button class="btn sm" id="noteBtn">설명 보기</button>
+        <span class="sp">속도 <input type="range" id="speed" min="0" max="6" value="3" style="width:96px" aria-label="속도"> <b id="speedView">1×</b></span>
+      </div>
+      <div class="codewrap">
+        <div class="codebar">
+          <span class="fn" id="fnName">—</span>
+          <span class="st" id="stState">정지</span>
+        </div>
+        <pre class="src" id="src"></pre>
+      </div>
+    </div>
+
+    <aside class="side">
+      <div id="sideMain">
+      <div class="card">
+        <h2>하드웨어 <em id="hwName"></em></h2>
+        <div class="hw" id="hw"></div>
+      </div>
+      <div class="card editor">
+        <h2>값 편집</h2>
+        <div id="editor"><p class="none">코드 안의 <b style="color:var(--edit)">점선 상자</b>를 누르면 여기서 값을 바꿀 수 있습니다. 바꾸는 즉시 코드와 동작이 함께 달라집니다.</p></div>
+      </div>
+      <div class="card" id="traceCard" hidden>
+        <h2>반복 추적표 <em>for 한 바퀴씩</em></h2>
+        <div class="tracewrap"><table class="trace" id="traceTbl"></table></div>
+        <p class="tracehint">조건이 <b>거짓</b>이 되는 마지막 바퀴에서는 몸통이 실행되지 않습니다.</p>
+      </div>
+      <div class="card">
+        <h2>변수 감시</h2>
+        <div class="watch" id="watch"></div>
+      </div>
+      </div>
+      <div class="card sidenote" id="sideNote" hidden></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var $ = function(s){ return document.querySelector(s); };
+var $$ = function(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); };
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function hex2(v){ return "0x" + v.toString(16).padStart(2,"0"); }
+
+/* ═══ 오디오 ═══ */
+var ac=null, vol=0.18, soundOn=false, osc=null, gn=null;
+function ensureAC(){
+  if(!ac){ var C = window.AudioContext||window.webkitAudioContext; if(!C) return null; ac = new C(); }
+  if(ac.state === "suspended") ac.resume();
+  return ac;
+}
+function sndOn(f){
+  if(!soundOn) return;
+  var a = ensureAC(); if(!a) return;
+  if(osc){ osc.frequency.setTargetAtTime(f, a.currentTime, 0.008); return; }
+  osc = a.createOscillator(); gn = a.createGain();
+  osc.type = "square"; osc.frequency.value = f;
+  gn.gain.setValueAtTime(0, a.currentTime);
+  gn.gain.linearRampToValueAtTime(vol, a.currentTime + 0.015);
+  osc.connect(gn); gn.connect(a.destination); osc.start();
+}
+function sndOff(){
+  if(!osc) return;
+  try{ gn.gain.linearRampToValueAtTime(0, ac.currentTime+0.03); osc.stop(ac.currentTime+0.06); }catch(e){}
+  osc = null; gn = null;
+}
+
+/* ═══ 소리를 언제 켜고 언제 끄는가 (세 갈래) ═══
+   ① 실행 중        : 스케치가 켠 소리는 다음 줄이 바꿀 때까지 계속 울린다
+   ② 한 줄씩        : 그 줄의 소리를 BLIP_MS 만큼만 들려주고 스스로 끈다
+   ③ 직접 눌러 볼 때 : 누르고 있는 동안 울리고, 톡 눌러도 최소 PV_MIN 은 들린다
+   정지·처음부터·탭 전환·소리 끄기 는 무조건 allOff() 로 끊는다.        */
+var BLIP_MS = 900, PV_MIN = 900;
+var pvT = null, pvDown = false, pvStart = 0, pvUntil = 0, runMuted = false;
+function killT(){ if(pvT){ clearTimeout(pvT); pvT = null; } }
+function allOff(){ killT(); pvDown = false; sndOff(); }
+function pvOn(f){
+  if(!soundOn || playing || !f) return false;
+  runMuted = true;   /* 스케치 소리가 끼어들지 못하게 */
+  killT(); sndOn(f); pvDown = true; pvStart = Date.now(); pvUntil = pvStart + PV_MIN;
+  return true;
+}
+function pvOff(){
+  if(!pvDown) return;
+  pvDown = false;
+  var left = PV_MIN - (Date.now() - pvStart);
+  pvUntil = pvStart + PV_MIN;
+  killT();
+  pvT = setTimeout(function(){ pvT = null; if(!pvDown && !playing) sndOff(); }, left > 0 ? left : 0);
+}
+function pvTap(f){ if(pvOn(f)) pvOff(); }
+/* 슬라이더를 끄는 동안 음높이가 따라 바뀐다 */
+function pvSlide(f){
+  if(!soundOn || playing || !f) return;
+  runMuted = true;
+  killT(); sndOn(f); pvUntil = Date.now() + 700;
+  pvT = setTimeout(function(){ pvT = null; if(!playing && !pvDown) sndOff(); }, 700);
+}
+function pvHold(el, getF){
+  el.addEventListener("pointerdown", function(e){ e.preventDefault(); pvOn(getF(el)); });
+  ["pointerup","pointerleave","pointercancel"].forEach(function(ev){
+    el.addEventListener(ev, function(){ pvOff(); });
+  });
+}
+/* 스케치가 내는 소리 — 실행 중이면 계속, 한 줄씩이면 잠깐만 */
+function hwSound(f){
+  if(!soundOn){ allOff(); return; }
+  if(!playing && (pvDown || Date.now() < pvUntil)) return;   /* 직접 눌러 듣는 중 — 양보 */
+  if(runMuted && !playing){ killT(); sndOff(); return; }     /* 정지 상태 — 화면만 남기고 소리는 없다 */
+  if(!f){ killT(); sndOff(); return; }
+  killT(); sndOn(f);
+  if(!playing) pvT = setTimeout(function(){
+    pvT = null; if(!playing && !pvDown) sndOff();
+  }, BLIP_MS);
+}
+$("#muteBtn").addEventListener("click", function(){
+  soundOn = !soundOn;
+  this.textContent = soundOn ? "🔊 소리 끄기" : "🔇 소리 켜기";
+  this.classList.toggle("solid", soundOn);
+  if(soundOn){ ensureAC(); if(playing && M.freq) sndOn(M.freq); } else allOff();
+});
+$("#vol").addEventListener("input", function(){
+  vol = +this.value/100*0.5;
+  if(gn && ac) gn.gain.setTargetAtTime(vol, ac.currentTime, 0.02);
+});
+
+/* ═══ 스케치 정의 ═══ */
+var CH_NAME = { 5:"소리" };
+/* 여러 스케치에 공통으로 쓰는 줄 해설 */
+var G = {
+  cmt:"슬래시-별(/*)과 별-슬래시(*/) 사이는 주석입니다. 컴파일러가 무시하므로 사람이 읽을 설명을 자유롭게 적습니다.",
+  blank:"빈 줄입니다. 읽기 좋으라고 띄운 것이라 동작에는 아무 영향이 없습니다.",
+  setup:"setup 함수의 시작입니다. 전원이 켜지거나 리셋될 때 딱 한 번만 실행됩니다. 준비 작업을 여기에 씁니다.",
+  loop:"loop 함수의 시작입니다. setup 이 끝나면 이 안을 무한히 반복합니다. 전원을 끌 때까지 멈추지 않습니다.",
+  open:"여는 중괄호입니다. 짝이 되는 닫는 중괄호까지가 한 덩어리로 묶입니다.",
+  closeSetup:"setup 이 끝났습니다. 이제 loop 로 넘어가 계속 반복합니다.",
+  closeLoop:"loop 의 끝입니다. 여기에 닿으면 곧바로 loop 의 첫 줄로 되돌아갑니다.",
+  closeFor:"반복문의 끝입니다. 아직 조건이 참이면 반복문 처음으로 돌아가고, 아니면 아래로 빠져나갑니다.",
+  pinOut:"이 핀을 출력으로 쓰겠다고 알려 줍니다. ESP32 핀은 입력도 출력도 될 수 있어서 미리 정해야 합니다."
+};
+var NOTE_NM = { 262:"도", 294:"레", 330:"미", 349:"파", 392:"솔", 440:"라", 494:"시", 523:"높은도" };
+/* 주파수 → 계이름. 정확히 맞으면 이름, 조금 어긋나면 "≈이름", 표 밖이면 계이름 아님 */
+function noteOf(hz){
+  hz = +hz;
+  if(!hz) return { nm:"쉼표", kind:"rest" };
+  if(NOTE_NM[hz]) return { nm:NOTE_NM[hz], kind:"exact" };
+  var best = null, bd = 1e9;
+  Object.keys(NOTE_NM).forEach(function(k){
+    var d = Math.abs(Math.log(+k) - Math.log(hz));
+    if(d < bd){ bd = d; best = +k; }
+  });
+  var cents = Math.abs(1200*Math.log(hz/best)/Math.LN2);
+  if(cents < 45) return { nm:"≈ " + NOTE_NM[best], kind:"near" };
+  return { nm:"계이름 아님", kind:"off" };
+}
+
+var SK = {
+  buzzer: {
+    ch:5, file:"01_buzzer.ino", title:"능동 부저", hw:"buzzer", hwName:"부저 (GPIO 5)",
+    overview:{"t": "능동 부저를 <b>1초 켜고 1초 끄기</b>를 끝없이 반복합니다.", "steps": [["선언부", "부저 핀 5 를 buzzer 에 담아 둠"], ["setup()", "buzzer 핀을 출력으로"], ["loop()", "HIGH → 1초 → LOW → 1초, 반복"]], "hw": "능동 부저 — 전압만 주면 스스로 정해진 음을 냅니다. 음높이는 못 바꿉니다.", "look": "delay 두 값이 곧 울리는 길이·쉬는 길이가 되는 것을 보세요.", "oops": "LOW 를 내보내는 줄을 빼면 부저가 계속 울립니다."},
+    vars:{
+      pin:{ label:"부저를 연결한 핀", def:5, min:0, max:39, step:1 },
+      d1:{ label:"켜 두는 시간", def:1000, min:50, max:2000, step:50, unit:"ms" },
+      d2:{ label:"꺼 두는 시간", def:1000, min:50, max:2000, step:50, unit:"ms" }
+    },
+    lines:[
+      "/*", "  ESP32 올인원 키트", "  능동 부저", "*/",
+      "int buzzer = {{pin}};   // 부저를 IO{{pin}} 핀에 연결",
+      "",
+      "void setup()", "{",
+      "  pinMode(buzzer, OUTPUT);   // 핀을 출력으로 설정",
+      "}", "",
+      "void loop()", "{",
+      "  digitalWrite(buzzer, HIGH);   // HIGH 출력 → 부저 울림",
+      "  delay({{d1}});",
+      "  digitalWrite(buzzer, LOW);    // LOW 출력 → 부저 멈춤",
+      "  delay({{d2}});",
+      "}"
+    ],
+    notes:{
+      0:G.cmt, 1:G.cmt, 2:G.cmt, 3:G.cmt,
+      4:{ t:"부저를 꽂은 핀 번호 5를 <b>buzzer</b> 라는 이름에 담아 둡니다. <code>int</code> 는 정수를 담는 상자라는 뜻입니다.",
+          why:"숫자 5를 코드 곳곳에 그대로 쓰면 나중에 부저를 옮길 때 5를 전부 찾아 고쳐야 합니다. 이름을 한 번 붙여 두면 이 한 줄만 바꾸면 됩니다. 교실 자리표와 같습니다 — 자리가 바뀌어도 이름표만 옮기면 나머지 서류는 그대로 씁니다.",
+          go:"5를 다른 번호로 바꿔 보세요. 아래 <code>pinMode</code> 와 <code>digitalWrite</code> 는 한 글자도 안 고쳤는데 오른쪽 하드웨어의 핀 번호가 따라 바뀝니다.",
+          oops:"<code>int</code> 를 빼먹고 <code>buzzer = 5;</code> 라고만 쓰면 에러가 납니다. 상자를 처음 만들 때는 무엇을 담을 상자인지 반드시 밝혀야 합니다." },
+      5:G.blank, 6:G.setup, 7:G.open,
+      8:{ t:"buzzer 핀을 <b>출력</b>으로 쓰겠다고 정해 줍니다.",
+          why:"ESP32의 핀은 대부분 입력도 되고 출력도 됩니다. 문 하나를 들어오는 문으로 쓸지 나가는 문으로 쓸지 미리 정하는 것과 같습니다. 부저는 우리가 신호를 내보내는 쪽이라 OUTPUT 입니다.",
+          go:"버튼처럼 값을 읽어 오는 부품은 <code>INPUT</code> 으로 씁니다. 8장 버튼 입력에서 그렇게 합니다.",
+          oops:"이 줄을 지워도 컴파일은 됩니다. 그런데 부저가 안 울리거나 소리가 약합니다. 에러가 안 나서 원인을 찾기 어려운 실수입니다." },
+      9:G.closeSetup, 10:G.blank, 11:G.loop, 12:G.open,
+      13:{ t:"buzzer 핀에 <b>HIGH</b>(약 3.3V)를 내보냅니다. 부저가 울리기 시작합니다.",
+           why:"<code>digitalWrite</code> 는 두 가지만 할 수 있습니다 — HIGH(3.3V)와 LOW(0V). 수도꼭지를 완전히 열거나 완전히 잠그는 것과 같아 중간이 없습니다. 능동 부저는 전압만 들어오면 안에 든 회로가 알아서 정해진 음을 냅니다.",
+           go:"능동 부저로는 도레미를 연주할 수 없습니다. 음높이를 정할 방법이 없기 때문입니다. 그래서 다음 스케치 02_melody.ino 는 <code>tone()</code> 을 씁니다." },
+      14:{ t:"이 밀리초만큼 아무것도 하지 않고 기다립니다. 1000이면 1초입니다.",
+           why:"소리를 내는 것은 <code>delay</code> 가 아니라 <b>앞줄</b>입니다. 앞줄에서 이미 켜 두었기 때문에 기다리는 동안 계속 울리는 것입니다.",
+           go:"1000을 100으로 줄이면 삑삑삑 빠르게 울립니다. 위아래 두 delay 를 다르게 주면 짧게 울리고 길게 쉬는 리듬이 됩니다.",
+           oops:"<code>delay</code> 가 도는 동안 ESP32는 <b>다른 일을 전혀 못 합니다.</b> 버튼을 눌러도 반응하지 않습니다. 9장 게임 만들기에서 이 문제를 다시 만납니다." },
+      15:{ t:"<b>LOW</b>(0V)를 내보내 부저를 멈춥니다.",
+           why:"켠 것은 반드시 꺼 주어야 합니다. 이 줄이 없으면 부저가 계속 울립니다.",
+           go:"이 줄을 지우고 실행해 보세요. 아래 delay 가 있어도 소리가 끊기지 않습니다." },
+      16:{ t:"조용한 채로 기다립니다.",
+           why:"14번 줄과 짝을 이룹니다. 위는 울리는 시간, 여기는 쉬는 시간이라 둘이 합쳐 삑–쉬–삑–쉬 리듬을 만듭니다.",
+           go:"이 값만 200으로 줄여 보세요. 길게 울리고 짧게 쉬는 소리가 됩니다." },
+      17:G.closeLoop
+    },
+    prog:function*(M,V){
+      yield {ln:8, dur:0};  M.mode = "OUTPUT";
+      while(true){
+        M.buzz = 1; M.freq = 2300; yield {ln:13, dur:0};
+        yield {ln:14, dur:V.d1};
+        M.buzz = 0; M.freq = 0;    yield {ln:15, dur:0};
+        yield {ln:16, dur:V.d2};
+      }
+    },
+    watch:function(M,V){ return [["buzzer", V.pin], ["출력 상태", M.buzz ? "HIGH" : "LOW", M.buzz]]; }
+  },
+
+  melody: {
+    ch:5, file:"02_melody.ino", title:"멜로디 연주", hw:"keys", hwName:"수동 부저 (GPIO 5)",
+    overview:{"t": "<b>tone</b> 으로 도레미파솔라시를 한 음씩 0.5초 연주하고 1초 쉬기를 반복합니다.", "steps": [["선언부", "수동 부저 핀 5"], ["setup()", "핀을 출력으로"], ["loop()", "tone(주파수) → delay 를 일곱 쌍, noTone, 1초 쉼"]], "hw": "수동 부저 — 주파수를 줘야 소리가 납니다. 건반을 누르면 그 음이 울립니다.", "look": "주파수 숫자가 곧 음높이이고, 뒤의 delay 가 음 길이입니다.", "oops": "noTone 이 없으면 마지막 음이 계속 울립니다."},
+    vars:(function(){
+      var v = { pin:{ label:"부저를 연결한 핀", def:5, min:0, max:39, step:1 } };
+      [262,294,330,349,392,440,494].forEach(function(f,i){
+        v["f"+i] = { label:"제 "+(i+1)+"음의 주파수", def:f, min:100, max:1200, step:1, unit:"Hz", isNote:true };
+        v["t"+i] = { label:"제 "+(i+1)+"음의 길이", def:500, min:80, max:1200, step:20, unit:"ms" };
+      });
+      v.tEnd = { label:"쉬는 시간", def:1000, min:100, max:3000, step:100, unit:"ms" };
+      return v;
+    })(),
+    lines:(function(){
+      var L = ["/*", "  ESP32 올인원 키트", "  멜로디 연주", "*/",
+        "int beeppin = {{pin}};   // 수동 부저 핀",
+        "", "void setup()", "{", "  pinMode(beeppin, OUTPUT);", "}", "",
+        "void loop()", "{"];
+      ["도","레","미","파","솔","라","시"].forEach(function(nm,i){
+        L.push("  tone(beeppin, {{f"+i+"}});   // [[f"+i+"]]");
+        L.push("  delay({{t"+i+"}});");
+      });
+      L.push("  noTone(beeppin);   // 소리 멈춤");
+      L.push("  delay({{tEnd}});");
+      L.push("}");
+      return L;
+    })(),
+    notes:(function(){
+      var nm = ["도","레","미","파","솔","라","시"];
+      var n = { 0:G.cmt, 1:G.cmt, 2:G.cmt, 3:G.cmt,
+        4:"수동 부저를 꽂은 핀입니다. 이름만 다르고 하는 일은 01_buzzer.ino 의 buzzer 와 같습니다.",
+        5:G.blank, 6:G.setup, 7:G.open, 8:G.pinOut, 9:G.closeSetup,
+        10:G.blank, 11:G.loop, 12:G.open,
+        27:{ t:"소리를 멈춥니다.",
+             why:"<code>tone</code> 으로 켠 소리는 스스로 꺼지지 않습니다. 다른 <code>tone</code> 이 오거나 <code>noTone</code> 을 만나야 바뀝니다. 라디오를 켜 두면 끌 때까지 계속 나오는 것과 같습니다.",
+             oops:"이 줄을 지우면 마지막 <b>시</b> 가 끝없이 울립니다. 아래 delay 1초 동안에도 계속 울려서 쉬는 구간이 사라집니다. 실제 수업에서 자주 나오는 상황입니다." },
+        28:{ t:"소리 없이 이만큼 쉬었다가 loop 처음으로 돌아가 다시 도부터 연주합니다.",
+             go:"이 값을 100으로 줄이면 도레미파솔라시가 거의 끊김 없이 반복됩니다." },
+        29:G.closeLoop };
+      var hz = [262,294,330,349,392,440,494];
+      for(var i=0;i<7;i++){
+        n[13+i*2] = { t:"<b>" + nm[i] + "</b>(" + hz[i] + "Hz)를 내기 시작합니다.",
+          why:"<code>tone(핀, 주파수)</code> 는 “이 핀을 1초에 " + hz[i] + "번 흔들어라”는 뜻입니다. 부저 판이 그 횟수만큼 떨면 우리 귀에 " + nm[i] + " 로 들립니다. 소리의 높낮이는 결국 <b>1초에 몇 번 떠는가</b>입니다.",
+          go:"숫자를 두 배인 " + (hz[i]*2) + " 로 바꾸면 한 옥타브 높은 " + nm[i] + " 가 됩니다. 주파수가 두 배면 한 옥타브 위입니다.",
+          oops:"<code>tone</code> 은 소리를 <b>시작만</b> 시키고 곧바로 다음 줄로 넘어갑니다. 이 줄이 시간을 기다려 주는 것이 아닙니다. 길이는 아래 delay 가 정합니다." };
+        n[14+i*2] = { t:"이 시간 동안 앞줄에서 시작한 <b>" + nm[i] + "</b> 가 이어집니다.",
+          why:"앞줄이 소리를 켜 두었으니 기다리는 동안 계속 울립니다. 그래서 <b>delay 값이 곧 그 음의 길이</b>가 됩니다. 악보의 음표 길이에 해당합니다.",
+          go:"이 음만 200으로 줄여 보세요. 다른 음은 그대로인데 이 음만 짧아져 리듬이 생깁니다." };
+      }
+      return n;
+    })(),
+    prog:function*(M,V){
+      yield {ln:8, dur:0}; M.mode = "OUTPUT";
+      while(true){
+        for(var i=0;i<7;i++){
+          M.freq = V["f"+i]; M.buzz = 1;
+          yield {ln:13+i*2, dur:0};
+          yield {ln:14+i*2, dur:V["t"+i]};
+        }
+        M.freq = 0; M.buzz = 0;
+        yield {ln:27, dur:0};
+        yield {ln:28, dur:V.tEnd};
+      }
+    },
+    watch:function(M,V){
+      return [["beeppin", V.pin],
+              ["지금 울리는 음", M.freq ? noteOf(M.freq).nm : (M.mode ? "없음" : "정지"), !!M.freq],
+              ["지금 울리는 주파수", M.freq ? M.freq + " Hz" : "—", !!M.freq]];
+    }
+  },
+
+  mymelody: {
+    ch:5, file:"03_my_melody.ino", title:"내 멜로디", sub:"응용", hw:"seq", hwName:"수동 부저 + 16칸",
+    overview:{"t": "16칸 <b>배열</b>에 넣어 둔 음을 <b>for 문</b>으로 차례로 연주합니다. 02 스케치의 응용.", "steps": [["선언부", "melody[16] 배열, 한 음 길이 noteLen"], ["setup()", "핀을 출력으로"], ["loop()", "for 로 i=0~15 를 꺼내 tone / noTone, 끝나면 쉼"]], "hw": "수동 부저 + 16칸 시퀀서 — 칸을 누르면 배열 값이 바뀝니다.", "look": "for 세 칸과 반복 추적표, 0이면 쉼표로 가는 if / else.", "oops": "칸 번호는 0부터입니다. melody[16] 은 없는 칸입니다."},
+    vars:(function(){
+      var star = [262,262,392,392,440,440,392,0, 349,349,330,330,294,294,262,0];
+      var v = { pin:{ label:"부저를 연결한 핀", def:5, min:0, max:39, step:1 } };
+      star.forEach(function(f,i){
+        v["m"+i] = { label:"melody["+i+"] — "+(i+1)+"번째 음", def:f, min:0, max:600, step:1, isNote:true,
+                     choices:[[0,"쉼표"],[262,"도"],[294,"레"],[330,"미"],[349,"파"],[392,"솔"],[440,"라"],[494,"시"],[523,"높은도"]] };
+      });
+      v.noteLen = { label:"한 음의 길이", def:300, min:120, max:600, step:20, unit:"ms" };
+      v.rest = { label:"곡이 끝나고 쉬는 시간", def:1000, min:200, max:3000, step:100, unit:"ms" };
+      v.iStart = { label:"반복 시작값 i", def:0, min:0, max:15, step:1 };
+      v.iEnd = { label:"반복 끝 조건 i <", def:16, min:0, max:16, step:1 };
+      v.iStep = { label:"증감식 — 한 바퀴마다 i 를 얼마나", def:1, min:-1, max:3, step:1,
+                  disp:{ "-1":"i--", "1":"i++", "2":"i += 2", "3":"i += 3" },
+                  choices:[[1,"i++"],[2,"i += 2"],[3,"i += 3"],[-1,"i--"]] };
+      return v;
+    })(),
+    lines:[
+      "/*", "  ESP32 올인원 키트", "  내가 만든 멜로디 — 02_melody.ino 응용", "*/",
+      "int beeppin = {{pin}};",
+      "int melody[16] = {{{m0}}, {{m1}}, {{m2}}, {{m3}}, {{m4}}, {{m5}}, {{m6}}, {{m7}},",
+      "                  {{m8}}, {{m9}}, {{m10}}, {{m11}}, {{m12}}, {{m13}}, {{m14}}, {{m15}}};",
+      "int noteLen = {{noteLen}};   // 한 음의 길이(ms)",
+      "",
+      "void setup()", "{",
+      "  pinMode(beeppin, OUTPUT);",
+      "}", "",
+      "void loop()", "{",
+      "  for(int i={{iStart}}; i<{{iEnd}}; {{iStep}})", "  {",
+      "    if(melody[i] > 0) tone(beeppin, melody[i]);   // 소리 내기",
+      "    else noTone(beeppin);                         // 0이면 쉼표",
+      "    delay(noteLen);",
+      "  }",
+      "  noTone(beeppin);",
+      "  delay({{rest}});",
+      "}"
+    ],
+    notes:{
+      0:G.cmt, 1:G.cmt, 2:G.cmt, 3:G.cmt,
+      4:"수동 부저를 꽂은 핀입니다.",
+      5:{ t:"음 열여섯 개를 늘어놓은 <b>배열</b>입니다. 0은 쉼표입니다.",
+          why:"02_melody.ino 는 <code>tone</code> 과 <code>delay</code> 를 일곱 쌍이나 늘어놓았습니다. 음이 서른 개면 줄이 예순 개가 됩니다. 배열은 그 값들을 <b>한 줄에 모아 두고 번호로 꺼내 쓰는</b> 방법입니다. 사물함 한 칸씩에 음을 넣어 두고 0번부터 차례로 여는 셈입니다.",
+          go:"오른쪽 격자를 눌러 곡을 만들면 이 숫자들이 그 자리에서 바뀝니다.",
+          oops:"칸 번호는 <b>0부터</b> 셉니다. 첫 번째 음은 <code>melody[1]</code> 이 아니라 <code>melody[0]</code> 입니다." },
+      6:{ t:"배열의 나머지 절반입니다.",
+          why:"C에서는 배열이 길면 이렇게 여러 줄로 나눠 씁니다. 쉼표로 이어져 있으면 한 줄로 쓴 것과 <b>똑같습니다</b>. 줄바꿈은 사람이 읽기 좋으라고 넣은 것일 뿐 컴파일러는 신경 쓰지 않습니다." },
+      7:{ t:"모든 음을 같은 길이로 연주합니다.",
+           why:"02_melody.ino 는 delay 를 일곱 번 따로 적었습니다. 여기서는 한 곳에만 적어 두고 반복문이 매번 같은 값을 쓰게 했습니다. 곡 빠르기를 바꾸려면 이 한 줄만 고치면 됩니다.",
+           go:"120으로 줄이면 곡 전체가 빨라지고 600으로 올리면 느려집니다." },
+      8:G.blank, 9:G.setup, 10:G.open, 11:G.pinOut, 12:G.closeSetup,
+      13:G.blank, 14:G.loop, 15:G.open,
+      16:{ t:"반복문은 <b>세 칸</b>으로 되어 있습니다 — 초기화 · 조건 · 증감. 셋 다 눌러서 바꿔 보세요.",
+           why:"배열을 앞에서부터 하나씩 꺼내 오는 것입니다. i 가 칸 번호 역할을 합니다.",
+           oops:"<code>i&lt;16</code> 이라 i 가 16이 되면 멈춥니다. <code>i&lt;=16</code> 으로 바꾸면 없는 칸을 읽어 이상한 소리가 납니다." },
+      17:G.open,
+      18:{ t:"<code>melody[i]</code> 가 0보다 크면 그 주파수로 소리를 냅니다.",
+           why:"<code>if</code> 는 “조건이 맞을 때만 하라”는 뜻입니다. 갈림길에서 왼쪽으로 가는 길입니다.",
+           go:"실행하며 이 줄과 아래 줄 중 어디가 밝아지는지 보세요. 쉼표 칸에서는 아래로 갑니다." },
+      19:{ t:"0이면 이쪽으로 와서 소리를 끕니다.",
+           why:"<code>else</code> 는 “위 조건이 아닐 때”입니다. 이 한 줄 덕분에 곡에 <b>쉼표</b>를 넣을 수 있습니다. 소리를 안 내는 것도 음악의 일부입니다.",
+           oops:"이 줄을 지우면 쉼표 자리에서 앞 음이 계속 이어져 곡이 뭉개집니다." },
+      20:{ t:"어느 쪽으로 갔든 여기로 모여 이만큼 기다립니다.",
+           why:"if 로 갈라졌던 두 길이 다시 합쳐지는 지점입니다. 그래서 소리든 쉼표든 길이가 똑같습니다." },
+      21:G.closeFor,
+      22:{ t:"열여섯 개를 다 연주했으니 소리를 끕니다.",
+           oops:"이 줄이 없으면 마지막 음이 아래 delay 동안 계속 울려서 곡이 끝난 느낌이 나지 않습니다." },
+      23:{ t:"곡이 끝나고 쉬는 시간입니다. 지나면 처음부터 다시 연주합니다." },
+      24:G.closeLoop
+    },
+    prog:function*(M,V){
+      yield {ln:11, dur:0}; M.mode = "OUTPUT";
+      while(true){
+        M.trace = [];
+        var st = V.iStart, en = V.iEnd, sp = V.iStep, turn = 0;
+        M.i = st;
+        yield {ln:16, dur:0, phase:"init", iter:"초기화 · i = " + st + " (한 번만)"};
+        while(true){
+          turn++;
+          var ok = (M.i < en);
+          M.trace.push({ n:turn, i:M.i, cond:(M.i + " < " + en), ok:ok });
+          yield {ln:16, dur:0, phase:"cond",
+                 iter:"조건 검사 · " + M.i + " < " + en + " → " + (ok ? "참" : "거짓, 반복 끝")};
+          if(!ok) break;
+          if(turn > 20){
+            M.freq = 0; M.buzz = 0;
+            yield {ln:16, dur:600, phase:"warn",
+                   iter:"20바퀴가 넘었습니다 — 조건이 거짓이 되지 않는 끝없는 반복문입니다"};
+            break;
+          }
+          var v = (M.i >= 0 && M.i < 16) ? V["m"+M.i] : 0;
+          if(v > 0){
+            M.freq = v; M.buzz = 1;
+            yield {ln:18, dur:0, phase:"body", iter:"몸통 · melody[" + M.i + "] = " + v + " → 소리"};
+          } else {
+            M.freq = 0; M.buzz = 0;
+            yield {ln:19, dur:0, phase:"body", iter:"몸통 · melody[" + M.i + "] = 0 → 쉼표"};
+          }
+          yield {ln:20, dur:V.noteLen, phase:"body", iter:"이 시간만큼 유지"};
+          M.i += sp;
+          yield {ln:16, dur:0, phase:"inc",
+                 iter:"증감 · " + fmtVar("iStep") + " 실행 → i = " + M.i};
+        }
+        M.i = null;
+        M.freq = 0; M.buzz = 0; M.i = null;
+        yield {ln:22, dur:0};
+        yield {ln:23, dur:V.rest};
+      }
+    },
+    watch:function(M,V){
+      var n = 0;
+      for(var i=0;i<16;i++) if(V["m"+i] > 0) n++;
+      return [["i", (M.i === null || M.i === undefined) ? "—" : M.i, M.i !== null && M.i !== undefined],
+              ["지금 울리는 음", M.freq ? noteOf(M.freq).nm : (M.mode ? "쉼표" : "정지"), !!M.freq],
+              ["지금 울리는 주파수", M.freq ? M.freq + " Hz" : "—", !!M.freq],
+              ["찍은 음 개수", n + " / 16"]];
+    }
+  }
+};
+var ORDER = ["buzzer","melody","mymelody"];
+
+/* ═══ 상태 ═══ */
+var noteOpen = false, wasOpen = false;
+var cur = "buzzer", V = {}, M = {}, gen = null, live = -1, iterTxt = "", iterPhase = "", selLine = null;
+var playing = false, timer = null, speed = 1, selVar = null;
+var SPEEDS = [0.25,0.5,0.75,1,2,4,8];
+
+function sk(){ return SK[cur]; }
+function loadVars(){
+  V = {};
+  var d = sk().vars;
+  Object.keys(d).forEach(function(k){ V[k] = d[k].def; });
+}
+function resetRun(){
+  gen = null; live = -1; iterTxt = ""; selLine = null;
+  M = { buzz:0, freq:0 };
+  allOff();
+  stop();
+  paint();
+}
+function stop(){
+  playing = false;
+  if(timer){ clearTimeout(timer); timer = null; }
+  allOff(); pvUntil = 0; runMuted = true;   /* 정지 = 소리도 즉시 끊고, 다시 켜지지 않게 잠근다 */
+  $("#playBtn").textContent = "▶ 실행";
+  $("#stState").textContent = "정지";
+}
+
+/* ═══ 렌더 ═══ */
+function renderPicker(){
+  $("#picker").innerHTML = ORDER.map(function(k){
+    var s = SK[k];
+    return '<button class="pick" data-k="' + k + '" aria-pressed="' + (k===cur) + '">' +
+      '<span class="ch">0' + s.ch + '</span>' +
+      '<span class="tx"><b>' + s.title + (s.sub ? '<span class="tag">' + s.sub + '</span>' : "") +
+      '</b><span>' + s.file + '</span></span></button>';
+  }).join("");
+  $$(".pick").forEach(function(b){
+    b.addEventListener("click", function(){
+      cur = b.dataset.k;
+      document.body.dataset.ch = String(sk().ch);
+      
+      selVar = null;
+      loadVars(); gen = null; live = -1; iterTxt = ""; selLine = null;
+      M = { buzz:0, freq:0 }; allOff(); stop();
+      renderPicker(); buildHW(); renderSrc(); renderEditor(); renderWatch();
+    });
+  });
+}
+function fmtVar(k){
+  var d = sk().vars[k];
+  if(d.disp && d.disp[String(V[k])] !== undefined) return d.disp[String(V[k])];
+  return d.hex ? hex2(V[k]) : String(V[k]);
+}
+
+/* ═══ 이름 뜻풀이 — 영어 단어를 합쳐 만든 이름이 무슨 뜻인지 ═══ */
+var WORDS = {
+  "setup":["set up · 준비하다","처음 한 번만 실행"],
+  "loop":["loop · 되풀이","끝없이 반복"],
+  "void":["void · 비어 있음","돌려주는 값 없음"],
+  "int":["integer · 정수","정수를 담는 상자"],
+  "byte":["byte · 바이트","0~255를 담는 상자"],
+  "const":["constant · 변하지 않는","바꿀 수 없는 값"],
+  "char":["character · 글자","아주 작은 상자"],
+  "for":["for · ~하는 동안","정해진 횟수만큼 반복"],
+  "if":["if · 만약","조건이 맞을 때만"],
+  "else":["else · 그 밖에","조건이 아닐 때"],
+  "pinMode":["pin(핀) + mode(방식)","핀을 입력/출력으로 정함"],
+  "OUTPUT":["output · 출력","내보내는 쪽"],
+  "INPUT":["input · 입력","받아들이는 쪽"],
+  "digitalWrite":["digital + write(쓰다)","HIGH/LOW 내보내기"],
+  "digitalRead":["digital + read(읽다)","HIGH인지 LOW인지 읽기"],
+  "analogRead":["analog(연속값) + read","전압을 0~4095로 읽기"],
+  "HIGH":["high · 높음","약 3.3V"],
+  "LOW":["low · 낮음","0V"],
+  "delay":["delay · 늦춤","이 시간(ms) 기다리기"],
+  "tone":["tone · 음높이","그 주파수로 소리내기"],
+  "noTone":["no + tone","소리 멈추기"],
+  "buzzer":["buzzer · 부저","삑 소리 내는 부품"],
+  "beeppin":["beep(삑) + pin(핀)","부저를 꽂은 핀"],
+  "melody":["melody · 가락","음을 늘어놓은 것"],
+  "noteLen":["note(음) + length(길이)","한 음의 길이"],
+  "rest":["rest · 쉼표","쉬는 시간"],
+  "include":["include · 포함하다","라이브러리 끌어오기"],
+  "define":["define · 정의하다","이름을 값으로 바꿔치기"],
+  "CLK":["clock · 박자","박자를 치는 신호선"],
+  "DIO":["Data In/Out","값이 오가는 선"],
+  "DIN":["Data In","값이 들어오는 선"],
+  "CS":["Chip Select","말 걸 상대를 고르는 선"],
+  "TM1650":["칩 이름","숫자 표시기 구동 칩"],
+  "DigitalTube":["digital(숫자) + tube(관)","숫자 표시기"],
+  "clearBit":["clear(지우다) + bit(자리)","한 자리 끄기"],
+  "displayFloatNum":["display + float + number","값을 화면에 표시"],
+  "LedControl":["LED + control(조종)","매트릭스 조종 라이브러리"],
+  "lc":["LedControl 의 줄임","우리가 만든 조종기 이름"],
+  "shutdown":["shut down · 절전","false면 화면 켜기"],
+  "setIntensity":["set + intensity(세기)","밝기 0~15"],
+  "clearDisplay":["clear + display","화면 지우기"],
+  "setRow":["set + row(가로줄)","한 줄 그리기"],
+  "IMAGES":["image(그림)의 복수","그릴 모양 배열"],
+  "xht11":["센서 라이브러리","DHT11 온습도 센서"]
+};
+function wordsIn(line){
+  var found = [];
+  Object.keys(WORDS).forEach(function(k){
+    var re = new RegExp("(^|[^A-Za-z0-9_])" + k + "($|[^A-Za-z0-9_])");
+    var m = re.exec(line);
+    if(m) found.push({ k:k, at:m.index });
+  });
+  found.sort(function(a,b){ return a.at - b.at; });
+  return found.slice(0, 4);
+}
+/* 이름은 소스에서 처음 나오는 줄에서만 설명한다.
+   같은 이름을 줄마다 다시 풀어 주면 잔소리가 되어 본 설명을 밀어낸다. */
+var _firstCache = {};
+function firstMap(){
+  if(_firstCache[cur]) return _firstCache[cur];
+  var m = {}, lines = sk().lines;
+  Object.keys(WORDS).forEach(function(k){
+    var re = new RegExp("(^|[^A-Za-z0-9_])" + k + "($|[^A-Za-z0-9_])");
+    for(var i=0;i<lines.length;i++){ if(re.test(lines[i])){ m[k] = i; break; } }
+  });
+  _firstCache[cur] = m;
+  return m;
+}
+function wordsHtml(line, idx){
+  var fm = firstMap();
+  var w = wordsIn(line).filter(function(o){ return fm[o.k] === idx; });
+  if(!w.length) return "";
+  return '<div class="words">' + w.map(function(o){
+    var d = WORDS[o.k];
+    return '<div class="wd"><b>' + o.k + '</b><span>' + d[0] + '</span><em>' + d[1] + '</em></div>';
+  }).join("") + '</div>';
+}
+
+
+/* ═══ { } 짝과 범위 ═══ */
+function blocksOf(){
+  var lines = sk().lines, st = [], out = [];
+  lines.forEach(function(t,i){
+    for(var c=0;c<t.length;c++){
+      if(t[c] === "{") st.push(i);
+      else if(t[c] === "}"){ var o = st.pop(); if(o !== undefined && i > o) out.push({open:o, close:i}); }
+    }
+  });
+  return out;
+}
+function ownerOf(openIdx){
+  var t = sk().lines[openIdx].trim();
+  if(t !== "{"){ return t.replace(/\{[\s\S]*$/, "").trim() || t; }
+  for(var k=openIdx-1;k>=0;k--){ var u = sk().lines[k].trim(); if(u) return u; }
+  return "";
+}
+/* 범위 안내는 for·if 같은 제어문에만 붙인다.
+   setup()·loop() 같은 함수 몸통까지 알려 주면 줄마다 잔소리가 되어 본 설명을 밀어낸다. */
+function isCtrl(openIdx){
+  return /^(for|if|else|while|do|switch)[^A-Za-z0-9_]/.test(ownerOf(openIdx).trim() + " ");
+}
+function braceHtml(i){
+  var bs = blocksOf().filter(function(b){ return isCtrl(b.open); }), parts = [];
+  bs.forEach(function(b){
+    var own = esc(ownerOf(b.open));
+    if(b.open === i){
+      var msg = "이 줄의 <code>{</code> 는 <b>" + (b.close+1) + "번 줄</b>의 <code>}</code> 와 짝입니다.";
+      if(b.close - b.open >= 2)
+        msg += " 사이의 <b>" + (b.open+2) + "~" + b.close + "번 줄</b>이 <code>" + own + "</code> 의 몸통입니다.";
+      parts.push(msg);
+    }
+    if(b.close === i)
+      parts.push("이 <code>}</code> 는 <b>" + (b.open+1) + "번 줄</b>의 <code>{</code> 와 짝입니다. 여기서 <code>" + own + "</code> 블록이 끝납니다.");
+  });
+  bs.forEach(function(b){            // 중괄호가 다음 줄에 있는 경우(for·void 등)
+    if(b.open === i) return;
+    if(sk().lines[b.open].trim() !== "{") return;
+    for(var k=b.open-1;k>=0;k--){
+      var u = sk().lines[k].trim();
+      if(!u) continue;
+      if(k === i){
+        var m = "이 줄이 이끄는 블록은 <b>" + (b.open+1) + "번 줄 <code>{</code></b> 부터 <b>" + (b.close+1) + "번 줄 <code>}</code></b> 까지입니다.";
+        if(b.close - b.open >= 2) m += " 몸통은 <b>" + (b.open+2) + "~" + b.close + "번 줄</b>.";
+        parts.push(m);
+      }
+      break;
+    }
+  });
+  var inner = null;
+  bs.forEach(function(b){ if(b.open < i && i < b.close){ if(!inner || b.open > inner.open) inner = b; } });
+  if(inner)
+    parts.push("이 줄은 <b>" + (inner.open+1) + "~" + (inner.close+1) + "번 줄</b> 블록(<code>" +
+               esc(ownerOf(inner.open)) + "</code>) 안에 있습니다.");
+  if(!parts.length) return "";
+  return '<div class="brace"><b class="hd">{ } 범위</b><p>' + parts.join("<br>") + '</p></div>';
+}
+
+
+/* ═══ 문법 색칠 — 아두이노 IDE 와 비슷하게 ═══ */
+var TYS = "void int byte char const unsigned long float double bool boolean String".split(" ");
+var STS = "for if else return while do break continue switch case setup loop".split(" ");
+var FNS = ("pinMode digitalWrite digitalRead analogRead analogWrite ledcWrite ledcSetup ledcAttachPin "
+         + "delay delayMicroseconds tone noTone map constrain millis micros random "
+         + "attach write shutdown setIntensity clearDisplay setRow clearBit "
+         + "displayFloatNum receive begin print println").split(" ");
+var CNS = "HIGH LOW OUTPUT INPUT INPUT_PULLUP".split(" ");
+var TOKRE = /("(?:[^"\\]|\\.)*"|<[A-Za-z0-9_.\/]+>|#\w+|[A-Za-z_]\w*|0[xX][0-9a-fA-F]+|\d+)/g;
+
+function hl(seg){
+  var out = "", last = 0, m;
+  TOKRE.lastIndex = 0;
+  while((m = TOKRE.exec(seg))){
+    out += esc(seg.slice(last, m.index));
+    var w = m[0], cls = "";
+    if(w.charAt(0) === '"' || w.charAt(0) === "<") cls = "s-str";
+    else if(w.charAt(0) === "#") cls = "s-pre";
+    else if(/^[0-9]/.test(w)) cls = "s-num";
+    else if(TYS.indexOf(w) >= 0) cls = "s-ty";
+    else if(STS.indexOf(w) >= 0) cls = "s-st";
+    else if(FNS.indexOf(w) >= 0) cls = "s-fn";
+    else if(CNS.indexOf(w) >= 0) cls = "s-con";
+    out += cls ? '<span class="' + cls + '">' + esc(w) + "</span>" : esc(w);
+    last = m.index + w.length;
+  }
+  return out + esc(seg.slice(last));
+}
+/* {{변수}} · [[계이름]] 자리표시자를 살리면서 색칠한다 */
+function withPh(txt, doHl, vars){
+  var out = "", re = /\{\{(\w+)\}\}|\[\[(\w+)\]\]/g, last = 0, m;
+  while((m = re.exec(txt))){
+    var plain = txt.slice(last, m.index);
+    out += doHl ? hl(plain) : esc(plain);
+    if(m[1]){
+      var k = m[1];
+      if(!vars[k]) out += "?";
+      else {
+        var chg = V[k] !== vars[k].def;
+        out += '<button class="ed' + (chg ? " chg" : "") + (selVar === k ? " sel" : "") +
+               '" data-v="' + k + '">' + fmtVar(k) + "</button>";
+      }
+    } else {
+      var n = noteOf(V[m[2]]);
+      out += '<span class="nnm ' + n.kind + '">' + n.nm + "</span>";
+    }
+    last = re.lastIndex;
+  }
+  var tail = txt.slice(last);
+  return out + (doHl ? hl(tail) : esc(tail));
+}
+function lineHtml(t, isCmt, vars){
+  if(isCmt) return '<span class="s-cmt">' + withPh(t, false, vars) + "</span>";
+  var ci = t.indexOf("//");
+  if(ci < 0) return withPh(t, true, vars);
+  return withPh(t.slice(0, ci), true, vars) +
+         '<span class="s-cmt">' + withPh(t.slice(ci), false, vars) + "</span>";
+}
+
+function rawLine(i){
+  return sk().lines[i].replace(/\{\{(\w+)\}\}/g, function(_,k){ return fmtVar(k); })
+                      .replace(/\[\[(\w+)\]\]/g, function(_,k){ return noteOf(V[k]).nm; });
+}
+/* ═══ 스케치 전체 설명 — 제목 주석 줄을 고르거나 아무 줄도 안 골랐을 때 ═══ */
+function headerLen(){
+  var L = sk().lines; if(!/^\s*\/\*/.test(L[0] || "")) return 0;
+  var n = 0; for(var i=0;i<L.length;i++){ n++; if(L[i].indexOf("*/") >= 0) break; }
+  return n;
+}
+function overviewHtml(){
+  var ov = sk().overview;
+  if(!ov) return '<p class="ntext">이 스케치의 전체 설명이 아직 없습니다.</p>';
+  var out = '<p class="ntext">' + ov.t + '</p>';
+  if(ov.steps) out += '<div class="words">' + ov.steps.map(function(s){ return '<div class="wd"><b>' + s[0] + '</b><em>' + s[1] + '</em></div>'; }).join("") + '</div>';
+  var sub = "";
+  if(ov.hw)   sub += '<div class="nb why"><b>하드웨어</b><p>' + ov.hw + '</p></div>';
+  if(ov.look) sub += '<div class="nb try"><b>실행하며 볼 것</b><p>' + ov.look + '</p></div>';
+  if(ov.oops) sub += '<div class="nb oops"><b>자주 막히는 곳</b><p>' + ov.oops + '</p></div>';
+  return out + (sub ? '<div class="nsub">' + sub + '</div>' : "");
+}
+function renderSideNote(){
+  var box = $("#sideNote");
+  ["#noteBtn","#noteBtnTop"].forEach(function(sel){
+    var b = $(sel); if(!b) return;
+    b.textContent = noteOpen ? "설명 닫기" : "설명 보기";
+    b.classList.toggle("noteon", noteOpen);
+  });
+  if(!noteOpen){ box.hidden = true; wasOpen = false; return; }
+  box.hidden = false;
+  if(!wasOpen){                      // 막 열렸다면 코드 패널을 화면 맨 위로
+    wasOpen = true;
+    var st = document.querySelector(".stage");
+    if(st){
+      var y = st.getBoundingClientRect().top + window.pageYOffset - 6;
+      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+    }
+  }
+  var show = (selLine !== null) ? selLine : live;
+  if(show < 0 || show < headerLen()){
+    box.innerHTML = '<div class="nhead"><span class="nno">' + (show < 0 ? '이 스케치는' : (show+1) + '번 줄 · 스케치 전체 설명') + '</span>' +
+      '<span class="ntag">' + esc(sk().file) + '</span>' +
+      '<button class="nclose" id="nclose">닫기</button></div>' + overviewHtml() +
+      (show < 0 ? '<p class="ntext" style="font-size:15px;color:var(--muted);padding-top:0">왼쪽 소스의 아무 줄이나 누르면 그 줄의 설명으로 바뀝니다. 실행 중에는 지나가는 줄을 따라옵니다.</p>' : '');
+  } else {
+    var raw = rawLine(show).trim();
+    box.innerHTML = '<div class="nhead"><span class="nno">' + (show+1) + '번 줄 설명</span>' +
+      '<span class="ntag">' + (selLine !== null ? "직접 고른 줄" : "지금 실행 중") + '</span>' +
+      '<button class="nclose" id="nclose">닫기</button></div>' +
+      (raw ? '<code class="ncode">' + esc(raw) + '</code>' : '') +
+      wordsHtml(raw, show) +
+      braceHtml(show) +
+      noteBody(sk().notes[show]);
+  }
+  var c = $("#nclose");
+  if(c) c.addEventListener("click", function(){ noteOpen = false; renderSrc(); });
+}
+function noteBody(nt){
+  if(!nt) return '<p class="ntext">이 줄에는 따로 설명이 없습니다.</p>';
+  if(typeof nt === "string") return '<p class="ntext">' + nt + '</p>';
+  var out = '<p class="ntext">' + nt.t + '</p>', sub = "";
+  if(nt.why)  sub += '<div class="nb why"><b>왜 이렇게 쓸까</b><p>' + nt.why + '</p></div>';
+  if(nt.go)   sub += '<div class="nb try"><b>바꿔 보기</b><p>' + nt.go + '</p></div>';
+  if(nt.oops) sub += '<div class="nb oops"><b>자주 하는 실수</b><p>' + nt.oops + '</p></div>';
+  return out + (sub ? '<div class="nsub">' + sub + '</div>' : "");
+}
+function renderSrc(){
+  $("#fnName").textContent = sk().file;
+  $("#hwName").textContent = sk().hwName;
+  $("#hTitle").textContent = CH_NAME[sk().ch];
+  $("#hSub").textContent = sk().title + (sk().sub ? " (" + sk().sub + ")" : "") + " · " + sk().file;
+  var vars = sk().vars;
+  var _rows = sk().lines.map(function(t,i){
+    var isCmt = /^\s*(\/\*|\*|\/\/)/.test(t) || i===1 || i===2;
+    var body = lineHtml(t, isCmt, vars);
+    var cls = "ln" + (isCmt ? " cmt" : "") +
+              (i===live ? " live" : "") + (i===selLine ? " sel" : "");
+    return '<div class="' + cls + '" id="L' + i + '" data-l="' + i + '" tabindex="0" role="button"><i>' + (i+1) + '</i><code>' + (body||" ") +
+           (i===live && iterTxt ? '<span class="iter ph-' + iterPhase + '">' + esc(iterTxt) + '</span>' : "") + '</code></div>';
+  });
+  $("#src").innerHTML = _rows.join("");
+  $$(".ed").forEach(function(b){
+    b.addEventListener("click", function(ev){
+      ev.stopPropagation();
+      selVar = b.dataset.v; selLine = +b.parentNode.parentNode.dataset.l;
+      renderSrc(); renderEditor();
+    });
+  });
+  $$("#src .ln").forEach(function(el){
+    el.addEventListener("click", function(){ selLine = +el.dataset.l; renderSrc(); });
+    el.addEventListener("keydown", function(ev){
+      if(ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); selLine = +el.dataset.l; renderSrc(); }
+    });
+  });
+  var el = document.getElementById("L" + live);
+  if(el && speed <= 2){
+    var box = $("#src");
+    var top = el.offsetTop - box.clientHeight/2;
+    if(box.scrollHeight > box.clientHeight) box.scrollTop = Math.max(0, top);
+  }
+  var _cc = 0, _vd = sk().vars;
+  Object.keys(_vd).forEach(function(k){ if(V[k] !== _vd[k].def) _cc++; });
+  $("#revertBtn").textContent = _cc ? "원래 소스로 (" + _cc + "곳 바뀜)" : "원래 소스로";
+  $("#revertBtn").classList.toggle("dim", _cc === 0);
+  renderSideNote();
+}
+function renderEditor(){
+  var box = $("#editor");
+  if(!selVar || !sk().vars[selVar]){
+    box.innerHTML = '<p class="none">코드 안의 <b style="color:var(--edit)">점선 상자</b>를 누르면 여기서 값을 바꿀 수 있습니다. 바꾸는 즉시 코드와 동작이 함께 달라집니다.</p>';
+    return;
+  }
+  var d = sk().vars[selVar];
+  function curHtml(){ return fmtVar(selVar) + (d.unit ? '<small>' + d.unit + '</small>' : ""); }
+  function noteRow(){
+    if(!d.isNote) return "";
+    var n = noteOf(V[selVar]);
+    return '계이름 <b>' + (n.kind === "off" ? "없음" : n.nm) + '</b>' +
+      (n.kind === "off" ? '<em>— 도레미 표에 없는 높이입니다</em>' :
+       n.kind === "near" ? '<em>— 살짝 어긋났습니다</em>' : "");
+  }
+  function noteCls(){ return "nrow " + (d.isNote ? noteOf(V[selVar]).kind : ""); }
+  var head =
+    '<div class="edrow">' +
+      '<span class="vn">' + selVar + '</span>' +
+      '<span class="vl">' + d.label + '</span>' +
+      '<span class="cur" id="curV">' + curHtml() + '</span>' +
+    '</div>' +
+    (d.isNote ? '<p class="' + noteCls() + '" id="nrow">' + noteRow() + '</p>' : "") +
+    '<button class="defbtn" id="defBtn"' + (V[selVar] === d.def ? ' disabled' : '') +
+      '>기본값으로 되돌리기 <b>' + (d.hex ? hex2(d.def) : d.def) + '</b></button>';
+  function bindDef(){
+    var db = $("#defBtn");
+    if(!db) return;
+    db.addEventListener("click", function(){
+      V[selVar] = d.def;
+      renderSrc(); renderEditor(); paintHW(); renderWatch();
+    });
+  }
+  if(d.choices){
+    box.innerHTML = head + '<div class="chz">' + d.choices.map(function(c){
+      return '<button data-c="' + c[0] + '"' + (V[selVar] === c[0] ? ' class="on"' : "") + '>' + c[1] + '</button>';
+    }).join("") + '</div>';
+    bindDef();
+    $$("#editor .chz button").forEach(function(b){
+      b.addEventListener("click", function(){
+        V[selVar] = +b.dataset.c;
+        if(d.isNote) pvTap(V[selVar]);
+        renderSrc(); renderEditor(); paintHW(); renderWatch();
+      });
+    });
+    return;
+  }
+  box.innerHTML = head +
+    '<input type="range" id="varRange" min="' + d.min + '" max="' + d.max + '" step="' + (d.step||1) + '" value="' + V[selVar] + '">';
+  bindDef();
+  $("#varRange").addEventListener("input", function(){
+    V[selVar] = +this.value;
+    $("#curV").innerHTML = curHtml();
+    var nr = $("#nrow");
+    if(nr){ nr.className = noteCls(); nr.innerHTML = noteRow(); }
+    var db2 = $("#defBtn");
+    if(db2) db2.disabled = (V[selVar] === d.def);
+    renderSrc(); paintHW(); renderWatch();
+    if(d.isNote) pvSlide(V[selVar]);
+  });
+}
+function renderWatch(){
+  var rows = sk().watch(M, V);
+  $("#watch").innerHTML = rows.map(function(r){
+    return '<div><span class="k">' + r[0] + '</span><span class="v' + (r[2]?" hot":"") + '">' + r[1] + '</span></div>';
+  }).join("");
+}
+
+/* 하드웨어 */
+var SEG = { 0:"abcdef",1:"bc",2:"abdeg",3:"abcdg",4:"bcfg",5:"acdfg",6:"acdefg",7:"abc",8:"abcdefg",9:"abcdfg" };
+function buildHW(){
+  var h = sk().hw, el = $("#hw");
+  if(h === "buzzer"){
+    el.innerHTML = '<button class="buzzer" id="bz"><span class="rip"></span>🔊</button>' +
+      '<p class="hwlab" id="bzl"></p>' +
+      '<p class="hwtip">부저를 <b>누르고 있으면</b> 그동안 계속 울립니다 · 톡 눌러도 잠깐 들립니다</p>';
+    var bzb = $("#bz");
+    bzb.addEventListener("click", function(){ if(!soundOn) needSound(); });
+    pvHold(bzb, function(){ return 2300; });
+  } else if(h === "keys"){
+    el.innerHTML = '<div class="keys" id="kys">' +
+      [262,294,330,349,392,440,494].map(function(f){
+        return '<div class="kk" data-f="' + f + '">' + NOTE_NM[f] + '<span>' + f + '</span></div>';
+      }).join("") + '</div><p class="hwlab" id="kyl"></p>' +
+      '<p class="hwtip">건반을 <b>누르고 있으면</b> 그 음이 계속 울립니다 · 두 건반을 번갈아 눌러 높낮이를 견줘 보세요</p>';
+    $$("#kys .kk").forEach(function(k, ki){
+      k.addEventListener("click", function(){
+        // 소리가 꺼져 있어도 해당 주파수 값은 고를 수 있어야 한다
+        if(sk().vars["f" + ki]){ selVar = "f" + ki; renderSrc(); renderEditor(); }
+        if(!soundOn) needSound();
+      });
+      pvHold(k, function(el){ return +el.dataset.f; });
+    });
+  } else if(h === "seq"){
+    var SCALE = [523,494,440,392,349,330,294,262];
+    el.innerHTML = '<div class="seqg" id="sq" style="grid-template-columns:26px repeat(16,1fr)">' +
+      SCALE.map(function(f){
+        var row = '<span class="sqr">' + NOTE_NM[f] + '</span>';
+        for(var s=0;s<16;s++) row += '<button class="sqc" data-f="' + f + '" data-s="' + s + '"></button>';
+        return row;
+      }).join("") + '</div>' +
+      '<p class="hwlab" id="sql"></p>' +
+      '<p class="hint">칸을 눌러 곡을 만들면 <b>5~6번 줄의 melody 배열</b>이 그 자리에서 바뀝니다.</p>';
+    $$("#sq .sqc").forEach(function(b){
+      b.addEventListener("click", function(){
+        var f = +b.dataset.f, s = +b.dataset.s;
+        V["m"+s] = (V["m"+s] === f) ? 0 : f;
+        selVar = "m"+s;
+        if(V["m"+s]) pvTap(f);
+        renderSrc(); renderEditor(); paintHW(); renderWatch();
+      });
+    });
+  } else if(h === "seg7"){
+    el.innerHTML = '<div class="seg7" id="sg">' + [0,1,2,3].map(function(i){
+      return '<div class="digit" id="dg' + i + '">' + "abcdefg".split("").map(function(s){
+        return '<i class="' + s + '"></i>'; }).join("") + '</div>';
+    }).join("") + '</div>';
+  } else {
+    el.innerHTML = '<div class="matrix" id="mx">' + Array.from({length:64},function(_,i){
+      return '<button data-i="' + i + '"></button>'; }).join("") + '</div>' +
+      '<p class="hint">매트릭스를 눌러 그림을 그리면 <b>10번 줄의 IMAGES 값</b>이 그 자리에서 바뀝니다.</p>';
+    $$("#mx button").forEach(function(b){
+      b.addEventListener("click", function(){
+        var i = +b.dataset.i, r = (i/8)|0, c = i%8;
+        V["b"+r] ^= (1 << (7-c));
+        selVar = "b"+r;
+        renderSrc(); renderEditor(); paintHW();
+      });
+    });
+  }
+  paintHW();
+}
+function paintHW(){
+  var h = sk().hw;
+  if(h === "buzzer"){
+    var bz = $("#bz"); if(!bz) return;
+    bz.classList.toggle("on", !!M.buzz);
+    $("#bzl").innerHTML = M.buzz ? '<b>울리는 중</b> · GPIO ' + V.pin + ' = HIGH' : '조용함 · GPIO ' + V.pin + ' = LOW';
+  } else if(h === "keys"){
+    $$("#kys .kk").forEach(function(k){ k.classList.remove("on"); });
+    if(M.freq){
+      var best = null, bd = 1e9;
+      $$("#kys .kk").forEach(function(k){
+        var d = Math.abs(+k.dataset.f - M.freq);
+        if(d < bd){ bd = d; best = k; }
+      });
+      if(best && bd < 12) best.classList.add("on");
+      $("#kyl").innerHTML = '<b>' + M.freq + ' Hz</b> 울리는 중';
+    } else $("#kyl").textContent = "noTone — 소리 없음";
+    hwSound(M.freq);
+  } else if(h === "seq"){
+    var sq = $("#sq"); if(!sq) return;
+    $$("#sq .sqc").forEach(function(b){
+      var f = +b.dataset.f, s = +b.dataset.s;
+      b.classList.toggle("on", V["m"+s] === f);
+      b.classList.toggle("now", M.i === s);
+    });
+    $("#sql").innerHTML = M.freq ? '<b>' + M.freq + ' Hz</b> · ' + (NOTE_NM[M.freq]||"-")
+      : (M.i === null || M.i === undefined ? "정지" : "쉼표");
+    hwSound(M.freq);
+  } else if(h === "seg7"){
+    var s = (M.num === undefined) ? "    " : String(M.num).padStart(4," ");
+    for(var i=0;i<4;i++){
+      var blank = (M.seg && M.seg[i] === null && M.num === undefined);
+      var ch = s[i], on = (blank || ch === " ") ? "" : SEG[+ch];
+      "abcdefg".split("").forEach(function(sg){
+        var e = $("#dg"+i+" ."+sg); if(e) e.classList.toggle("on", on.indexOf(sg) >= 0);
+      });
+    }
+  } else {
+    var mx = $("#mx"); if(!mx) return;
+    var rows = M.rows || [0,0,0,0,0,0,0,0];
+    var alpha = 0.28 + (M.intens === undefined ? 8 : M.intens)/15*0.72;
+    for(var r=0;r<8;r++) for(var c=0;c<8;c++){
+      var b = mx.children[r*8+c];
+      var lit = ((rows[r] >> (7-c)) & 1) === 1;
+      b.classList.toggle("on", lit);
+      b.style.opacity = lit ? alpha.toFixed(2) : "1";
+      b.classList.toggle("wr", M.wr === r);
+    }
+  }
+  if(h === "buzzer") hwSound(M.buzz ? 2300 : 0);
+}
+function renderTrace(){
+  var card = $("#traceCard"), tbl = $("#traceTbl");
+  if(!card || !tbl) return;
+  var tr = M.trace;
+  if(!tr || !tr.length){ card.hidden = true; return; }
+  card.hidden = false;
+  tbl.innerHTML = "<tr><th>바퀴</th><th>i</th><th>조건</th><th>몸통</th></tr>" +
+    tr.slice(-9).map(function(r){
+      return '<tr class="' + (r.ok ? "" : "no") + '"><td>' + r.n + '</td>' +
+        '<td class="iv">' + r.i + '</td>' +
+        '<td>' + r.cond + '</td>' +
+        '<td class="' + (r.ok ? "ok" : "no") + '">' + (r.ok ? "실행" : "건너뜀") + '</td></tr>';
+    }).join("");
+}
+function paint(){ renderSrc(); paintHW(); renderWatch(); renderTrace(); }
+
+/* ═══ 실행 ═══ */
+function stepOnce(){
+  runMuted = false;                 /* 한 줄 실행하면 그 줄의 소리는 들려준다 */
+  if(!gen) gen = sk().prog(M, V);
+  var r = gen.next();
+  if(r.done){ gen = null; return 0; }
+  live = r.value.ln;
+  iterTxt = r.value.iter || "";
+  iterPhase = r.value.phase || "";
+  paint();
+  return r.value.dur || 0;
+}
+["#noteBtn","#noteBtnTop"].forEach(function(sel){
+  var b = $(sel);
+  if(b) b.addEventListener("click", function(){ noteOpen = !noteOpen; renderSrc(); });
+});
+$("#stepBtn").addEventListener("click", function(){ stop(); selLine = null; stepOnce(); });
+$("#resetBtn").addEventListener("click", function(){ resetRun(); });
+$("#revertBtn").addEventListener("click", function(){
+  loadVars(); selVar = null; renderSrc(); renderEditor(); paintHW(); renderWatch();
+});
+$("#playBtn").addEventListener("click", function(){
+  if(playing){ stop(); paint(); return; }
+  playing = true; selLine = null; pvUntil = 0; pvDown = false; runMuted = false;
+  this.textContent = "■ 정지";
+  $("#stState").innerHTML = "<b>실행 중</b>";
+  (function run(){
+    if(!playing) return;
+    var d = stepOnce();
+    timer = setTimeout(run, Math.max(90, d/speed || 260/speed));
+  })();
+});
+$("#speed").addEventListener("input", function(){
+  speed = SPEEDS[+this.value];
+  $("#speedView").textContent = speed + "×";
+});
+
+/* ═══ 글자 크기 ═══ */
+function setZoom(pct, save){
+  pct = Math.max(100, Math.min(230, Math.round(pct/5)*5));
+  document.documentElement.style.setProperty("--zoom", pct/100);
+  $("#zoomR").value = pct;
+  $("#zoomV").textContent = pct + "%";
+  if(save){ try{ localStorage.setItem("stepZoom5", pct); }catch(e){} }
+}
+$("#zoomR").addEventListener("input", function(){ setZoom(+this.value, true); });
+(function(){
+  var z = 140;
+  try{ z = +localStorage.getItem("stepZoom5") || 140; }catch(e){}
+  setZoom(z, false);
+})();
+
+/* ═══ 시작 ═══ */
+document.body.dataset.ch = "5";
+loadVars();
+renderPicker();
+buildHW();
+resetRun();
+renderEditor();
+})();
+</script>
+<!--/ART-->
+</body>
+</html>

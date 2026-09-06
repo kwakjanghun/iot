@@ -1,0 +1,1913 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<!--ART-->
+<!-- design-family: playful-modules -->
+<title>08장 버튼 입력 소스 실행기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gothic+A1:wght@400;600;800&family=Nanum+Gothic+Coding:wght@400;700&display=swap">
+<style>
+/* D2Coding — 설치되어 있으면 그것을 쓰고, 없으면 내려받아 씁니다. */
+@font-face{
+  font-family:'D2Coding';font-style:normal;font-weight:400;font-display:swap;
+  src:local('D2Coding'),local('D2Coding Regular'),
+      url('https://cdn.jsdelivr.net/gh/wan2land/d2coding@master/fonts/d2coding-full.woff2') format('woff2');
+}
+@font-face{
+  font-family:'D2Coding';font-style:normal;font-weight:700;font-display:swap;
+  src:local('D2Coding Bold'),
+      url('https://cdn.jsdelivr.net/gh/wan2land/d2coding@master/fonts/d2coding-bold-full.woff2') format('woff2');
+}
+</style>
+<style>
+/* ART DIRECTION — 누르는 물건들. 상아색 작업판 위에 놓인 두툼한 모듈, 눌리는 단추의 두꺼운 밑그림자,
+   세 단추 색(빨강·노랑·초록)이 곧 이 장의 색. 소스는 아두이노 IDE 와 똑같은 밝은 편집기 색.
+   이 페이지는 밝은 한 가지 모습으로만 그린다(테마 전환 없음). */
+:root{
+  --paper:#F6EFDD; --module:#FFFDF8; --module-2:#F1EAD8; --ink:#1E2430; --ink-2:#4A5262; --muted:#767E8C;
+  --rule:#D9CFB6; --rule-2:#E8DFC8; --shadow:#C9BC9C;
+  --red:#E4572E; --yellow:#F2B705; --green:#2E9E5B; --red-2:#B93F1C; --green-2:#227A45;
+  --accent:var(--red); --accent-2:var(--red-2); --soft:rgba(228,87,46,.12);
+  --led:#FF3B2A; --led-off:#7A3A34; --ok:var(--green); --warn:#B07A00; --edit:#B93F1C;
+  --note:#2F6FD0; --note-soft:rgba(47,111,208,.11); --note-bg:#F5F9FF; --note-line:#C9DAF5;
+  /* 아두이노 IDE 밝은 편집기 색 */
+  --code-bg:#FFFFFF; --code-fg:#2B2B2B; --code-dim:#8C8C8C; --code-gutter:#B8B8B8;
+  --font-disp:"Jua","Gothic A1","Malgun Gothic",sans-serif;
+  --font-ui:"Gothic A1","Malgun Gothic",system-ui,sans-serif;
+  --font-code:"D2Coding","D2Coding ligature","Nanum Gothic Coding",ui-monospace,monospace;
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-ui);font-weight:400;font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
+h1,h2,h3,p,dl,dd,ul,pre{margin:0}
+ul{padding:0;list-style:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 18px 50px;zoom:var(--zoom,1)}
+
+/* ── 머리 : 큰 키캡 숫자 + 제목, 오른쪽에 글자 크기 ── */
+.plate{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:18px 0 14px}
+.plate .chno{font-family:var(--font-disp);font-size:44px;line-height:1;color:#fff;background:var(--red);border-radius:18px;padding:14px 20px 12px;box-shadow:0 7px 0 var(--red-2);flex:none}
+.plate .ttl h1{font-family:var(--font-disp);font-size:36px;line-height:1.1;color:var(--ink);font-weight:400}
+.plate .ttl p{font-size:15px;color:var(--muted);font-family:var(--font-code);margin-top:4px}
+.plate .ttl p b{color:var(--red-2);font-weight:700}
+.zoomctl{margin-left:auto;display:flex;align-items:center;gap:8px;border:2px solid var(--rule);border-radius:14px;padding:7px 13px;background:var(--module)}
+.zoomctl .lb{font-size:14px;color:var(--muted)}
+.zoomctl .mini{font-family:var(--font-disp);font-size:12px;color:var(--muted);line-height:1}
+.zoomctl .maxi{font-family:var(--font-disp);font-size:21px;color:var(--muted);line-height:1}
+.zoomctl input[type=range]{width:150px;flex:none}
+.zoomctl b{font-family:var(--font-code);font-size:15px;color:var(--red-2);min-width:52px;text-align:right}
+
+/* ── 징검다리 : 스케치 4개를 순서대로 밟아 간다 ── */
+.rail{display:flex;gap:14px;align-items:stretch;margin-bottom:16px;position:relative}
+.rail::before{content:"";position:absolute;left:30px;right:30px;top:50%;border-top:3px dashed var(--rule);z-index:0}
+.rail .rl{display:none}
+.pick{position:relative;z-index:1;flex:1;display:flex;align-items:center;gap:12px;padding:10px 16px 10px 12px;background:var(--module);border:2px solid var(--rule);border-radius:16px;box-shadow:0 5px 0 var(--shadow);transition:transform .1s,box-shadow .1s,border-color .1s}
+.pick:nth-child(odd){transform:translateY(-3px)}
+.pick:hover{border-color:var(--green)}
+.pick:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow)}
+.pick .ch{display:none}
+.pick .tx .no{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:var(--module-2);color:var(--ink-2);font-family:var(--font-disp);font-size:16px;margin-right:10px;vertical-align:middle;flex:none}
+.pick .tx{display:flex;align-items:center;flex-wrap:wrap}
+.pick .tx b{font-family:var(--font-disp);font-size:18px;font-weight:400;line-height:1.2;color:var(--ink)}
+.pick .tx > span:last-child{display:block;width:100%;font-family:var(--font-code);font-size:13px;color:var(--muted);line-height:1.4;margin-top:2px;padding-left:44px}
+.pick[aria-pressed="true"]{border-color:var(--green);background:#EAF7EE;box-shadow:0 5px 0 var(--green-2)}
+.pick[aria-pressed="true"] .tx .no{background:var(--green);color:#fff}
+.pick .tag{font-size:11.5px;color:var(--red-2);border:1.5px solid var(--red);border-radius:6px;padding:0 5px;margin-left:6px;font-family:var(--font-ui);vertical-align:middle}
+
+/* ── 2열 : 소스 | 모듈 ── */
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:18px;align-items:start}
+
+/* ── 실행 바 ── */
+.runbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 12px;background:var(--module);border:2px solid var(--rule);border-radius:16px;margin-bottom:12px;position:sticky;top:8px;z-index:20;box-shadow:0 6px 0 var(--shadow)}
+.btn{padding:9px 16px;border:2px solid var(--rule);border-radius:12px;background:var(--module);font-size:15px;font-weight:600;color:var(--ink);box-shadow:0 3px 0 var(--shadow);transition:transform .08s,box-shadow .08s,border-color .1s}
+.btn:hover{border-color:var(--green);color:var(--green-2)}
+.btn:active{transform:translateY(3px);box-shadow:0 0 0 var(--shadow)}
+.btn.solid{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 3px 0 var(--green-2)}
+.btn.solid:hover{background:#35B168;color:#fff}
+.btn.sm{padding:7px 12px;font-size:13.5px}
+.btn.dim{opacity:.45}
+.btn.noteon{background:var(--note);border-color:var(--note);color:#fff;box-shadow:0 3px 0 #1F4E9E}
+.runbar .sp{margin-left:auto;display:flex;align-items:center;gap:9px;font-size:14px;color:var(--muted)}
+.runbar .sp b{font-family:var(--font-code);color:var(--ink-2);min-width:42px;display:inline-block;font-size:16px}
+
+/* ── 소스 : 아두이노 IDE 밝은 편집기 ── */
+.codewrap{min-width:0;background:var(--code-bg);border:2px solid var(--rule);border-radius:16px;overflow:hidden;box-shadow:0 6px 0 var(--shadow)}
+.codebar{display:flex;align-items:center;gap:9px;padding:9px 16px;background:#E8F3EE;border-bottom:2px solid #CFE3D8}
+.codebar .fn{font-family:var(--font-code);font-size:15px;color:#1B6B45;margin-right:auto;font-weight:700}
+.codebar .st{font-size:13.5px;color:#4A5262;font-family:var(--font-code)}
+.codebar .st b{color:var(--red-2)}
+pre.src{font-family:var(--font-code);font-size:15.5px;line-height:1.9;padding:10px 0 16px;overflow-x:auto;scrollbar-gutter:stable;color:var(--code-fg)}
+.ln{display:flex;gap:13px;padding:0 16px 0 8px;position:relative;cursor:pointer}
+.ln:hover{background:#F6F6F2}
+.ln > i{width:28px;flex:none;text-align:right;color:var(--code-gutter);font-style:normal;font-variant-numeric:tabular-nums;user-select:none;background:#F3F3F1;padding-right:8px;margin-right:4px}
+.ln > code{white-space:pre;font-family:inherit}
+.ln.cmt > code{color:var(--code-dim)}
+.ln.live{background:#FFF3C4}
+.ln.live > i{color:var(--red-2);font-weight:700;background:#FFE58A}
+.ln.live::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--red)}
+.ln.sel{background:#E4EEFF;box-shadow:inset 5px 0 0 var(--note)}
+.ln.sel > i{color:var(--note);font-weight:700}
+.ln .iter{position:absolute;right:10px;top:50%;transform:translateY(-50%);max-width:58%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:1px 8px;border-radius:4px;color:var(--red-2);font-size:14px;margin-left:12px;font-weight:700;background:#fff;border-radius:6px;padding:0 6px}
+.ln .iter.ph-init{color:#3F7A12}
+.ln .iter.ph-cond{color:#1F5CC4}
+.ln .iter.ph-body{color:#8A5A00}
+.ln .iter.ph-inc{color:#C4520F}
+.ln .iter.ph-warn{color:#C81E1E}
+/* 아두이노 IDE 색 그대로 */
+.ln .s-ty {color:#CC6600}                 /* 자료형 */
+.ln .s-st {color:#5E6D03}                 /* 구조 */
+.ln .s-fn {color:#00979C}                 /* 내장 함수 */
+.ln .s-con{color:#006699;font-weight:700} /* 상수 */
+.ln .s-str{color:#005C5F}
+.ln .s-num{color:#2B2B2B}
+.ln .s-pre{color:#5E6D03}
+.ln .s-cmt{color:#8C8C8C}
+.ln.live .s-cmt{color:#6B6B6B}
+.ed{font-family:inherit;font-size:inherit;color:var(--edit);background:#FFF0E8;border:1.5px dashed #E9A08A;border-radius:6px;padding:0 5px;line-height:1.35;cursor:pointer;transition:all .14s}
+.ed:hover{background:#FFDCCB;border-style:solid}
+.ed.chg{color:#7A4B00;background:#FFE58A;border-color:#E0B23A;font-weight:700}
+.ed.sel{outline:2px solid var(--red);outline-offset:1px}
+
+/* ── 모듈 (오른쪽) ── */
+.side{display:flex;flex-direction:column;gap:14px;position:sticky;top:86px}
+#sideMain{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--module);border:2px solid var(--rule);border-radius:18px;padding:14px 16px 16px;box-shadow:0 5px 0 var(--shadow)}
+.card > h2{font-family:var(--font-disp);font-size:20px;font-weight:400;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--ink)}
+.card > h2 em{font-style:normal;font-size:13.5px;color:var(--muted);font-family:var(--font-code);margin-left:auto;font-weight:400}
+
+/* 설명 창 — 오른쪽 카드 위에 덮이는 레이어 (장 색을 쓰지 않는다) */
+.card.sidenote{padding:0 !important;overflow:hidden;border:2px solid var(--note-line) !important;border-left:7px solid var(--note) !important;background:var(--note-bg) !important;position:absolute;left:0;right:0;top:0;z-index:6;min-height:100%;max-height:calc((100vh - 104px) / var(--zoom,1));overflow-y:auto;overscroll-behavior:contain;box-shadow:0 18px 46px -14px rgba(60,40,10,.45), 0 0 0 1px rgba(60,40,10,.06)}
+.sidenote .nhead{display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding:12px 16px;background:var(--note-soft);border-bottom:2px solid var(--note-line)}
+.sidenote .nno{font-family:var(--font-disp);font-size:20px;color:var(--note)}
+.sidenote .ntag{font-size:13px;color:var(--muted)}
+.sidenote .nclose{margin-left:auto;font-size:13.5px;color:var(--note);border:2px solid var(--note);border-radius:10px;padding:4px 12px;background:#fff}
+.sidenote .nclose:hover{background:var(--note);color:#fff}
+.sidenote .ncode{display:block;margin:12px 16px 0;font-family:var(--font-code);font-size:15px;color:var(--ink);background:#fff;border:1.5px solid var(--rule);border-radius:8px;padding:8px 11px;overflow-x:auto;white-space:pre}
+.sidenote .ntext{padding:13px 16px 4px;font-size:17.5px;color:var(--ink);line-height:1.75}
+.sidenote .ntext b{font-weight:800}
+.sidenote .nsub{display:flex;flex-direction:column;gap:10px;padding:11px 16px 17px}
+.nb{border-radius:12px;padding:12px 15px;background:#fff;border:1.5px solid var(--rule-2)}
+.nb b{display:block;font-family:var(--font-disp);font-size:15px;font-weight:400;margin-bottom:5px}
+.nb p{font-size:16px;line-height:1.78;color:var(--ink-2)}
+.nb.why{border-left:5px solid var(--note)} .nb.why b{color:var(--note)}
+.nb.try{border-left:5px solid var(--green)} .nb.try b{color:var(--green-2)}
+.nb.oops{border-left:5px solid var(--red)} .nb.oops b{color:var(--red-2)}
+.nb code,.ntext code{font-family:var(--font-code);font-size:15px;background:#F3F3F1;border:1px solid var(--rule);border-radius:6px;padding:1px 6px;color:#1B4F8A}
+.words{padding:11px 16px 2px;display:flex;flex-direction:column;gap:2px}
+.wd{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;padding:4px 0;border-bottom:1.5px dotted var(--rule)}
+.wd:last-child{border-bottom:0}
+.wd b{font-family:var(--font-code);font-size:16.5px;color:var(--note);flex:none}
+.wd span{font-size:14.5px;color:var(--muted);flex:none}
+.wd em{font-style:normal;font-size:16px;color:var(--ink)}
+.brace{margin:11px 16px 0;padding:12px 15px;border-radius:12px;background:#FFF8E1;border-left:5px solid var(--yellow)}
+.brace b.hd{display:block;font-family:var(--font-disp);font-size:15px;color:var(--warn);margin-bottom:4px}
+.brace p{font-size:16px;line-height:1.8;color:var(--ink-2)}
+.brace code{font-family:var(--font-code);font-size:15px;color:var(--ink);background:#fff;border:1px solid var(--rule);border-radius:6px;padding:0 5px}
+.brace b{color:var(--ink);font-weight:800}
+
+/* 값 편집 */
+.editor .none{font-size:15px;color:var(--muted);line-height:1.7}
+.editor .none b{color:var(--edit)}
+.edrow{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.editor .vn{font-family:var(--font-code);font-size:21px;color:var(--edit);font-weight:700}
+.editor .vl{font-size:16px;color:var(--ink-2)}
+.editor .cur{font-family:var(--font-code);font-size:34px;font-weight:700;color:var(--green-2);line-height:1.1;margin-left:auto}
+.editor .cur small{font-size:15px;color:var(--muted);margin-left:3px;font-weight:400}
+.editor .defbtn{display:inline-block;margin-top:6px;font-family:var(--font-code);font-size:14.5px;color:var(--note);border:2px solid var(--note-line);border-radius:10px;padding:6px 13px;background:#fff;box-shadow:0 2px 0 var(--note-line);transition:all .16s}
+.editor .defbtn b{color:var(--ink);font-weight:700}
+.editor .defbtn:hover:not(:disabled){background:var(--note-soft);border-color:var(--note)}
+.editor .defbtn:disabled{opacity:.45;cursor:default;color:var(--muted);border-color:var(--rule);box-shadow:none}
+.editor .defbtn:disabled b{color:var(--muted)}
+.editor input[type=text]{width:100%;font-family:var(--font-code);font-size:22px;color:var(--ink);background:#fff;border:2px solid var(--rule);border-radius:10px;padding:8px 12px;margin-top:6px}
+.editor .tlen{font-size:13.5px;color:var(--muted);margin-top:4px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:none;cursor:pointer;display:block}
+input[type=range]::-webkit-slider-runnable-track{height:8px;background:var(--rule-2);border-radius:8px;border:1.5px solid var(--rule)}
+input[type=range]::-moz-range-track{height:8px;background:var(--rule-2);border-radius:8px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:var(--green);border:3px solid #fff;box-shadow:0 2px 0 var(--green-2)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--green);border:3px solid #fff}
+.chz{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chz button{padding:6px 12px;border:2px solid var(--rule);border-radius:10px;font-family:var(--font-code);font-size:14px;background:#fff;box-shadow:0 2px 0 var(--shadow)}
+.chz button:hover{border-color:var(--green);color:var(--green-2)}
+.chz button.on{background:var(--green);border-color:var(--green);color:#fff;font-weight:700;box-shadow:0 2px 0 var(--green-2)}
+.hint{font-size:14px;color:var(--muted);margin-top:10px;line-height:1.7}
+.hint b{color:var(--edit);font-weight:600}
+
+/* 변수 감시 — 칩 모양 */
+.watch{display:flex;flex-wrap:wrap;gap:9px}
+.watch div{flex:1;min-width:140px;background:var(--module-2);border-radius:12px;padding:9px 13px;border:1.5px solid var(--rule)}
+.watch .k{display:block;font-size:13px;color:var(--muted);line-height:1.4}
+.watch .v{display:block;font-family:var(--font-code);font-size:25px;font-weight:700;color:var(--ink);line-height:1.25}
+.watch .v.hot{color:var(--red-2)}
+
+/* 반복 추적표 */
+.trace{width:100%;border-collapse:collapse;font-family:var(--font-code);font-size:15px}
+.trace th{font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--muted);text-align:left;padding:4px 8px;border-bottom:2px solid var(--rule)}
+.trace td{padding:5px 8px;border-bottom:1px dotted var(--rule)}
+.trace tr.no td{color:var(--muted)}
+.trace td.ok{color:var(--green-2);font-weight:700}
+.trace td.no{color:var(--red-2);font-weight:700}
+.trace td.iv{color:var(--red-2);font-weight:700}
+.tracewrap{max-height:230px;overflow-y:auto}
+.tracehint{font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.6}
+
+/* ── 하드웨어 모듈 ── */
+.hw{display:flex;flex-direction:column;align-items:center;gap:10px}
+.v3d{border-radius:14px;overflow:hidden;background:#E9E2CF;border:2px solid var(--rule)}
+.hwlab{font-family:var(--font-code);font-size:16.5px;color:var(--ink-2);text-align:center;line-height:1.5}
+.hwlab b{color:var(--red-2);font-weight:700}
+.hwtip{font-size:14px;color:var(--muted);text-align:center;line-height:1.6}
+.hwtip b{color:var(--green-2);font-weight:600}
+.hwbtnrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+.hwbtn{padding:7px 13px;border:2px solid var(--rule);border-radius:10px;background:#fff;font-size:14px;color:var(--ink);box-shadow:0 2px 0 var(--shadow)}
+.hwbtn:hover{border-color:var(--green);color:var(--green-2)}
+.latch{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink-2);cursor:pointer;user-select:none;padding:6px 10px;border:2px solid var(--rule);border-radius:10px;background:#fff}
+.latch input{width:17px;height:17px;accent-color:var(--green)}
+.sigline{display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-code);font-size:14.5px;color:var(--ink-2);flex-wrap:wrap}
+.sigline b{font-size:21px;font-weight:700;color:var(--green-2)}
+.sigline b.low{color:var(--red-2)}
+
+/* 시리얼 모니터 — 종이 테이프 */
+.serial{width:100%;background:#1E2430;border-radius:12px;padding:8px 0 4px;font-family:var(--font-code);color:#D7E6DC;border:2px solid #0F141B}
+.serial .sh{display:flex;justify-content:space-between;padding:0 12px 6px;font-size:13px;color:#8FA3B6;border-bottom:1px solid #2E3745}
+.serial .sh b{color:#F2B705;font-weight:700}
+.serial .sl{height:186px;overflow:hidden;padding:6px 12px 0;font-size:15.5px;line-height:1.55;display:flex;flex-direction:column;justify-content:flex-end}
+.serial .sl div{white-space:pre}
+.serial .sl div:last-child{color:#fff}
+.serial .sl .z{color:#7FE7A5} .serial .sl .o{color:#FFB48A}
+.serial .sl .part::after{content:"▮";color:#F2B705;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* 누른 시간 재기 */
+.timer{width:100%;background:#fff;border:2px solid var(--rule);border-radius:12px;padding:10px 12px}
+.timer .tl{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;color:var(--muted)}
+.timer .tl b{font-family:var(--font-code);font-size:30px;color:var(--ink);font-weight:700}
+.timer .bar{position:relative;height:18px;background:var(--module-2);border-radius:9px;margin-top:6px;overflow:hidden;border:1.5px solid var(--rule)}
+.timer .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--yellow);transition:width .05s linear}
+.timer .bar i.long{background:var(--green)}
+.timer .bar s{position:absolute;top:-2px;bottom:-2px;width:3px;background:var(--red);text-decoration:none}
+.timer .verdict{margin-top:6px;font-family:var(--font-disp);font-size:19px;text-align:center;color:var(--ink)}
+.timer .verdict.short{color:var(--warn)} .timer .verdict.long{color:var(--green-2)}
+
+@media (max-width:980px){
+  .sidenote{position:static;max-height:none;box-shadow:none}
+  .stage{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:start}
+  .rail{flex-wrap:wrap}
+  .rail::before{display:none}
+  .pick{min-width:240px}
+  .zoomctl{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms !important;animation:none !important}}
+</style>
+
+<div class="wrap">
+  <header class="plate">
+    <div class="chno">08</div>
+    <div class="ttl"><h1 id="hTitle">버튼 입력</h1><p id="hSub"></p></div>
+    <div class="zoomctl">
+      <span class="lb">글자 크기</span><span class="mini">가</span>
+      <input type="range" id="zoomR" min="100" max="230" step="5" value="140" aria-label="글자 크기">
+      <span class="maxi">가</span><b id="zoomV">140%</b>
+    </div>
+  </header>
+
+  <nav class="rail" id="picker" aria-label="스케치 선택"></nav>
+
+  <div class="stage">
+    <div>
+      <div class="runbar">
+        <button class="btn solid" id="playBtn">▶ 실행</button>
+        <button class="btn" id="stepBtn">한 줄 →</button>
+        <button class="btn" id="resetBtn">처음부터</button>
+        <button class="btn sm" id="revertBtn">원래 소스로</button>
+        <button class="btn sm" id="noteBtn">설명 보기</button>
+        <span class="sp">속도 <input type="range" id="speed" min="0" max="6" value="3" style="width:96px" aria-label="속도"> <b id="speedView">1×</b></span>
+      </div>
+      <div class="codewrap">
+        <div class="codebar">
+          <span class="fn" id="fnName">—</span>
+          <span class="st" id="stState">정지</span>
+        </div>
+        <pre class="src" id="src"></pre>
+      </div>
+    </div>
+
+    <aside class="side">
+      <div id="sideMain">
+        <div class="card">
+          <h2>하드웨어 <em id="hwName"></em></h2>
+          <div class="hw" id="hw"></div>
+        </div>
+        <div class="card editor">
+          <h2>값 편집</h2>
+          <div id="editor"></div>
+        </div>
+        <div class="card" id="traceCard" hidden>
+          <h2>반복 추적표 <em>for 한 바퀴씩</em></h2>
+          <div class="tracewrap"><table class="trace" id="traceTbl"></table></div>
+          <p class="tracehint">조건이 <b>거짓</b>이 되는 마지막 바퀴에서는 몸통이 실행되지 않습니다.</p>
+        </div>
+        <div class="card">
+          <h2>변수 감시</h2>
+          <div class="watch" id="watch"></div>
+        </div>
+      </div>
+      <div class="card sidenote" id="sideNote" hidden></div>
+    </aside>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.147.0/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ═══════════════════════════════════════════════════════════════
+   HW3D — 학생이 직접 만지는 3D 하드웨어 (three.js)
+   한 패널 = Kit 하나. 빈 곳을 끌면 시점이 돌고, 부품을 누르면 부품이 반응한다.
+   단위는 대략 cm. 카메라는 앞·위에서 내려다본다.
+   ═══════════════════════════════════════════════════════════════ */
+var HW3D = (function(){
+  var kits = [];
+  var CODE_FONT = '"D2Coding","Nanum Gothic Coding",monospace';
+  function zoomNow(){ var z = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--zoom")); return isFinite(z) && z > 0 ? z : 1; }
+
+  function Kit(el, opt){
+    var self = this;
+    opt = opt || {};
+    this.el = el; this.h = opt.h || 250;
+    this.wrap = document.createElement("div");
+    this.wrap.className = "v3d";
+    this.wrap.style.cssText = "width:100%;position:relative;touch-action:none;user-select:none;";
+    el.appendChild(this.wrap);
+    this.renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
+    this.wrap.appendChild(this.renderer.domElement);
+    this.orbit = !!opt.orbit;   /* 시점 회전은 그 화면에 정말 필요할 때만 켠다 */
+    this.renderer.domElement.style.cssText = "display:block;width:100%;height:" + this.h + "px;border-radius:inherit;cursor:" + (this.orbit ? "grab" : "default");
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+    this.target = new THREE.Vector3(0, 0.4, 0);
+    this.sph = { r: opt.r || 9, th: opt.th !== undefined ? opt.th : 0.35, ph: opt.ph !== undefined ? opt.ph : 1.0 };
+    this.sph0 = { r:this.sph.r, th:this.sph.th, ph:this.sph.ph };
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x3A4350, 1.05));
+    var dl = new THREE.DirectionalLight(0xffffff, 0.75); dl.position.set(3, 7, 5); this.scene.add(dl);
+    var dl2 = new THREE.DirectionalLight(0x9CC8FF, 0.25); dl2.position.set(-4, 3, -3); this.scene.add(dl2);
+    this.picks = []; this.anims = []; this.dirty = true; this.active = null;
+    this.ray = new THREE.Raycaster(); this.ptr = new THREE.Vector2();
+    this.dragCam = null;
+    var c = this.renderer.domElement;
+    c.addEventListener("pointerdown", function(e){ self.onDown(e); });
+    c.addEventListener("pointermove", function(e){ self.onMove(e); });
+    ["pointerup","pointercancel","pointerleave"].forEach(function(ev){ c.addEventListener(ev, function(e){ self.onUp(e); }); });
+    c.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+    kits.push(this);
+    this.resize();
+    this.loop();
+  }
+  Kit.prototype.resize = function(){
+    var w = this.wrap.clientWidth || 380;
+    var z = zoomNow();
+    this.renderer.setPixelRatio(Math.min(2.5, (window.devicePixelRatio || 1) * z));
+    this.renderer.setSize(w, this.h, false);
+    this.renderer.domElement.style.width = "100%"; this.renderer.domElement.style.height = this.h + "px";
+    this.camera.aspect = w / this.h; this.camera.updateProjectionMatrix();
+    this.dirty = true;
+  };
+  Kit.prototype.place = function(){
+    var s = this.sph;
+    this.camera.position.set(
+      this.target.x + s.r * Math.sin(s.ph) * Math.sin(s.th),
+      this.target.y + s.r * Math.cos(s.ph),
+      this.target.z + s.r * Math.sin(s.ph) * Math.cos(s.th));
+    this.camera.lookAt(this.target);
+  };
+  Kit.prototype.loop = function(){
+    var self = this, last = performance.now();
+    (function frame(now){
+      if(self.dead) return;
+      requestAnimationFrame(frame);
+      var dt = Math.min(0.05, (now - last)/1000); last = now;
+      if(self.anims.length){
+        self.anims = self.anims.filter(function(f){ return f(dt) !== false; });
+        self.dirty = true;
+      }
+      if(!self.dirty) return;
+      self.dirty = false;
+      self.place();
+      self.renderer.render(self.scene, self.camera);
+    })(last);
+  };
+  Kit.prototype.animate = function(fn){ this.anims.push(fn); this.dirty = true; };
+  Kit.prototype.pick = function(obj, h){ obj.userData.pick = h; this.picks.push(obj); obj.traverse(function(o){ o.userData.pickRoot = obj; }); };
+  Kit.prototype.hitAt = function(e){
+    var r = this.renderer.domElement.getBoundingClientRect();
+    this.ptr.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+    this.ptr.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+    this.ray.setFromCamera(this.ptr, this.camera);
+    var hits = this.ray.intersectObjects(this.picks, true);
+    if(!hits.length) return null;
+    var h = hits[0], root = h.object.userData.pickRoot || h.object;
+    return { hit:h, root:root, handler:root.userData.pick };
+  };
+  Kit.prototype.planeHit = function(y){
+    var pl = new THREE.Plane(new THREE.Vector3(0,1,0), -y), p = new THREE.Vector3();
+    return this.ray.ray.intersectPlane(pl, p) ? p : null;
+  };
+  Kit.prototype.onDown = function(e){
+    e.preventDefault();
+    try{ this.renderer.domElement.setPointerCapture(e.pointerId); }catch(x){}
+    var p = this.hitAt(e);
+    if(p && p.handler){
+      this.active = p;
+      if(p.handler.down) p.handler.down(p, e);
+      this.dirty = true; return;
+    }
+    if(!this.orbit) return;
+    this.dragCam = { x:e.clientX, y:e.clientY, th:this.sph.th, ph:this.sph.ph };
+    this.renderer.domElement.style.cursor = "grabbing";
+  };
+  Kit.prototype.onMove = function(e){
+    if(this.active){ if(this.active.handler.move){ this.hitAt(e); this.active.handler.move(this.active, e); this.dirty = true; } return; }
+    if(this.dragCam){
+      var dx = (e.clientX - this.dragCam.x) / 160, dy = (e.clientY - this.dragCam.y) / 160;
+      this.sph.th = this.dragCam.th - dx;
+      this.sph.ph = Math.max(0.25, Math.min(1.45, this.dragCam.ph - dy));
+      this.dirty = true;
+    }
+  };
+  Kit.prototype.onUp = function(e){
+    if(this.active){ if(this.active.handler.up) this.active.handler.up(this.active, e); this.active = null; this.dirty = true; }
+    if(this.dragCam){ this.dragCam = null; this.renderer.domElement.style.cursor = "grab"; }
+  };
+  Kit.prototype.resetView = function(){ this.sph.r = this.sph0.r; this.sph.th = this.sph0.th; this.sph.ph = this.sph0.ph; this.dirty = true; };
+
+  /* ── 재료 ── */
+  function mat(color, o){ o = o || {}; return new THREE.MeshStandardMaterial(Object.assign({ color:color, roughness:0.62, metalness:0.08 }, o)); }
+  function box(w,h,d,color,o){ return new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat(color,o)); }
+  function cyl(r,h,color,o,seg){ return new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,seg||28), mat(color,o)); }
+
+  /* 글자 판 — 보드 위 실크 인쇄 같은 라벨 */
+  function textPlane(txt, w, opt){
+    opt = opt || {};
+    var px = opt.px || 48, cv = document.createElement("canvas");
+    var ctx = cv.getContext("2d");
+    ctx.font = "700 " + px + "px " + CODE_FONT;
+    var tw = Math.ceil(ctx.measureText(txt).width) + 16;
+    cv.width = tw; cv.height = px + 14;
+    ctx = cv.getContext("2d");
+    if(opt.bg){ ctx.fillStyle = opt.bg; ctx.fillRect(0,0,cv.width,cv.height); }
+    ctx.font = "700 " + px + "px " + CODE_FONT; ctx.fillStyle = opt.color || "#F2F5F8";
+    ctx.textBaseline = "middle"; ctx.textAlign = "center";
+    ctx.fillText(txt, cv.width/2, cv.height/2 + 2);
+    var tex = new THREE.CanvasTexture(cv); tex.anisotropy = 4; tex.encoding = THREE.sRGBEncoding;
+    var h = w * cv.height / cv.width;
+    var m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map:tex, transparent:true }));
+    m.rotation.x = -Math.PI/2;
+    return m;
+  }
+  function pcb(kit, w, d, y){
+    var b = box(w, 0.16, d, 0x1F6B3E, { roughness:0.8 });
+    b.position.y = (y || 0) - 0.08;
+    kit.scene.add(b);
+    /* 모서리 나사 구멍 */
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(function(s){
+      var hole = cyl(0.13, 0.18, 0x0B1A10);
+      hole.position.set(s[0]*(w/2-0.3), (y||0)-0.08, s[1]*(d/2-0.3));
+      kit.scene.add(hole);
+    });
+    return b;
+  }
+
+  /* ── 1602 LCD (I2C) ── */
+  function lcd1602(kit, o){
+    var g = new THREE.Group();
+    var board = box(8.0, 0.16, 3.6, 0x1F6B3E, { roughness:.8 }); board.position.y = -0.08; g.add(board);
+    var bezel = box(7.2, 0.55, 2.55, 0x111417, { roughness:.55 }); bezel.position.y = 0.275; g.add(bezel);
+    var cv = document.createElement("canvas"); cv.width = 1024; cv.height = 272;
+    var tex = new THREE.CanvasTexture(cv); tex.encoding = THREE.sRGBEncoding; tex.anisotropy = 8;
+    var screen = new THREE.Mesh(new THREE.PlaneGeometry(6.45, 1.72), new THREE.MeshBasicMaterial({ map:tex }));
+    screen.rotation.x = -Math.PI/2; screen.position.y = 0.56; g.add(screen);
+    /* I2C 변환 보드 — 뒤쪽에 작은 파란 판 + 명암 조절 나사 */
+    var back = box(4.0, 0.12, 1.5, 0x1E3A8A); back.position.set(-1.6, 0.0, 2.05); g.add(back);
+    var pot = box(0.55, 0.35, 0.55, 0x2E6BD6); pot.position.set(0.0, 0.2, 2.05); g.add(pot);
+    var screw = cyl(0.14, 0.05, 0xE8C05A); screw.position.set(0, 0.39, 2.05); g.add(screw);
+    /* 핀 4개 : GND VCC SDA SCL */
+    ["GND","VCC","SDA","SCL"].forEach(function(nm, i){
+      var pin = cyl(0.06, 0.6, 0xC9CED6, { metalness:.7, roughness:.3 }, 8); pin.position.set(-3.55 + i*0.45, 0.0, 2.55); g.add(pin);
+      var lb = textPlane(nm, 0.5, { px:36, color:"#E9EEF3" }); lb.position.set(-3.55 + i*0.45, 0.005, 3.05); g.add(lb);
+    });
+    var t1 = textPlane("1602 LCD  I2C 0x27", 2.6, { px:36, color:"#DDE5EC" }); t1.position.set(2.2, 0.005, 2.35); g.add(t1);
+    kit.scene.add(g);
+    var st = { rows:["",""], bl:true, cur:null, on:true };
+    function draw(){
+      var ctx = cv.getContext("2d");
+      var bg = st.bl ? "#87DC5C" : "#1E3A25", fg = st.bl ? "#0B1A0D" : "#2F5237";
+      ctx.fillStyle = bg; ctx.fillRect(0,0,cv.width,cv.height);
+      var cw = 1024/16, ch = 272/2;
+      for(var r=0;r<2;r++) for(var c=0;c<16;c++){
+        ctx.fillStyle = st.bl ? "#7BCF52" : "#1B3521";
+        ctx.fillRect(c*cw+3, r*ch+3, cw-6, ch-6);
+      }
+      ctx.fillStyle = fg; ctx.font = "700 92px " + CODE_FONT; ctx.textBaseline = "middle"; ctx.textAlign = "center";
+      for(var r2=0;r2<2;r2++){
+        var s = st.rows[r2] || "";
+        for(var c2=0;c2<16;c2++){
+          var chh = s[c2] || " ";
+          if(chh !== " ") ctx.fillText(chh, c2*cw + cw/2, r2*ch + ch/2 + 4);
+        }
+      }
+      if(st.cur && st.on){
+        ctx.fillStyle = fg; ctx.globalAlpha = .9;
+        ctx.fillRect(st.cur[0]*cw+8, st.cur[1]*ch+ch-22, cw-16, 9);
+        ctx.globalAlpha = 1;
+      }
+      tex.needsUpdate = true; kit.dirty = true;
+    }
+    kit.pick(screen, { down:function(p){
+      var uv = p.hit.uv; if(!uv) return;
+      var col = Math.min(15, Math.floor(uv.x * 16)), row = uv.y > 0.5 ? 0 : 1;
+      if(o && o.onCell) o.onCell(col, row);
+    }});
+    draw();
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+    return { group:g, set:function(rows, bl, cur, on){ st.rows = rows; st.bl = bl; st.cur = cur; st.on = on; draw(); } };
+  }
+
+  /* ── SG90 서보 + 각도판 ── */
+  function servo(kit, o){
+    var g = new THREE.Group();
+    var body = box(2.3, 2.2, 1.2, 0x2456B8, { roughness:.5 }); body.position.y = 1.1; g.add(body);
+    var tabs = box(3.3, 0.22, 1.2, 0x2456B8, { roughness:.5 }); tabs.position.y = 1.85; g.add(tabs);
+    [[-1.45],[1.45]].forEach(function(s){ var h = cyl(0.12, 0.26, 0x0E1F4A); h.position.set(s[0], 1.85, 0); g.add(h); });
+    var boss = cyl(0.62, 0.55, 0x2456B8, { roughness:.5 }); boss.position.set(-0.55, 2.47, 0); g.add(boss);
+    var boss2 = cyl(0.36, 0.35, 0x1B3C86); boss2.position.set(-0.55, 2.9, 0); g.add(boss2);
+    var shaft = cyl(0.2, 0.3, 0xF5F1E6, { roughness:.4 }); shaft.position.set(-0.55, 3.2, 0); g.add(shaft);
+    /* 케이블 3가닥 */
+    [[0xB86B2A, 0],[0xE23B1E, 0.18],[0xF2A93B, 0.36]].forEach(function(c){
+      var w = cyl(0.05, 2.4, c[0], {}, 8); w.rotation.z = Math.PI/2; w.position.set(2.35, 0.3 + c[1], 0); g.add(w);
+    });
+    /* 각도판 — 축 둘레의 투명 아크릴 눈금판 */
+    var pc = document.createElement("canvas"); pc.width = 1024; pc.height = 560;
+    (function(){
+      var ctx = pc.getContext("2d"), cx = 512, cy = 520, R = 470;
+      ctx.clearRect(0,0,1024,560);
+      ctx.fillStyle = "rgba(230,240,250,.22)"; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,R,Math.PI,0); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(cx,cy,R,Math.PI,0); ctx.stroke();
+      for(var a=0;a<=180;a+=5){
+        var rad = Math.PI - a*Math.PI/180, len = (a%30===0) ? 60 : (a%10===0 ? 36 : 18);
+        ctx.lineWidth = (a%30===0) ? 6 : 3; ctx.strokeStyle = (a%30===0) ? "#FFFFFF" : "rgba(255,255,255,.7)";
+        ctx.beginPath(); ctx.moveTo(cx + Math.cos(rad)*R, cy - Math.sin(rad)*R); ctx.lineTo(cx + Math.cos(rad)*(R-len), cy - Math.sin(rad)*(R-len)); ctx.stroke();
+        if(a%30===0){
+          ctx.fillStyle = "#FFFFFF"; ctx.font = "700 54px " + CODE_FONT; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(a + "°", cx + Math.cos(rad)*(R-110), cy - Math.sin(rad)*(R-110));
+        }
+      }
+    })();
+    var ptex = new THREE.CanvasTexture(pc); ptex.encoding = THREE.sRGBEncoding; ptex.anisotropy = 8;
+    var dial = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 2.52), new THREE.MeshBasicMaterial({ map:ptex, transparent:true, side:THREE.DoubleSide, depthWrite:false }));
+    dial.rotation.x = -Math.PI/2; dial.position.set(-0.55, 3.1, -1.08); g.add(dial);
+    /* 혼(팔) */
+    var horn = new THREE.Group(); horn.position.set(-0.55, 3.38, 0);
+    var hub = cyl(0.36, 0.14, 0xF5F1E6, { roughness:.4 }); horn.add(hub);
+    var arm = box(1.95, 0.12, 0.42, 0xF5F1E6, { roughness:.4 }); arm.position.x = 0.9; horn.add(arm);
+    for(var i=0;i<4;i++){ var hh = cyl(0.05, 0.16, 0x9A958A, {}, 8); hh.position.set(0.7 + i*0.32, 0, 0); horn.add(hh); }
+    var tip = box(0.3, 0.14, 0.42, 0xFF5D5D); tip.position.x = 1.85; horn.add(tip);
+    g.add(horn);
+    kit.scene.add(g);
+    var st = { a:90, shown:90 };
+    function apply(){ horn.rotation.y = -(st.shown) * Math.PI/180 + Math.PI; kit.dirty = true; }
+    /* 0° = 오른쪽(+x), 90° = 뒤쪽, 180° = 왼쪽 */
+    apply();
+    function angleFromPointer(){
+      var p = kit.planeHit(3.38); if(!p) return null;
+      var dx = p.x - (-0.55), dz = -(p.z - 0);
+      var a = Math.atan2(dz, dx) * 180/Math.PI;
+      if(a < -90) a = 180; if(a < 0) a = 0; if(a > 180) a = 180;
+      return Math.round(a);
+    }
+    var h = { down:function(){ var a = angleFromPointer(); if(a !== null && o && o.onDrag) o.onDrag(a); },
+              move:function(){ var a = angleFromPointer(); if(a !== null && o && o.onDrag) o.onDrag(a); },
+              up:function(){ if(o && o.onDrop) o.onDrop(st.a); } };
+    kit.pick(horn, h); kit.pick(dial, h);
+    return {
+      group:g,
+      set:function(a, instant){
+        st.a = a;
+        if(instant){ st.shown = a; apply(); return; }
+        kit.animate(function(dt){
+          var d = st.a - st.shown;
+          if(Math.abs(d) < 0.4){ st.shown = st.a; apply(); return false; }
+          st.shown += d * Math.min(1, dt * 14); apply(); return true;
+        });
+      },
+      shown:function(){ return st.shown; }
+    };
+  }
+
+  /* ── 택트 스위치 ── */
+  function tact(kit, o){
+    var g = new THREE.Group();
+    var base = box(0.75, 0.32, 0.75, 0x14171B, { roughness:.6 }); base.position.y = 0.16; g.add(base);
+    var rim = cyl(0.36, 0.06, 0x2A2F36); rim.position.y = 0.35; g.add(rim);
+    var cap = cyl(0.3, 0.34, o.color || 0xE23B1E, { roughness:.45 }); cap.position.y = 0.53; g.add(cap);
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(function(s){ var leg = cyl(0.04, 0.2, 0xC9CED6, { metalness:.7, roughness:.3 }, 8); leg.position.set(s[0]*0.3, 0.02, s[1]*0.3); g.add(leg); });
+    g.position.set(o.x || 0, 0, o.z || 0);
+    if(o.label){ var lb = textPlane(o.label, o.lw || 1.0, { px:40, color:"#E9EEF3" }); lb.position.set(0, 0.005, 0.7); g.add(lb); }
+    kit.scene.add(g);
+    kit.pick(g, { down:function(){ if(o.onDown) o.onDown(); }, up:function(){ if(o.onUp) o.onUp(); } });
+    return { group:g, set:function(pressed){ cap.position.y = pressed ? 0.42 : 0.53; kit.dirty = true; } };
+  }
+
+  /* ── 5mm LED ── */
+  function led(kit, o){
+    var g = new THREE.Group();
+    var col = o.color || 0xFF3B2A;
+    var m = new THREE.MeshStandardMaterial({ color:col, emissive:col, emissiveIntensity:0.08, roughness:.3, transparent:true, opacity:.92 });
+    var body = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.42, 24), m); body.position.y = 0.21 + 0.1; g.add(body);
+    var dome = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 16, 0, Math.PI*2, 0, Math.PI/2), m); dome.position.y = 0.52; g.add(dome);
+    var flange = cyl(0.31, 0.08, col, { emissive:col, emissiveIntensity:.05 }); flange.position.y = 0.12; g.add(flange);
+    [-0.12, 0.12].forEach(function(x){ var leg = cyl(0.03, 0.2, 0xC9CED6, { metalness:.7, roughness:.3 }, 8); leg.position.set(x, 0.0, 0); g.add(leg); });
+    var light = new THREE.PointLight(col, 0, 3.5); light.position.y = 0.6; g.add(light);
+    g.position.set(o.x || 0, 0, o.z || 0);
+    if(o.label){ var lb = textPlane(o.label, o.lw || 0.9, { px:40, color:"#E9EEF3" }); lb.position.set(0, 0.005, 0.65); g.add(lb); }
+    kit.scene.add(g);
+    return { group:g, set:function(on){ m.emissiveIntensity = on ? 1.6 : 0.08; light.intensity = on ? 1.4 : 0; kit.dirty = true; } };
+  }
+
+  /* ── 4자리 7세그먼트 (TM1650) ── */
+  var SEGMAP = { "0":"abcdef","1":"bc","2":"abdeg","3":"abcdg","4":"bcfg","5":"acdfg","6":"acdefg","7":"abc","8":"abcdefg","9":"abcdfg","-":"g"," ":"" };
+  function seg4(kit, o){
+    var g = new THREE.Group();
+    var mod = box(4.6, 0.5, 1.5, 0x0E1114, { roughness:.5 }); mod.position.y = 0.25; g.add(mod);
+    var face = box(4.2, 0.06, 1.2, 0x1A0A0A, { roughness:.3 }); face.position.y = 0.52; g.add(face);
+    var digits = [];
+    var W = 0.52, H = 0.9, T = 0.09;
+    function segMat(){ return new THREE.MeshStandardMaterial({ color:0x3A1414, emissive:0xFF3B2A, emissiveIntensity:0.0, roughness:.4 }); }
+    for(var d=0; d<4; d++){
+      var dg = new THREE.Group(); dg.position.set(-1.5 + d*1.0, 0.56, 0);
+      var segs = {};
+      function seg(name, w, h, x, z){ var s = new THREE.Mesh(new THREE.BoxGeometry(w, 0.05, h), segMat()); s.position.set(x, 0, z); dg.add(s); segs[name] = s; }
+      seg("a", W-0.12, T, 0, -H/2);
+      seg("d", W-0.12, T, 0,  H/2);
+      seg("g", W-0.12, T, 0,  0);
+      seg("f", T, H/2-0.12, -W/2, -H/4);
+      seg("b", T, H/2-0.12,  W/2, -H/4);
+      seg("e", T, H/2-0.12, -W/2,  H/4);
+      seg("c", T, H/2-0.12,  W/2,  H/4);
+      g.add(dg); digits.push(segs);
+    }
+    var lb = textPlane("TM1650  CLK 22  DIO 21", 2.6, { px:34, color:"#DDE5EC" }); lb.position.set(0.7, 0.59, 0.62); g.add(lb);
+    g.position.set(o && o.x || 0, 0, o && o.z || 0);
+    kit.scene.add(g);
+    return { group:g, set:function(str){
+      str = (str === null || str === undefined) ? "    " : String(str);
+      if(str.length > 4) str = str.slice(-4);
+      str = str.padStart(4, " ");
+      for(var i=0;i<4;i++){
+        var on = SEGMAP[str[i]] !== undefined ? SEGMAP[str[i]] : "g";
+        "abcdefg".split("").forEach(function(s){ digits[i][s].material.emissiveIntensity = on.indexOf(s) >= 0 ? 1.5 : 0.0; digits[i][s].material.color.setHex(on.indexOf(s) >= 0 ? 0xFF6A5A : 0x3A1414); });
+      }
+      kit.dirty = true;
+    } };
+  }
+
+  return {
+    make:function(el, opt){ return new Kit(el, opt); },
+    resizeAll:function(){ kits.forEach(function(k){ k.resize(); }); },
+    drop:function(kit){ if(!kit) return; kit.dead = true; var i = kits.indexOf(kit); if(i >= 0) kits.splice(i, 1); try{ kit.renderer.dispose(); kit.renderer.forceContextLoss(); }catch(e){} },
+    pcb:pcb, textPlane:textPlane, lcd1602:lcd1602, servo:servo, tact:tact, led:led, seg4:seg4
+  };
+})();
+window.addEventListener("resize", function(){ HW3D.resizeAll(); });
+
+/* ═══ 08장 스케치 정의 ═══ */
+var CH_NAME = "버튼 입력", ZOOM_KEY = "stepZoom8";
+var ORDER = ["read","toggle","press","counter"];
+var G = {
+  cmt:"슬래시-별(/*)과 별-슬래시(*/) 사이는 주석입니다. 컴파일러가 무시하므로 사람이 읽을 설명을 자유롭게 적습니다.",
+  blank:"빈 줄입니다. 읽기 좋으라고 띄운 것이라 동작에는 아무 영향이 없습니다.",
+  setup:"setup 함수의 시작입니다. 전원이 켜지거나 리셋될 때 딱 한 번만 실행됩니다. 준비 작업을 여기에 씁니다.",
+  loop:"loop 함수의 시작입니다. setup 이 끝나면 이 안을 무한히 반복합니다. 전원을 끌 때까지 멈추지 않습니다.",
+  open:"여는 중괄호입니다. 짝이 되는 닫는 중괄호까지가 한 덩어리로 묶입니다.",
+  closeSetup:"setup 이 끝났습니다. 이제 loop 로 넘어가 계속 반복합니다.",
+  closeLoop:"loop 의 끝입니다. 여기에 닿으면 곧바로 loop 의 첫 줄로 되돌아갑니다.",
+  closeFor:"반복문의 끝입니다. 아직 조건이 참이면 반복문 처음으로 돌아가고, 아니면 아래로 빠져나갑니다.",
+  closeIf:"if 블록의 끝입니다. 조건이 거짓이었다면 이 줄 다음부터 이어집니다.",
+  pinIn:{ t:"버튼 핀을 <b>입력</b>으로 씁니다. 버튼은 우리가 값을 읽어 오는 부품입니다.",
+          why:"LED·부저는 우리가 신호를 내보내니 OUTPUT, 버튼은 밖에서 들어오는 신호를 받으니 INPUT 입니다.",
+          oops:"OUTPUT 으로 잘못 두면 버튼을 눌러도 값이 바뀌지 않고, 핀에 무리가 갈 수도 있습니다." },
+  pinOut:{ t:"LED 핀을 <b>출력</b>으로 씁니다. 우리가 LED 에 전압을 내보내는 쪽입니다." },
+  lowMeans:"이 보드는 버튼을 <b>누르면 0(LOW)</b>, 떼면 1(HIGH) 입니다. 안 눌렀을 때 핀은 풀업 저항(R29)을 거쳐 3.3V 에 붙어 있고, 누르면 GND 와 이어집니다."
+};
+function fmtRead(r){ return r + (r === 0 ? " (LOW, 눌림)" : " (HIGH, 안 눌림)"); }
+
+var SK = {
+  /* ─────────────────────────── 01 버튼 읽기 ─────────────────────────── */
+  read: {
+    file:"01_button_read.ino", title:"버튼 값 읽기", hw:"read", minPress:6, hwName:"버튼 (GPIO 15) + 시리얼 모니터",
+    overview:{"t": "버튼 값을 읽어 시리얼 모니터에 <b>Key status:1</b> 또는 <b>0</b> 을 계속 찍습니다.", "steps": [["선언부", "버튼 핀 15, 값 상자 value"], ["setup()", "Serial.begin(9600), 버튼 입력"], ["loop()", "digitalRead → print(\"Key status:\") → println(value)"]], "hw": "빨간 버튼(GPIO 15) + 시리얼 모니터 — 누르고 있으면 0, 떼면 1.", "look": "안 눌렀는데 1, 누르면 0 인 이유(풀업 저항). 누르는 순간 값이 튀는 떨림.", "oops": "모니터 속도가 9600 과 다르면 글자가 깨집니다."},
+    vars:{
+      btn:{ label:"버튼을 꽂은 핀", def:15, min:0, max:39, step:1 },
+      baud:{ label:"시리얼 속도 (보드레이트)", def:9600, choices:[[9600,"9600"],[115200,"115200"]] }
+    },
+    lines:[
+      "/*", "  ESP32 올인원 키트", "  버튼 입력 읽기", "*/",
+      "int button = {{btn}};",
+      "int value = 0;",
+      "",
+      "void setup() ", "{",
+      "  Serial.begin({{baud}}); // 시리얼 통신 속도를 9600으로 설정",
+      "  pinMode(button, INPUT);  // 버튼 핀을 입력 모드로 설정",
+      "}",
+      "",
+      "void loop() ", "{",
+      "  value = digitalRead(button);// 버튼 값 읽기",
+      "  Serial.print(\"Key status:\"); // 시리얼 모니터에 \"Key status:\" 출력",
+      "  Serial.println(value); // 버튼 값을 출력하고 줄 바꿈",
+      "}"
+    ],
+    notes:{
+      0:G.cmt, 1:G.cmt, 2:G.cmt, 3:G.cmt,
+      4:{ t:"버튼을 꽂은 핀 번호 15를 <b>button</b> 에 담습니다.",
+          why:"보드의 버튼은 안쪽에서 저항(R29)을 거쳐 3.3V 와 이어져 있습니다. 그래서 아무것도 안 하면 핀에 3.3V 가 걸려 1 로 읽히고, 누르면 GND 와 붙어 0 이 됩니다." },
+      5:{ t:"읽어 온 값을 담을 상자 <b>value</b> 를 만들고 0 으로 시작합니다.",
+          why:"<code>digitalRead</code> 가 돌려주는 값을 어딘가에 받아 두어야 다음 줄에서 쓸 수 있습니다. 상자 이름은 마음대로 지어도 되지만, 무엇이 든 상자인지 알 수 있는 이름이 좋습니다." },
+      6:G.blank, 7:G.setup, 8:G.open,
+      9:{ t:"컴퓨터와 글자를 주고받는 <b>시리얼 통신</b>을 시작합니다. 1초에 9600비트 속도입니다.",
+          why:"ESP32 는 화면이 없습니다. 값을 확인하려면 USB 선으로 컴퓨터에 보내 <b>시리얼 모니터</b> 창에서 봐야 합니다. 양쪽이 같은 속도로 말해야 글자가 안 깨집니다.",
+          go:"115200 으로 바꿔 보세요. 오른쪽 모니터 오른쪽 위의 숫자와 다르면 글자가 깨져 나옵니다. 실제로는 시리얼 모니터 오른쪽 아래에서 속도를 맞춥니다.",
+          oops:"이 줄이 없으면 <code>Serial.print</code> 를 써도 아무것도 안 나옵니다. 에러도 안 납니다." },
+      10:G.pinIn, 11:G.closeSetup, 12:G.blank, 13:G.loop, 14:G.open,
+      15:{ t:"버튼 핀의 전압을 읽어 <b>1 아니면 0</b> 으로 value 에 담습니다.",
+           why:G.lowMeans,
+           go:"오른쪽 <b>빨간 버튼</b>을 누른 채로 한 줄씩 실행해 보세요. 변수 감시의 value 가 0 이 됩니다. 떨림 흉내가 켜져 있으면 누르는 순간 값이 몇 번 튑니다.",
+           oops:"<code>analogRead</code> 로 읽으면 0~4095 사이 값이 나와 “눌렸다/아니다”를 바로 알 수 없습니다. 버튼은 <code>digitalRead</code> 입니다." },
+      16:{ t:"시리얼 모니터에 <b>Key status:</b> 라는 글자를 보냅니다. 줄은 바꾸지 않습니다.",
+           why:"<code>print</code> 는 글자를 보내고 그 자리에 머뭅니다. 그래서 다음 줄의 숫자가 <b>같은 줄</b>에 이어 붙습니다." },
+      17:{ t:"value 값을 보내고 <b>줄을 바꿉니다.</b> ln 은 line(줄)의 줄임입니다.",
+           why:"<code>println</code> = print + line. 이 줄 덕분에 모니터에 한 줄씩 차곡차곡 쌓입니다.",
+           go:"16번 줄과 17번 줄을 바꿔 생각해 보세요. <code>println(\"Key status:\")</code> 다음에 <code>print(value)</code> 를 쓰면 숫자가 다음 줄 맨 앞에 붙고 그 뒤에 글자가 이어져 읽기 어려워집니다.",
+           oops:"loop 에 <code>delay</code> 가 없어 1초에 수천 줄이 쏟아집니다. 실제 모니터에서는 읽기 힘들 만큼 빠릅니다. 여기서는 관찰용으로 늦춰 보여 줍니다." },
+      18:G.closeLoop
+    },
+    initM:function(M, V){ M.value = null; M.lines = []; M.part = ""; M.n = 0; M.serialOn = false; M.bounced = false; },
+    prog:function*(M,V){
+      M.serialOn = true; M.baud = V.baud;
+      yield {ln:9, iter:"시리얼 시작 · " + V.baud};
+      yield {ln:10};
+      while(true){
+        M.value = readBtn("btn");
+        yield {ln:15, quick:playing && M.value !== 0 && M.n > 3, iter:"digitalRead → " + fmtRead(M.value)};
+        M.part = "Key status:";
+        yield {ln:16, iter:"모니터에 “Key status:” — 줄 바꿈 없음"};
+        M.lines.push(M.part + M.value); M.part = ""; M.n++;
+        if(M.lines.length > 40) M.lines.shift();
+        yield {ln:17, iter:"“" + M.value + "” 출력하고 줄 바꿈"};
+      }
+    },
+    watch:function(M,V){
+      var p = btnPressed("btn");
+      return [["button (GPIO " + V.btn + ")", p ? "0  LOW" : "1  HIGH", p],
+              ["value", M.value === null ? "—" : M.value, M.value === 0],
+              ["출력한 줄 수", M.n, M.n > 0]];
+    }
+  },
+
+  /* ─────────────────────────── 02 토글 ─────────────────────────── */
+  toggle: {
+    file:"02_button_toggle.ino", title:"누를 때마다 LED 뒤집기", hw:"toggle", hwName:"버튼 (GPIO 15) + LED (GPIO 4)",
+    overview:{"t": "버튼을 <b>한 번 누를 때마다</b> LED 가 켜짐 ↔ 꺼짐으로 뒤집힙니다.", "steps": [["선언부", "#define led 4 · button 15, 상태 상자 ledState"], ["setup()", "LED 출력, 버튼 입력"], ["loop()", "눌림 → 20ms 뒤 다시 확인 → ledState = !ledState → digitalWrite → 손 뗄 때까지 대기"]], "hw": "빨간 버튼(GPIO 15) + 빨간 LED(GPIO 4).", "look": "! 로 뒤집히는 ledState, 떨림 방지 delay(20), while(눌림) ; 의 역할.", "oops": "delay(20) 을 0 으로 두면 떨림 때문에 두 번 뒤집혀 안 바뀐 것처럼 됩니다."},
+    vars:{
+      led:{ label:"LED 를 꽂은 핀", def:4, min:0, max:39, step:1 },
+      btn:{ label:"버튼을 꽂은 핀", def:15, min:0, max:39, step:1 },
+      deb:{ label:"떨림 방지로 기다리는 시간", def:20, min:0, max:200, step:5, unit:"ms" }
+    },
+    lines:[
+      "/*", "  ESP32 올인원 키트", "  버튼 입력 읽기", "*/",
+      "#define led    {{led}}",
+      "#define button {{btn}}",
+      "bool ledState = false;",
+      "",
+      "void setup() ", "{",
+      "  pinMode(led, OUTPUT);  // LED 핀을 출력 모드로 설정",
+      "  pinMode(button, INPUT);",
+      "}",
+      "",
+      "// loop 함수는 계속 반복 실행된다",
+      "void loop() ", "{",
+      "  if (digitalRead(button) == LOW) {    // 버튼이 눌리면 떨림(채터링)이 생길 수 있어 잠깐 기다린 뒤 다시 확인",
+      "    delay({{deb}});                              // 20ms 기다림",
+      "    if (digitalRead(button) == LOW) {   // 버튼 값이 정말 0인지 확인",
+      "      ledState = !ledState;                 // ledState를 반대로 뒤집어 LED를 켜거나 끔",
+      "      digitalWrite(led, ledState);",
+      "    }",
+      "    while (digitalRead(button) == LOW);     // 버튼을 누르고 있는 동안 대기, 떼면 빠져나감",
+      "  }",
+      "}"
+    ],
+    notes:{
+      0:G.cmt, 1:G.cmt, 2:G.cmt, 3:G.cmt,
+      4:{ t:"<b>led</b> 라는 이름을 숫자 4 로 <b>바꿔치기</b>하라고 컴파일러에게 알립니다.",
+          why:"<code>#define</code> 는 변수가 아닙니다. 컴파일 전에 글자를 찾아 바꾸는 <b>치환</b>입니다. 그래서 끝에 세미콜론이 없고, <code>int</code> 도 없습니다. 메모리를 안 쓰는 대신 값을 바꿀 수도 없습니다.",
+          oops:"<code>#define led 4;</code> 처럼 세미콜론을 붙이면 <code>pinMode(4;, OUTPUT)</code> 이 되어 에러가 납니다." },
+      5:{ t:"<b>button</b> 을 15 로 바꿔치기합니다. 4번 줄과 같은 방식입니다." },
+      6:{ t:"LED 가 켜져 있는지 기억하는 상자입니다. <b>bool</b> 은 참/거짓 두 값만 담습니다. 처음엔 꺼짐(false).",
+          why:"버튼은 누르는 순간만 알려 줍니다. “지금 켜져 있으니 이번엔 꺼야지”를 판단하려면 <b>현재 상태를 기억하는 상자</b>가 필요합니다. 그것이 ledState 입니다." },
+      7:G.blank, 8:G.setup, 9:G.open, 10:G.pinOut, 11:G.pinIn, 12:G.closeSetup, 13:G.blank,
+      14:"두 슬래시(//) 뒤는 줄 끝까지 주석입니다.",
+      15:G.loop, 16:G.open,
+      17:{ t:"버튼이 <b>LOW(눌림)</b> 인지 봅니다.",
+           why:G.lowMeans,
+           go:"오른쪽 빨간 버튼을 눌러 보세요. 누르는 동안만 이 조건이 참이 됩니다." },
+      18:{ t:"눌린 것 같으면 <b>잠깐 기다립니다.</b> 접점이 떨리는 시간을 넘기기 위해서입니다.",
+           why:"버튼을 누르는 순간 금속 접점이 몇 ms 동안 붙었다 떨어졌다 합니다(채터링). 그 사이에 읽으면 0과 1이 마구 나옵니다. 20ms 쯤 기다리면 가라앉습니다.",
+           go:"이 값을 <b>0</b> 으로 두고 떨림 흉내를 켠 채 버튼을 여러 번 눌러 보세요. 가끔 LED 가 <b>두 번 뒤집혀</b> 결국 안 바뀐 것처럼 됩니다. 그게 채터링입니다." },
+      19:{ t:"기다린 뒤 <b>다시 읽어</b> 정말 눌려 있는지 확인합니다.",
+           why:"두 번 다 LOW 여야 진짜 눌림으로 칩니다. 떨림 때문에 잠깐 0 이 나온 것은 여기서 걸러집니다." },
+      20:{ t:"ledState 를 <b>반대로</b> 뒤집습니다. 켜짐이면 꺼짐, 꺼짐이면 켜짐.",
+           why:"<code>!</code> 는 “아니다(not)”입니다. <code>!true</code> 는 false. 스위치를 올리고 내리는 것을 이 한 줄이 합니다. 그래서 같은 버튼으로 켰다 껐다 할 수 있습니다.",
+           oops:"<code>ledState = true;</code> 라고만 쓰면 켤 수만 있고 끌 수 없습니다." },
+      21:{ t:"뒤집힌 ledState 를 LED 핀에 내보냅니다. true 면 HIGH(켜짐), false 면 LOW(꺼짐).",
+           why:"<code>digitalWrite</code> 는 HIGH/LOW 를 받지만, true/false 도 1/0 이라 그대로 넣을 수 있습니다." },
+      22:G.closeIf,
+      23:{ t:"버튼에서 <b>손을 뗄 때까지</b> 여기서 기다립니다. 끝에 붙은 <code>;</code> 이 몸통이 빈 while 문입니다.",
+           why:"이 줄이 없으면 누르고 있는 동안 loop 가 계속 돌아 LED 가 20ms 마다 켜졌다 꺼졌다 합니다. 한 번 누르면 한 번만 뒤집히게 하려고 손을 뗄 때까지 붙잡아 둡니다.",
+           go:"오른쪽 버튼을 <b>고정</b>해 두고 한 줄씩 실행해 보세요. 이 줄에서 못 빠져나갑니다. 고정을 풀면 다음 줄로 갑니다." },
+      24:G.closeIf, 25:G.closeLoop
+    },
+    initM:function(M, V){ M.led = false; M.ledState = false; M.flips = 0; M.bounced = false; },
+    prog:function*(M,V){
+      yield {ln:10}; yield {ln:11};
+      while(true){
+        var r = readBtn("btn");
+        yield {ln:17, quick:playing && r !== 0, iter:"digitalRead → " + fmtRead(r) + (r === 0 ? " → 참" : " → 거짓")};
+        if(r === 0){
+          yield {ln:18, dur:V.deb};
+          r = readBtn("btn");
+          yield {ln:19, iter:"다시 읽음 → " + r + (r === 0 ? " → 참, 진짜 눌림" : " → 거짓, 떨림이었음")};
+          if(r === 0){
+            M.ledState = !M.ledState; M.flips++;
+            yield {ln:20, iter:"ledState = " + (M.ledState ? "true" : "false")};
+            M.led = M.ledState;
+            yield {ln:21, iter:"LED " + (M.led ? "켜짐" : "꺼짐")};
+          }
+          var n = 0;
+          while(readBtn("btn") === 0){ n++; yield {ln:23, dur:5, quick:true, iter:"아직 눌려 있음 — 기다리는 중 (" + n + ")"}; }
+          yield {ln:23, iter:"손을 뗐음 → 빠져나감"};
+        }
+        yield {ln:25, dur:1, quick:true};
+      }
+    },
+    watch:function(M,V){
+      var p = btnPressed("btn");
+      return [["button (GPIO " + V.btn + ")", p ? "0  LOW" : "1  HIGH", p],
+              ["ledState", M.ledState ? "true" : "false", M.ledState],
+              ["LED (GPIO " + V.led + ")", M.led ? "켜짐" : "꺼짐", M.led],
+              ["뒤집은 횟수", M.flips, M.flips > 0]];
+    }
+  },
+
+  /* ─────────────────────────── 03 길게·짧게 ─────────────────────────── */
+  press: {
+    file:"03_button_press.ino", title:"길게·짧게 구분", hw:"press", minPress:3, hwName:"버튼 (GPIO 15) + LED (GPIO 4)",
+    overview:{"t": "누른 시간을 <b>millis</b> 로 재서 0.5초 미만이면 LED 한 번, 이상이면 세 번 깜빡입니다.", "steps": [["선언부", "버튼 15 · LED 4, pressStart(누른 시각), wasPressed(직전 상태)"], ["setup()", "버튼 입력, LED 출력"], ["loop()", "막 누른 순간 → 시각 기록 / 막 뗀 순간 → 시간 계산 → 짧게·길게 갈라 깜빡임"]], "hw": "빨간 버튼 + LED + 스톱워치 표시 — 톡 / 꾹 눌러 보세요.", "look": "지금 상태와 직전 상태(wasPressed)를 비교해 ‘순간’을 잡아내는 방법.", "oops": "wasPressed = false 로 되돌리는 줄이 없으면 두 번째부터 반응이 없습니다."},
+    vars:{
+      btn:{ label:"버튼을 꽂은 핀", def:15, min:0, max:39, step:1 },
+      led:{ label:"LED 를 꽂은 핀", def:4, min:0, max:39, step:1 },
+      th:{ label:"길게/짧게를 가르는 시간", def:500, min:100, max:2000, step:50, unit:"ms" },
+      s1:{ label:"짧게 눌렀을 때 켜 두는 시간", def:100, min:50, max:1000, step:50, unit:"ms" },
+      n:{ label:"길게 눌렀을 때 깜빡이는 횟수", def:3, min:1, max:10, step:1, unit:"번" },
+      lOn:{ label:"깜빡일 때 켜 두는 시간", def:150, min:50, max:600, step:50, unit:"ms" },
+      lOff:{ label:"깜빡일 때 꺼 두는 시간", def:150, min:50, max:600, step:50, unit:"ms" }
+    },
+    lines:[
+      "/*", "  ESP32 올인원 키트", "  버튼 길게·짧게 누르기", "*/",
+      "const int button = {{btn}};   // 버튼을 IO15에 연결",
+      "const int led = {{led}};       // LED를 IO4에 연결",
+      "unsigned long pressStart = 0;",
+      "bool wasPressed = false;",
+      "",
+      "void setup() {",
+      "  pinMode(button, INPUT);",
+      "  pinMode(led, OUTPUT);",
+      "}",
+      "",
+      "void loop() {",
+      "  bool isPressed = (digitalRead(button) == LOW);",
+      "  if (isPressed && !wasPressed) {     // 막 누르기 시작한 순간",
+      "    pressStart = millis();            // 누르기 시작한 시각 기록",
+      "    wasPressed = true;",
+      "  } else if (!isPressed && wasPressed) {   // 막 손을 뗀 순간",
+      "    unsigned long dur = millis() - pressStart;  // 누른 시간 계산",
+      "    if (dur < {{th}}) {                  // 0.5초보다 짧으면 '짧게'",
+      "      digitalWrite(led, HIGH); delay({{s1}}); digitalWrite(led, LOW);",
+      "    } else {                          // 0.5초 이상이면 '길게' → 3번 깜빡",
+      "      for (int i = 0; i < {{n}}; i++) {",
+      "        digitalWrite(led, HIGH); delay({{lOn}});",
+      "        digitalWrite(led, LOW);  delay({{lOff}});",
+      "      }",
+      "    }",
+      "    wasPressed = false;",
+      "  }",
+      "}"
+    ],
+    notes:{
+      0:G.cmt, 1:G.cmt, 2:G.cmt, 3:G.cmt,
+      4:{ t:"버튼 핀 번호입니다. <b>const</b> 가 붙어 프로그램이 도는 동안 바꿀 수 없습니다.",
+          why:"핀 번호는 배선이 정해지면 바뀔 일이 없습니다. <code>const</code> 를 붙여 두면 실수로 고치는 줄을 컴파일러가 막아 줍니다. 02 스케치의 <code>#define</code> 과 목적은 같고 방법만 다릅니다." },
+      5:{ t:"LED 핀 번호입니다." },
+      6:{ t:"누르기 시작한 <b>시각</b>을 담을 상자입니다. <b>unsigned long</b> 은 음수 없는 아주 큰 정수입니다.",
+          why:"<code>millis()</code> 는 켜진 뒤 지난 밀리초를 돌려주는데, 50일쯤 지나면 40억을 넘습니다. <code>int</code> 는 약 21억까지라 모자랍니다. 그래서 시간은 늘 <code>unsigned long</code> 에 담습니다.",
+          oops:"<code>int pressStart</code> 로 쓰면 컴파일은 되지만 오래 켜 두면 시간 계산이 틀어집니다." },
+      7:{ t:"<b>직전 loop 에서</b> 눌려 있었는지 기억하는 상자입니다. 처음엔 false.",
+          why:"“지금 눌렸다”만으로는 <b>막 누른 순간</b>인지 <b>계속 누르는 중</b>인지 모릅니다. 직전 상태와 비교해야 순간을 잡아낼 수 있습니다. 이 스케치의 핵심입니다." },
+      8:G.blank, 9:G.setup, 10:G.pinIn, 11:G.pinOut, 12:G.closeSetup, 13:G.blank, 14:G.loop,
+      15:{ t:"지금 눌려 있으면 true, 아니면 false 를 <b>isPressed</b> 에 담습니다.",
+           why:"괄호 안의 비교식 자체가 참/거짓 값입니다. 그 값을 상자에 담아 두면 아래에서 두 번 읽지 않고 한 번 읽은 값을 씁니다. 이 스케치는 떨림 방지 delay 가 없어 아주 드물게 잘못 읽을 수 있습니다." },
+      16:{ t:"<b>지금은 눌렸는데 직전엔 안 눌려 있었다</b> = 막 누르기 시작한 순간입니다.",
+           why:"<code>&amp;&amp;</code> 는 “그리고”입니다. 둘 다 참일 때만 참. 계속 누르고 있으면 wasPressed 가 이미 true 라 이 조건은 <b>한 번만</b> 참이 됩니다.",
+           go:"버튼을 <b>고정</b>해 두고 한 줄씩 실행해 보세요. 첫 바퀴만 이리로 오고, 다음 바퀴부터는 19번 줄 조건도 거짓이라 아무 데도 안 들어갑니다." },
+      17:{ t:"지금 시각을 <b>pressStart</b> 에 적어 둡니다. 스톱워치의 시작 단추입니다.",
+           why:"<code>millis()</code> 는 전원이 켜진 뒤 지난 밀리초입니다. 나중에 뗀 시각에서 이 값을 빼면 누른 시간이 나옵니다." },
+      18:{ t:"“눌려 있는 중”이라고 기억해 둡니다. 다음 바퀴부터 16번 줄이 거짓이 됩니다." },
+      19:{ t:"<b>지금은 안 눌렸는데 직전엔 눌려 있었다</b> = 막 손을 뗀 순간입니다.",
+           why:"<code>else if</code> 는 위 조건이 아닐 때 다시 한 번 다른 조건을 봅니다. 두 순간(누름·뗌)을 이렇게 갈라 잡습니다." },
+      20:{ t:"뗀 시각에서 누른 시각을 빼 <b>누르고 있던 시간</b>을 구합니다. 스톱워치의 정지 단추입니다." },
+      21:{ t:"누른 시간이 500ms 보다 <b>짧으면</b> ‘짧게’입니다.",
+           go:"오른쪽 버튼을 <b>짧게</b> 톡 눌렀다 떼 보세요. 그리고 1초쯤 <b>꾹</b> 눌렀다 떼 보세요. 오른쪽 스톱워치가 시간을 재고, 이 줄에서 길이 갈립니다. 500 을 200 으로 바꾸면 훨씬 빨리 떼야 ‘짧게’가 됩니다." },
+      22:{ t:"한 줄에 세 문장입니다 — 켜기, 잠깐 기다리기, 끄기. <b>한 번</b> 깜빡입니다.",
+           why:"세미콜론이 문장의 끝입니다. 줄바꿈이 아닙니다. 그래서 한 줄에 여러 문장을 써도 됩니다. 짧아서 한 줄에 모았을 뿐 세 줄로 나눠 써도 똑같습니다." },
+      23:{ t:"500ms 이상이면 이쪽, ‘길게’입니다." },
+      24:{ t:"<b>3번</b> 반복합니다. 반복 추적표에서 바퀴를 세어 보세요.",
+           go:"3 을 5 로 바꾸면 다섯 번 깜빡입니다." },
+      25:{ t:"켜고, 150ms 기다립니다." },
+      26:{ t:"끄고, 150ms 기다립니다. 켜짐·꺼짐 한 쌍이 한 번의 깜빡임입니다.",
+           oops:"뒤의 <code>delay</code> 를 빼면 끄자마자 다음 바퀴에서 다시 켜져 사람 눈에는 계속 켜진 것처럼 보입니다." },
+      27:G.closeFor, 28:G.closeIf,
+      29:{ t:"“이제 안 눌려 있음”으로 기억을 고칩니다. 다음 누름을 다시 잡을 준비입니다.",
+           oops:"이 줄이 없으면 wasPressed 가 영원히 true 라 두 번째 누름부터는 아무 반응이 없습니다." },
+      30:G.closeIf, 31:G.closeLoop
+    },
+    initM:function(M, V){ M.led = false; M.wasPressed = false; M.pressStart = null; M.dur = null; M.verdict = ""; M.t0 = Date.now(); },
+    prog:function*(M,V){
+      function millis(){ return Date.now() - M.t0; }
+      yield {ln:10}; yield {ln:11};
+      while(true){
+        var isP = (readBtn("btn") === 0);
+        M.isPressed = isP;
+        yield {ln:15, dur:1, quick:!playing ? false : !(isP !== M.wasPressed), iter:"isPressed = " + (isP ? "true" : "false")};
+        if(isP && !M.wasPressed){
+          yield {ln:16, iter:"true && !false → 참 — 막 눌렀다"};
+          M.pressStart = millis(); M.dur = null; M.verdict = "";
+          yield {ln:17, iter:"pressStart = " + M.pressStart};
+          M.wasPressed = true;
+          yield {ln:18};
+        } else if(!isP && M.wasPressed){
+          yield {ln:19, iter:"false 이고 wasPressed 는 true → 참 — 막 뗐다"};
+          M.dur = millis() - M.pressStart;
+          yield {ln:20, iter:"dur = " + (M.pressStart + M.dur) + " - " + M.pressStart + " = " + M.dur};
+          if(M.dur < V.th){
+            M.verdict = "short";
+            yield {ln:21, iter:M.dur + " < " + V.th + " → 참, 짧게"};
+            M.led = true; yield {ln:22, iter:"HIGH"};
+            yield {ln:22, dur:V.s1, iter:"delay(" + V.s1 + ")"};
+            M.led = false; yield {ln:22, iter:"LOW"};
+          } else {
+            M.verdict = "long";
+            yield {ln:21, iter:M.dur + " < " + V.th + " → 거짓, 길게"};
+            yield {ln:23};
+            yield* forLoop({ ln:24, name:"i", from:0, cond:function(i){ return i < V.n; }, condTxt:function(i){ return i + " < " + V.n; },
+              step:function(i){ return i + 1; }, stepTxt:"i++",
+              body:function*(i){
+                M.led = true; yield {ln:25, dur:V.lOn, iter:"HIGH · " + V.lOn + "ms"};
+                M.led = false; yield {ln:26, dur:V.lOff, iter:"LOW · " + V.lOff + "ms"};
+              } });
+          }
+          M.wasPressed = false;
+          yield {ln:29, iter:"wasPressed = false"};
+        }
+      }
+    },
+    watch:function(M,V){
+      var p = btnPressed("btn");
+      return [["button", p ? "0  LOW" : "1  HIGH", p],
+              ["wasPressed", M.wasPressed ? "true" : "false", M.wasPressed],
+              ["dur", M.dur === null ? "—" : M.dur + " ms", M.dur !== null],
+              ["LED", M.led ? "켜짐" : "꺼짐", M.led]];
+    }
+  },
+
+  /* ─────────────────────────── 04 카운터 ─────────────────────────── */
+  counter: {
+    file:"04_counter.ino", title:"세 버튼 숫자 세기", hw:"counter", hwName:"버튼 3개 (17·18·19) + TM1650 표시기",
+    overview:{"t": "세 버튼으로 숫자를 <b>+1 · −1 · 0</b> 으로 바꾸며 4자리 표시기에 보여 줍니다. 9999 를 넘으면 0.", "steps": [["선언부", "TM1650(CLK 22 · DIO 21), item, 버튼 핀 17·18·19"], ["setup()", "버튼 세 개 입력, for 로 4자리 지움"], ["loop()", "표시 → 세 버튼 읽기 → 초록 ++ / 노랑 −− / 빨강 0 → 9999 넘으면 0"]], "hw": "빨강·노랑·초록 버튼 + TM1650 표시기 — 누르고 있으면 0.2초마다 계속 셉니다.", "look": "item 이 바뀌는 것과 표시기에 쓰는 것(25번 줄)이 별개인 것. 6장 for 문이 다시 나옴.", "oops": "0 아래를 막는 줄이 없어 노랑을 누르면 음수가 됩니다."},
+    vars:{
+      init:{ label:"처음 숫자", def:0, min:0, max:9999, step:1 },
+      clk:{ label:"TM1650 CLK 핀", def:22, min:0, max:39, step:1 },
+      dio:{ label:"TM1650 DIO 핀", def:21, min:0, max:39, step:1 },
+      res:{ label:"초기화(빨강) 버튼 핀", def:17, min:0, max:39, step:1 },
+      sub:{ label:"빼기(노랑) 버튼 핀", def:18, min:0, max:39, step:1 },
+      add:{ label:"더하기(초록) 버튼 핀", def:19, min:0, max:39, step:1 },
+      d:{ label:"한 번 세고 기다리는 시간", def:200, min:20, max:1000, step:20, unit:"ms" },
+      max:{ label:"이 값을 넘으면 0으로", def:9999, min:9, max:9999, step:1 }
+    },
+    lines:[
+      "/*", "  ESP32 올인원 키트", "  숫자 카운터", "*/",
+      "#include \"TM1650.h\" // TM1650 라이브러리 불러오기",
+      "int item = {{init}}; // 화면에 표시할 숫자",
+      "#define CLK {{clk}}    // TM1650 CLK를 IO22 핀에 연결",
+      "#define DIO {{dio}}    // TM1650 DIO를 IO21 핀에 연결",
+      "TM1650 DigitalTube(CLK,DIO);",
+      "",
+      "int res = {{res}};     // 초기화 버튼",
+      "int subtract = {{sub}};   // 빼기 버튼",
+      "int  add = {{add}};       // 더하기 버튼",
+      "",
+      "void setup(){",
+      "  pinMode(res,INPUT);  // 버튼이 연결된 핀을 입력 모드로 설정",
+      "  pinMode(add,INPUT);",
+      "  pinMode(subtract,INPUT);",
+      "  for(char b=0;b<4;b++){",
+      "    DigitalTube.clearBit(b);      // 0~3번 자리 화면 지우기",
+      "  }",
+      "}",
+      "",
+      "void loop()",
+      "{",
+      "  DigitalTube.displayFloatNum(item);// item 값을 표시기에 출력",
+      "  int red_key = digitalRead(res);            // 빨강 버튼은 초기화",
+      "  int yellow_key = digitalRead(subtract);    // 노랑 버튼은 1 빼기",
+      "  int green_key = digitalRead(add);           // 초록 버튼은 1 더하기",
+      "  if(green_key == 0)",
+      "  {",
+      "    item++;  // 1 더하기 (item = item + 1)",
+      "    delay({{d}});",
+      "  }",
+      "  if(yellow_key == 0)",
+      "  {",
+      "    item--;    // 1 빼기 (item = item - 1)",
+      "    delay({{d}});",
+      "  }",
+      "  if(red_key == 0)",
+      "  {",
+      "    item = 0;",
+      "    delay({{d}});",
+      "  }",
+      "  if (item > {{max}}) // 9999를 넘으면(표시 범위 초과) 0으로 되돌림",
+      "  {  ",
+      "    item = 0; ",
+      "  }",
+      "}"
+    ],
+    notes:{
+      0:G.cmt, 1:G.cmt, 2:G.cmt, 3:G.cmt,
+      4:{ t:"숫자 표시기 칩 <b>TM1650</b> 을 다루는 라이브러리를 끌어옵니다.",
+          why:"꺾쇠 <code>&lt; &gt;</code> 대신 <b>따옴표</b>입니다. 따옴표는 “내 스케치 폴더 안에서 먼저 찾아라”는 뜻입니다. 이 라이브러리는 키트 폴더에 같이 들어 있습니다.",
+          oops:"6장에서 이미 썼습니다. 파일이 스케치 폴더에 없으면 No such file 에러가 납니다." },
+      5:{ t:"세고 있는 숫자를 담는 상자 <b>item</b>. 0 부터 시작합니다.",
+          why:"교안 연습문제 Q2 — 숫자를 직접 9999 라고 적으면 왜 안 될까요? 코드에 적은 숫자는 <b>고정된 값</b>이라 버튼을 눌러도 바뀌지 않습니다. 바꿔 담을 <b>변수</b>가 있어야 셀 수 있습니다.",
+          go:"처음 숫자를 9990 으로 두고 초록 버튼을 꾹 눌러 보세요. 9999 를 넘는 순간 0 으로 돌아갑니다(45번 줄)." },
+      6:{ t:"CLK(박자 선)를 22번 핀으로 정합니다. <code>#define</code> 은 글자 바꿔치기입니다.",
+          why:"6장 디스플레이에서 본 것과 같은 표시기입니다. CLK 는 clock, 박자를 치는 선입니다." },
+      7:{ t:"DIO(값이 오가는 선)를 21번 핀으로 정합니다." },
+      8:{ t:"<b>DigitalTube</b> 라는 이름의 표시기 조종기를 만들고 두 핀을 알려 줍니다." },
+      9:G.blank,
+      10:{ t:"빨강 버튼 핀. 이름이 <b>res</b>(reset) 입니다.",
+           why:"버튼 셋의 역할을 이름에 담았습니다 — res(되돌리기), subtract(빼기), add(더하기). 핀 번호 17·18·19 보다 이름이 훨씬 읽기 쉽습니다." },
+      11:{ t:"노랑 버튼 핀. subtract 는 “빼다”입니다." },
+      12:{ t:"초록 버튼 핀. add 는 “더하다”입니다. int 와 add 사이의 빈칸 두 개는 실수지만 동작에는 상관없습니다." },
+      13:G.blank, 14:G.setup,
+      15:{ t:"세 버튼 핀을 모두 <b>입력</b>으로 씁니다.", why:"버튼은 값을 읽어 오는 부품이니 INPUT 입니다. 셋 다 같은 이유입니다." },
+      16:{ t:"add 핀도 입력." }, 17:{ t:"subtract 핀도 입력." },
+      18:{ t:"b 를 0, 1, 2, 3 으로 바꾸며 <b>네 번</b> 반복합니다. 자리 번호입니다.",
+           why:"<code>char</code> 는 원래 글자 상자지만 0~255 정수를 담는 아주 작은 상자로도 씁니다. 자리 번호는 0~3 이라 이걸로 충분합니다. <code>int</code> 라고 써도 똑같이 동작합니다.",
+           go:"한 줄씩 실행하며 반복 추적표를 보세요. b 가 4 가 되는 순간 조건이 거짓이 되어 빠져나갑니다." },
+      19:{ t:"b 번째 자리를 <b>지웁니다.</b> 전원이 켜질 때 남아 있던 찌꺼기를 없앱니다." },
+      20:G.closeFor, 21:G.closeSetup, 22:G.blank, 23:G.loop, 24:G.open,
+      25:{ t:"<b>item</b> 값을 네 자리 표시기에 보여 줍니다. loop 가 돌 때마다 매번 다시 씁니다.",
+           why:"버튼을 눌러 item 이 바뀌어도 이 줄이 없으면 표시기는 옛 숫자를 보여 줍니다. 값이 바뀌는 것과 화면에 쓰는 것은 별개입니다.",
+           oops:"이름에 Float 가 있지만 네 자리라 소수는 제대로 못 보여 줍니다. 음수(-1 …)가 어떻게 보이는지는 실물에서 확인해 보세요. 이 화면은 맨 앞 자리에 - 를 그립니다." },
+      26:{ t:"빨강 버튼 값을 읽어 <b>red_key</b> 에 담습니다. 안 누르면 1, 누르면 0.", why:G.lowMeans },
+      27:{ t:"노랑 버튼 값을 <b>yellow_key</b> 에." },
+      28:{ t:"초록 버튼 값을 <b>green_key</b> 에. 세 버튼을 먼저 다 읽어 두고 아래에서 하나씩 살핍니다." },
+      29:{ t:"초록 버튼이 눌렸으면(0) 아래 블록으로 들어갑니다.",
+           go:"오른쪽 <b>초록 버튼</b>을 누르고 있어 보세요. 0.2초마다 하나씩 올라갑니다. 손을 떼면 멈춥니다." },
+      30:G.open,
+      31:{ t:"<b>item 을 1 늘립니다.</b> <code>item++</code> 은 <code>item = item + 1</code> 과 같습니다.",
+           why:"‘지금 값에 1 을 더해 다시 같은 상자에 담는다’ — 프로그래밍에서 가장 흔한 줄이라 <code>++</code> 라는 줄임말이 따로 있습니다." },
+      32:{ t:"0.2초 기다립니다. 누르고 있으면 0.2초마다 한 번씩 셉니다.",
+           why:"이 delay 가 없으면 한 번 누르는 사이에 수백 번 올라가 버립니다. 떨림 방지와 ‘누르고 있으면 천천히 계속’ 두 역할을 한꺼번에 합니다.",
+           go:"20 으로 줄이면 누르고 있는 동안 숫자가 휙휙 올라갑니다. 1000 으로 올리면 1초에 하나씩." },
+      33:G.closeIf,
+      34:{ t:"노랑 버튼이 눌렸으면 아래 블록으로. 29번 줄과 같은 꼴입니다." },
+      35:G.open,
+      36:{ t:"<b>item 을 1 줄입니다.</b>",
+           oops:"0 아래로 내려가는 것을 막는 줄이 없습니다. 0 에서 노랑을 누르면 -1 이 됩니다. 44번 줄은 위쪽만 막습니다. 아래쪽도 막으려면 <code>if(item &lt; 0) item = 0;</code> 같은 줄이 더 필요합니다." },
+      37:{ t:"0.2초 기다립니다." }, 38:G.closeIf,
+      39:{ t:"빨강 버튼이 눌렸으면 아래 블록으로." }, 40:G.open,
+      41:{ t:"item 을 <b>0 으로 되돌립니다.</b> ++ 나 -- 가 아니라 값을 그냥 덮어씁니다." },
+      42:{ t:"0.2초 기다립니다." }, 43:G.closeIf,
+      44:{ t:"item 이 9999 를 <b>넘었으면</b> 아래 블록으로. 표시기는 네 자리라 10000 은 못 보여 줍니다.",
+           why:"버튼과 상관없이 매 바퀴 검사합니다. 그래서 초록을 누르다 9999 를 지나면 곧바로 0 으로 돌아갑니다.",
+           go:"이 값을 9 로 바꿔 보세요. 9 다음에 0 으로 돌아가 한 자리 카운터가 됩니다." },
+      45:G.open,
+      46:{ t:"0 으로 되돌립니다. 자동차 주행거리계가 999999 다음에 000000 이 되는 것과 같습니다." },
+      47:G.closeIf, 48:G.closeLoop
+    },
+    initM:function(M, V){ M.item = null; M.shown = null; M.cleared = 0; M.keys = null; M.bounced = false; },
+    prog:function*(M,V){
+      M.item = V.init;
+      yield {ln:15}; yield {ln:16}; yield {ln:17};
+      yield* forLoop({ ln:18, name:"b", from:0, cond:function(b){ return b < 4; }, condTxt:function(b){ return b + " < 4"; },
+        step:function(b){ return b + 1; }, stepTxt:"b++",
+        body:function*(b){ M.cleared = b + 1; yield {ln:19, iter:"clearBit(" + b + ") — " + b + "번 자리 지움"}; } });
+      while(true){
+        M.shown = M.item;
+        yield {ln:25, iter:"표시기 ← " + M.item};
+        var r = readBtn("res"), y = readBtn("sub"), g = readBtn("add");
+        M.keys = [r, y, g];
+        yield {ln:26, quick:playing, iter:"red_key = " + r};
+        yield {ln:27, quick:playing, iter:"yellow_key = " + y};
+        yield {ln:28, quick:playing, iter:"green_key = " + g};
+        yield {ln:29, quick:playing && g !== 0, iter:g + " == 0 → " + (g === 0 ? "참" : "거짓")};
+        if(g === 0){ M.item++; yield {ln:31, iter:"item = " + M.item}; yield {ln:32, dur:V.d}; }
+        yield {ln:34, quick:playing && y !== 0, iter:y + " == 0 → " + (y === 0 ? "참" : "거짓")};
+        if(y === 0){ M.item--; yield {ln:36, iter:"item = " + M.item}; yield {ln:37, dur:V.d}; }
+        yield {ln:39, quick:playing && r !== 0, iter:r + " == 0 → " + (r === 0 ? "참" : "거짓")};
+        if(r === 0){ M.item = 0; yield {ln:41, iter:"item = 0"}; yield {ln:42, dur:V.d}; }
+        yield {ln:44, iter:M.item + " > " + V.max + " → " + (M.item > V.max ? "참" : "거짓"), quick:true};
+        if(M.item > V.max){ M.item = 0; yield {ln:46, iter:"item = 0 — 한 바퀴 돌아 0 으로"}; }
+        M.t += 1;
+      }
+    },
+    watch:function(M,V){
+      var k = M.keys || [1,1,1];
+      return [["item", M.item === null ? "—" : M.item, M.item !== null],
+              ["표시기에 보이는 값", M.shown === null ? "지워짐" : M.shown, M.shown !== null],
+              ["green · yellow · red", k[2] + " · " + k[1] + " · " + k[0], k.indexOf(0) >= 0],
+              ["b", (M.b === null || M.b === undefined) ? "—" : M.b, M.b !== null && M.b !== undefined]];
+    }
+  }
+};
+
+/* ═══ 3D 하드웨어 패널 ═══ */
+var curKit = null, hwObj = {};
+function newKit(el, opt){ HW3D.drop(curKit); curKit = HW3D.make(el, opt); return curKit; }
+function chatterRow(){
+  var l = document.createElement("label"); l.className = "latch";
+  l.innerHTML = '<input type="checkbox" ' + (chatterOn ? "checked" : "") + '> 접점 떨림 흉내 (관찰용으로 늘려 놓음)';
+  l.querySelector("input").addEventListener("change", function(){ chatterOn = this.checked; });
+  return l;
+}
+function latchRow(name, txt){
+  var l = document.createElement("label"); l.className = "latch";
+  l.innerHTML = '<input type="checkbox"> ' + (txt || "누른 채로 고정");
+  l.querySelector("input").addEventListener("change", function(){ setLatch(name, this.checked); });
+  return l;
+}
+function sigRow(el){ var p = document.createElement("p"); p.className = "sigline"; p.id = "hwl"; el.appendChild(p); return p; }
+function tip(el, html){ var t = document.createElement("p"); t.className = "hwtip"; t.innerHTML = html; el.appendChild(t); }
+function btnSig(name, pin){
+  var p = btnPressed(name);
+  return 'GPIO ' + pin + ' → <b class="' + (p ? "low" : "") + '">' + (p ? "0 LOW (눌림)" : "1 HIGH (안 눌림)") + '</b>';
+}
+function oneButtonBoard(el, ledToo){
+  var kit = newKit(el, { h:230, r:8.5, th:0.26, ph:0.9 });
+  kit.target.set(0, 0.3, 0);
+  HW3D.pcb(kit, 7.5, 4.5);
+  hwObj.tact = HW3D.tact(kit, { x: ledToo ? -1.4 : 0, z:0.2, color:0xE23B1E, label:"IO15", lw:0.9,
+    onDown:function(){ setBtn("btn", true); }, onUp:function(){ setBtn("btn", false); } });
+  if(ledToo) hwObj.led = HW3D.led(kit, { x:1.6, z:0.2, color:0xFF3B2A, label:"IO4", lw:0.8 });
+  var r = document.createElement("div"); r.className = "hwbtnrow";
+  r.appendChild(latchRow("btn")); r.appendChild(chatterRow());
+  return { kit:kit, row:r };
+}
+var HWDEF = {
+  read:{
+    build:function(el){
+      var b = oneButtonBoard(el, false);
+      sigRow(el);
+      var s = document.createElement("div"); s.className = "serial"; s.id = "serial"; el.appendChild(s);
+      el.appendChild(b.row);
+      tip(el, "<b>빨간 버튼</b>을 누르고 있으면 GPIO 15 가 LOW · 키보드 <b>B</b> 키로도 눌립니다");
+      bindKey("btn", "b");
+    },
+    paint:function(){
+      if(hwObj.tact) hwObj.tact.set(btnPressed("btn"));
+      var l = $("#hwl"); if(l) l.innerHTML = btnSig("btn", V.btn);
+      var s = $("#serial"); if(!s) return;
+      var bad = M.serialOn && M.baud !== 9600;
+      var lines = (M.lines || []).slice(-9).map(function(t){
+        if(bad) return '<div>' + esc(t.replace(/[A-Za-z: ]/g, function(){ return "⸮"; })) + '</div>';
+        return '<div>' + esc(t.slice(0, -1)) + '<span class="' + (t.slice(-1) === "0" ? "z" : "o") + '">' + t.slice(-1) + '</span></div>';
+      });
+      if(M.part) lines.push('<div class="part">' + esc(M.part) + '</div>');
+      s.innerHTML = '<div class="sh"><span>시리얼 모니터 · ' + (M.serialOn ? "연결됨" : "대기") + '</span><span>모니터 속도 <b>9600</b>' + (bad ? ' · 보드는 ' + M.baud : '') + '</span></div>' +
+        '<div class="sl">' + (lines.length ? lines.join("") : '<div style="color:#5D6B7B">— 아직 출력 없음 —</div>') + '</div>';
+    }
+  },
+  toggle:{
+    build:function(el){
+      var b = oneButtonBoard(el, true);
+      sigRow(el); el.appendChild(b.row);
+      tip(el, "<b>빨간 버튼</b>을 눌렀다 떼면 LED 가 뒤집힙니다 · 한 줄씩 볼 때는 <b>고정</b>을 켜세요 · 키보드 <b>B</b>");
+      bindKey("btn", "b");
+    },
+    paint:function(){
+      if(hwObj.tact) hwObj.tact.set(btnPressed("btn"));
+      if(hwObj.led) hwObj.led.set(!!M.led);
+      var l = $("#hwl"); if(l) l.innerHTML = btnSig("btn", V.btn) + ' <span>·</span> LED <b class="' + (M.led ? "" : "low") + '">' + (M.led ? "켜짐" : "꺼짐") + '</b>' + (M.bounced ? ' <span>· 떨림이 읽힌 적 있음</span>' : '');
+    }
+  },
+  press:{
+    build:function(el){
+      var b = oneButtonBoard(el, true);
+      sigRow(el);
+      var t = document.createElement("div"); t.className = "timer"; t.id = "timer"; el.appendChild(t);
+      el.appendChild(b.row);
+      tip(el, "<b>톡</b> 눌렀다 떼면 한 번, <b>꾹</b> 눌렀다 떼면 여러 번 깜빡입니다 · 실행 중에 눌러 보세요 · 키보드 <b>B</b>");
+      bindKey("btn", "b");
+      hwObj.tick = function(){
+        var t = $("#timer"); if(!t) return;
+        var p = btnPressed("btn"), now = Date.now() - (M.t0 || Date.now());
+        var d = (p && M.pressStart !== null && M.wasPressed) ? now - M.pressStart : (M.dur !== null ? M.dur : 0);
+        var pct = Math.min(100, d / (V.th * 2) * 100);
+        var v = M.verdict === "short" ? "짧게 — 한 번 깜빡" : M.verdict === "long" ? "길게 — " + V.n + "번 깜빡" : (p ? "재는 중 …" : "버튼을 눌러 보세요");
+        t.innerHTML = '<div class="tl"><span>누른 시간 (millis 차이)</span><b>' + d + ' ms</b></div>' +
+          '<div class="bar"><i class="' + (d >= V.th ? "long" : "") + '" style="width:' + pct + '%"></i><s style="left:50%" title="' + V.th + 'ms"></s></div>' +
+          '<div class="verdict ' + (M.verdict || "") + '">' + v + ' <span style="font-size:13px;color:var(--muted)">기준 ' + V.th + 'ms</span></div>';
+      };
+      if(hwObj.timerIv) clearInterval(hwObj.timerIv);
+      hwObj.timerIv = setInterval(function(){ if(sk().hw === "press" && btnPressed("btn") && M.wasPressed) hwObj.tick(); }, 60);
+    },
+    paint:function(){
+      if(hwObj.tact) hwObj.tact.set(btnPressed("btn"));
+      if(hwObj.led) hwObj.led.set(!!M.led);
+      var l = $("#hwl"); if(l) l.innerHTML = btnSig("btn", V.btn) + ' <span>·</span> LED <b class="' + (M.led ? "" : "low") + '">' + (M.led ? "켜짐" : "꺼짐") + '</b>';
+      if(hwObj.tick) hwObj.tick();
+    }
+  },
+  counter:{
+    build:function(el){
+      var kit = newKit(el, { h:250, r:10, th:0.2, ph:0.86 });
+      kit.target.set(0, 0.4, 0.2);
+      HW3D.pcb(kit, 9.5, 5.5);
+      hwObj.seg = HW3D.seg4(kit, { x:0, z:-1.3 });
+      hwObj.tr = HW3D.tact(kit, { x:-2.2, z:1.3, color:0xE23B1E, label:"IO17 res", lw:1.3, onDown:function(){ setBtn("res", true); }, onUp:function(){ setBtn("res", false); } });
+      hwObj.ty = HW3D.tact(kit, { x:0, z:1.3, color:0xF2B705, label:"IO18 subtract", lw:1.6, onDown:function(){ setBtn("sub", true); }, onUp:function(){ setBtn("sub", false); } });
+      hwObj.tg = HW3D.tact(kit, { x:2.2, z:1.3, color:0x2E9E5B, label:"IO19 add", lw:1.3, onDown:function(){ setBtn("add", true); }, onUp:function(){ setBtn("add", false); } });
+      sigRow(el);
+      var r = document.createElement("div"); r.className = "hwbtnrow";
+      r.appendChild(latchRow("add", "초록 고정")); r.appendChild(latchRow("sub", "노랑 고정")); r.appendChild(latchRow("res", "빨강 고정"));
+      r.appendChild(chatterRow()); el.appendChild(r);
+      tip(el, "<b>초록</b> +1 · <b>노랑</b> −1 · <b>빨강</b> 0 으로 · 누르고 있으면 계속 셉니다 · 키보드 <b>G · Y · R</b>");
+      bindKey("add", "g"); bindKey("sub", "y"); bindKey("res", "r");
+    },
+    paint:function(){
+      if(hwObj.tr){ hwObj.tr.set(btnPressed("res")); hwObj.ty.set(btnPressed("sub")); hwObj.tg.set(btnPressed("add")); }
+      if(hwObj.seg) hwObj.seg.set(M.shown === null || M.shown === undefined ? null : String(M.shown));
+      var l = $("#hwl");
+      if(l) l.innerHTML = '<span style="color:var(--green-2)">add</span> ' + (btnPressed("add") ? "<b class='low'>0</b>" : "<b>1</b>") +
+        ' · <span style="color:var(--warn)">subtract</span> ' + (btnPressed("sub") ? "<b class='low'>0</b>" : "<b>1</b>") +
+        ' · <span style="color:var(--red-2)">res</span> ' + (btnPressed("res") ? "<b class='low'>0</b>" : "<b>1</b>");
+    }
+  }
+};
+var _keyBound = {};
+function bindKey(name, key){
+  if(_keyBound[key]) return; _keyBound[key] = true;
+  document.addEventListener("keydown", function(e){ if(e.repeat || e.target.tagName === "INPUT") return; if(e.key.toLowerCase() === key) setBtn(name, true); });
+  document.addEventListener("keyup", function(e){ if(e.key.toLowerCase() === key) setBtn(name, false); });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   소스 실행기 엔진 (05장 실행기에서 이어받음 — 소리 계층은 뺐고,
+   버튼 눌림·떨림, 문자열 값 편집, 빠른 반복 단계, 3D 하드웨어 연결을 더했다)
+   ═══════════════════════════════════════════════════════════════ */
+var $ = function(s){ return document.querySelector(s); };
+var $$ = function(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); };
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function hex2(v){ return "0x" + (+v).toString(16).padStart(2,"0"); }
+
+/* ═══ 상태 ═══ */
+var noteOpen = false, wasOpen = false;
+var cur = ORDER[0], V = {}, M = {}, gen = null, live = -1, iterTxt = "", iterPhase = "", selLine = null;
+var playing = false, timer = null, speed = 1, selVar = null, lastQuick = false;
+var SPEEDS = [0.25,0.5,0.75,1,2,4,8];
+function sk(){ return SK[cur]; }
+
+/* ═══ 버튼 — 학생이 누르는 택트 스위치 ═══
+   BTN[name] = { down:누르고 있음, latch:고정, edge:마지막으로 바뀐 시각(M.t) }
+   readBtn() 은 스케치의 digitalRead() 가 부른다.
+   풀업 저항이 있는 보드라 안 누르면 1(HIGH), 누르면 0(LOW) 이다.
+   떨림(채터링) 흉내 : 눌리거나 떼인 뒤 CHATTER_MS 동안은 값이 튄다. */
+var BTN = {}, chatterOn = true, CHATTER_MS = 4, MIN_PRESS = 60;
+/* 실제 보드는 1초에 수만 번 읽지만 이 화면은 한 줄에 수십 ms 가 걸린다.
+   그래서 톡 누른 버튼은 스케치가 한 번 읽고 나서 MIN_PRESS(모의 ms)가 지난 뒤에야 떼인 것으로 친다 — 짧은 누름을 놓치지 않게. */
+function minPress(){ return sk().minPress || MIN_PRESS; }   /* 스케치가 짧게 정할 수 있다 — delay 없는 loop 는 모의 ms 가 천천히 가므로 */
+function btn(name){ return BTN[name] || (BTN[name] = { down:false, latch:false, edge:-1e9, seenT:null, pend:false }); }
+function btnPressed(name){ var b = btn(name); return b.down || b.latch; }
+function applyEdge(b, name, was){
+  if(btnPressed(name) !== was){ b.edge = (M.t || 0); b.seenT = null; }
+}
+function setBtn(name, down){
+  var b = btn(name), was = btnPressed(name);
+  if(!down && b.down && !b.latch && (b.seenT === null || (M.t || 0) - b.seenT < minPress())){
+    b.pend = true;            /* 아직 스케치가 충분히 읽지 못했다 — 잠시 눌린 채로 둔다 */
+  } else {
+    b.down = down; b.pend = false;
+    applyEdge(b, name, was);
+  }
+  M.lastBtn = name;
+  paintHW(); renderWatch();
+}
+function setLatch(name, on){
+  var b = btn(name), was = btnPressed(name);
+  b.latch = on; if(on){ b.pend = false; }
+  applyEdge(b, name, was);
+  paintHW(); renderWatch();
+}
+function settleBtns(){
+  Object.keys(BTN).forEach(function(k){
+    var b = BTN[k];
+    if(b.pend && b.seenT !== null && (M.t || 0) - b.seenT >= minPress()){
+      var was = btnPressed(k); b.down = false; b.pend = false; applyEdge(b, k, was);
+      paintHW(); renderWatch();
+    }
+  });
+}
+function readBtn(name){
+  settleBtns();
+  var b = btn(name), pressed = btnPressed(name);
+  M.reads = (M.reads || 0) + 1;
+  if(chatterOn && ((M.t || 0) - b.edge) < CHATTER_MS){
+    var v = Math.random() < 0.5 ? 0 : 1;
+    M.bounced = true;
+    return v;
+  }
+  if(pressed && b.seenT === null) b.seenT = (M.t || 0);
+  return pressed ? 0 : 1;
+}
+function clearBtns(){ Object.keys(BTN).forEach(function(k){ BTN[k].down = false; BTN[k].latch = false; BTN[k].pend = false; BTN[k].seenT = null; BTN[k].edge = -1e9; }); }
+/* 누르고 있는 동안 — 포인터와 키보드 둘 다 */
+function holdOn(el, name, key){
+  el.addEventListener("pointerdown", function(e){ e.preventDefault(); try{ el.setPointerCapture(e.pointerId); }catch(x){} setBtn(name, true); });
+  ["pointerup","pointercancel"].forEach(function(ev){ el.addEventListener(ev, function(){ setBtn(name, false); }); });
+  el.addEventListener("keydown", function(e){ if((e.key === " " || e.key === "Enter") && !e.repeat){ e.preventDefault(); setBtn(name, true); } });
+  el.addEventListener("keyup", function(e){ if(e.key === " " || e.key === "Enter"){ e.preventDefault(); setBtn(name, false); } });
+  if(key){
+    document.addEventListener("keydown", function(e){
+      if(e.repeat || e.target.tagName === "INPUT") return;
+      if(e.key.toLowerCase() === key) setBtn(name, true);
+    });
+    document.addEventListener("keyup", function(e){ if(e.key.toLowerCase() === key) setBtn(name, false); });
+  }
+}
+
+/* ═══ 스케치 바꾸기 · 되돌리기 ═══ */
+function loadVars(){
+  V = {};
+  var d = sk().vars;
+  Object.keys(d).forEach(function(k){ V[k] = d[k].def; });
+}
+function freshM(){ M = { t:0 }; if(sk().initM) sk().initM(M, V); }
+function resetRun(){
+  gen = null; live = -1; iterTxt = ""; iterPhase = ""; selLine = null;
+  freshM(); clearBtns();
+  stop();
+  paint();
+}
+function stop(){
+  playing = false;
+  if(timer){ clearTimeout(timer); timer = null; }
+  $("#playBtn").textContent = "▶ 실행";
+  $("#stState").textContent = "정지";
+}
+function switchTo(k){
+  cur = k; selVar = null; noteOpen = false; wasOpen = false;
+  loadVars(); gen = null; live = -1; iterTxt = ""; iterPhase = ""; selLine = null;
+  freshM(); clearBtns(); stop();
+  renderPicker(); buildHW(); renderSrc(); renderEditor(); renderWatch(); renderTrace();
+}
+function fmtVar(k){
+  var d = sk().vars[k];
+  if(d.disp && d.disp[String(V[k])] !== undefined) return d.disp[String(V[k])];
+  if(d.text) return String(V[k]);
+  return d.hex ? hex2(V[k]) : String(V[k]);
+}
+
+/* ═══ 이름 뜻풀이 — 영어 단어를 합쳐 만든 이름이 무슨 뜻인지 ═══ */
+var WORDS = {
+  "setup":["set up · 준비하다","처음 한 번만 실행"],
+  "loop":["loop · 되풀이","끝없이 반복"],
+  "void":["void · 비어 있음","돌려주는 값 없음"],
+  "int":["integer · 정수","정수를 담는 상자"],
+  "char":["character · 글자","아주 작은 정수 상자"],
+  "bool":["boolean · 참/거짓","true 아니면 false"],
+  "const":["constant · 변하지 않는","바꿀 수 없는 값"],
+  "unsigned":["un(아닌) + signed(부호 있는)","음수 없는 수"],
+  "long":["long · 긴","큰 정수를 담는 상자"],
+  "for":["for · ~하는 동안","정해진 횟수만큼 반복"],
+  "if":["if · 만약","조건이 맞을 때만"],
+  "else":["else · 그 밖에","조건이 아닐 때"],
+  "while":["while · ~하는 동안","조건이 참인 동안 반복"],
+  "true":["true · 참","1"],
+  "false":["false · 거짓","0"],
+  "pinMode":["pin(핀) + mode(방식)","핀을 입력/출력으로 정함"],
+  "OUTPUT":["output · 출력","내보내는 쪽"],
+  "INPUT":["input · 입력","받아들이는 쪽"],
+  "digitalWrite":["digital + write(쓰다)","HIGH/LOW 내보내기"],
+  "digitalRead":["digital + read(읽다)","HIGH인지 LOW인지 읽기"],
+  "HIGH":["high · 높음","약 3.3V · 1"],
+  "LOW":["low · 낮음","0V · 0"],
+  "delay":["delay · 늦춤","이 시간(ms) 기다리기"],
+  "delayMicroseconds":["delay + micro(백만분의 1) + seconds","마이크로초 단위로 기다리기"],
+  "millis":["milliseconds · 밀리초","켜진 뒤 지난 시간(ms)"],
+  "map":["map · 대응시키다","한 범위의 값을 다른 범위로 바꾸기"],
+  "include":["include · 포함하다","라이브러리 끌어오기"],
+  "define":["define · 정의하다","이름을 값으로 바꿔치기"],
+  "Wire":["wire · 전선","I2C 통신 라이브러리"],
+  "LiquidCrystal_I2C":["liquid crystal(액정) + I2C","I2C 액정 화면 라이브러리"],
+  "lcd":["Liquid Crystal Display","액정 화면"],
+  "init":["initialize · 초기화","처음 상태로 준비"],
+  "backlight":["back(뒤) + light(빛)","화면 뒤에서 비추는 빛"],
+  "setCursor":["set + cursor(커서)","다음 글자 쓸 자리 정하기"],
+  "print":["print · 인쇄하다","글자 내보내기"],
+  "println":["print + line","글자 내보내고 줄 바꿈"],
+  "scrollDisplayLeft":["scroll(밀다) + display + left","화면을 왼쪽으로 한 칸 밀기"],
+  "servoPin":["servo(서보) + pin","서보를 꽂은 핀"],
+  "servopulse":["servo + pulse(맥박·펄스)","서보에 펄스 보내는 함수"],
+  "pulsewidth":["pulse + width(폭)","HIGH 로 켜 두는 시간"],
+  "myangle":["my + angle(각도)","넘겨받은 각도"],
+  "Servo":["servo · 서보","서보 조종 라이브러리"],
+  "myServo":["my + servo","우리가 만든 서보 이름"],
+  "attach":["attach · 붙이다","서보를 핀에 연결"],
+  "write":["write · 쓰다","서보에 각도 명령"],
+  "angles":["angle(각도)의 복수","각도를 늘어놓은 배열"],
+  "idx":["index · 차례 번호","배열의 몇 번째 칸인지"],
+  "button":["button · 단추","누르는 스위치"],
+  "value":["value · 값","읽어 온 값"],
+  "Serial":["serial · 직렬","컴퓨터와 글자 주고받기"],
+  "begin":["begin · 시작하다","통신 시작 · 속도 정하기"],
+  "led":["Light Emitting Diode","빛 내는 부품"],
+  "ledState":["LED + state(상태)","LED 가 켜졌는지 기억"],
+  "pressStart":["press(누름) + start(시작)","누르기 시작한 시각"],
+  "wasPressed":["was(였다) + pressed(눌린)","직전에 눌려 있었나"],
+  "isPressed":["is(이다) + pressed(눌린)","지금 눌려 있나"],
+  "dur":["duration · 지속 시간","누르고 있던 시간"],
+  "TM1650":["칩 이름","숫자 표시기 구동 칩"],
+  "DigitalTube":["digital(숫자) + tube(관)","숫자 표시기"],
+  "clearBit":["clear(지우다) + bit(자리)","한 자리 끄기"],
+  "displayFloatNum":["display + float + number","값을 화면에 표시"],
+  "CLK":["clock · 박자","박자를 치는 신호선"],
+  "DIO":["Data In/Out","값이 오가는 선"],
+  "item":["item · 항목","세고 있는 숫자"],
+  "res":["reset · 되돌리기","초기화 버튼 핀"],
+  "subtract":["subtract · 빼다","빼기 버튼 핀"],
+  "add":["add · 더하다","더하기 버튼 핀"],
+  "red_key":["red(빨강) + key(단추)","빨강 버튼에서 읽은 값"],
+  "yellow_key":["yellow(노랑) + key","노랑 버튼에서 읽은 값"],
+  "green_key":["green(초록) + key","초록 버튼에서 읽은 값"]
+};
+function wordsIn(line){
+  var found = [];
+  Object.keys(WORDS).forEach(function(k){
+    var re = new RegExp("(^|[^A-Za-z0-9_])" + k + "($|[^A-Za-z0-9_])");
+    var m = re.exec(line);
+    if(m) found.push({ k:k, at:m.index });
+  });
+  found.sort(function(a,b){ return a.at - b.at; });
+  return found.slice(0, 4);
+}
+var _firstCache = {};
+function firstMap(){
+  if(_firstCache[cur]) return _firstCache[cur];
+  var m = {}, lines = sk().lines;
+  Object.keys(WORDS).forEach(function(k){
+    var re = new RegExp("(^|[^A-Za-z0-9_])" + k + "($|[^A-Za-z0-9_])");
+    for(var i=0;i<lines.length;i++){ if(re.test(lines[i])){ m[k] = i; break; } }
+  });
+  _firstCache[cur] = m;
+  return m;
+}
+function wordsHtml(line, idx){
+  var fm = firstMap();
+  var w = wordsIn(line).filter(function(o){ return fm[o.k] === idx; });
+  if(!w.length) return "";
+  return '<div class="words">' + w.map(function(o){
+    var d = WORDS[o.k];
+    return '<div class="wd"><b>' + o.k + '</b><span>' + d[0] + '</span><em>' + d[1] + '</em></div>';
+  }).join("") + '</div>';
+}
+
+/* ═══ 주석 줄 판정 — /* … *​/ 블록을 실제로 따라간다 ═══ */
+var _cmtCache = {};
+function cmtMap(){
+  if(_cmtCache[cur]) return _cmtCache[cur];
+  var lines = sk().lines, inB = false, m = [];
+  lines.forEach(function(t,i){
+    var s = t.trim(), isC = false;
+    if(inB){ isC = true; if(s.indexOf("*/") >= 0) inB = false; }
+    else if(s.indexOf("/*") === 0){ isC = true; if(s.indexOf("*/") < 0) inB = true; }
+    else if(s.indexOf("//") === 0) isC = true;
+    m[i] = isC;
+  });
+  _cmtCache[cur] = m;
+  return m;
+}
+
+/* ═══ { } 짝과 범위 ═══ */
+function codeOnly(t){ return t.replace(/\/\/.*$/, "").replace(/"(?:[^"\\]|\\.)*"/g, '""'); }
+function blocksOf(){
+  var lines = sk().lines, st = [], out = [], cm = cmtMap();
+  lines.forEach(function(t,i){
+    if(cm[i]) return;
+    var c0 = codeOnly(t);
+    for(var c=0;c<c0.length;c++){
+      if(c0[c] === "{") st.push(i);
+      else if(c0[c] === "}"){ var o = st.pop(); if(o !== undefined && i > o) out.push({open:o, close:i}); }
+    }
+  });
+  return out;
+}
+function ownerOf(openIdx){
+  var t = codeOnly(sk().lines[openIdx]).trim().replace(/^\}\s*/, "");
+  if(t !== "{"){ return t.replace(/\{[\s\S]*$/, "").trim() || t; }
+  for(var k=openIdx-1;k>=0;k--){ var u = codeOnly(sk().lines[k]).trim().replace(/^\}\s*/, ""); if(u) return u; }
+  return "";
+}
+function isCtrl(openIdx){
+  return /^(for|if|else|while|do|switch)[^A-Za-z0-9_]/.test(ownerOf(openIdx).trim() + " ");
+}
+function braceHtml(i){
+  var bs = blocksOf().filter(function(b){ return isCtrl(b.open); }), parts = [];
+  bs.forEach(function(b){
+    var own = esc(ownerOf(b.open));
+    if(b.open === i){
+      var msg = "이 줄의 <code>{</code> 는 <b>" + (b.close+1) + "번 줄</b>의 <code>}</code> 와 짝입니다.";
+      if(b.close - b.open >= 2)
+        msg += " 사이의 <b>" + (b.open+2) + "~" + b.close + "번 줄</b>이 <code>" + own + "</code> 의 몸통입니다.";
+      parts.push(msg);
+    }
+    if(b.close === i && b.open !== i)
+      parts.push("이 <code>}</code> 는 <b>" + (b.open+1) + "번 줄</b>의 <code>{</code> 와 짝입니다. 여기서 <code>" + own + "</code> 블록이 끝납니다.");
+  });
+  bs.forEach(function(b){
+    if(b.open === i) return;
+    if(codeOnly(sk().lines[b.open]).trim() !== "{") return;
+    for(var k=b.open-1;k>=0;k--){
+      var u = sk().lines[k].trim();
+      if(!u) continue;
+      if(k === i){
+        var m = "이 줄이 이끄는 블록은 <b>" + (b.open+1) + "번 줄 <code>{</code></b> 부터 <b>" + (b.close+1) + "번 줄 <code>}</code></b> 까지입니다.";
+        if(b.close - b.open >= 2) m += " 몸통은 <b>" + (b.open+2) + "~" + b.close + "번 줄</b>.";
+        parts.push(m);
+      }
+      break;
+    }
+  });
+  var inner = null;
+  bs.forEach(function(b){ if(b.open < i && i < b.close){ if(!inner || b.open > inner.open) inner = b; } });
+  if(inner)
+    parts.push("이 줄은 <b>" + (inner.open+1) + "~" + (inner.close+1) + "번 줄</b> 블록(<code>" +
+               esc(ownerOf(inner.open)) + "</code>) 안에 있습니다.");
+  if(!parts.length) return "";
+  return '<div class="brace"><b class="hd">{ } 범위</b><p>' + parts.join("<br>") + '</p></div>';
+}
+
+/* ═══ 문법 색칠 — 아두이노 IDE 의 분류를 따른다 ═══ */
+var TYS = "void int byte char const unsigned long float double bool boolean String Servo LiquidCrystal_I2C TM1650".split(" ");
+var STS = "for if else return while do break continue switch case setup loop".split(" ");
+var FNS = ("pinMode digitalWrite digitalRead analogRead analogWrite delay delayMicroseconds tone noTone map constrain millis micros random "
+         + "attach write init backlight setCursor print println scrollDisplayLeft servopulse clearBit displayFloatNum begin").split(" ");
+var CNS = "HIGH LOW OUTPUT INPUT INPUT_PULLUP true false".split(" ");
+var TOKRE = /("(?:[^"\\]|\\.)*"|<[A-Za-z0-9_.\/]+>|#\w+|[A-Za-z_]\w*|0[xX][0-9a-fA-F]+|\d+|")/g;
+function hl(seg){
+  var out = "", last = 0, m;
+  TOKRE.lastIndex = 0;
+  while((m = TOKRE.exec(seg))){
+    out += esc(seg.slice(last, m.index));
+    var w = m[0], cls = "";
+    if(w.charAt(0) === '"' || w.charAt(0) === "<") cls = "s-str";
+    else if(w.charAt(0) === "#") cls = "s-pre";
+    else if(/^[0-9]/.test(w)) cls = "s-num";
+    else if(TYS.indexOf(w) >= 0) cls = "s-ty";
+    else if(STS.indexOf(w) >= 0) cls = "s-st";
+    else if(FNS.indexOf(w) >= 0) cls = "s-fn";
+    else if(CNS.indexOf(w) >= 0) cls = "s-con";
+    out += cls ? '<span class="' + cls + '">' + esc(w) + "</span>" : esc(w);
+    last = m.index + w.length;
+  }
+  return out + esc(seg.slice(last));
+}
+function withPh(txt, doHl, vars){
+  var out = "", re = /\{\{(\w+)\}\}/g, last = 0, m;
+  while((m = re.exec(txt))){
+    var plain = txt.slice(last, m.index);
+    out += doHl ? hl(plain) : esc(plain);
+    var k = m[1];
+    if(!vars[k]) out += "?";
+    else {
+      var chg = V[k] !== vars[k].def;
+      out += '<button class="ed' + (chg ? " chg" : "") + (selVar === k ? " sel" : "") +
+             '" data-v="' + k + '">' + esc(fmtVar(k)) + "</button>";
+    }
+    last = re.lastIndex;
+  }
+  var tail = txt.slice(last);
+  return out + (doHl ? hl(tail) : esc(tail));
+}
+function lineHtml(t, isCmt, vars){
+  if(isCmt) return '<span class="s-cmt">' + withPh(t, false, vars) + "</span>";
+  var ci = t.indexOf("//");
+  if(ci < 0) return withPh(t, true, vars);
+  return withPh(t.slice(0, ci), true, vars) +
+         '<span class="s-cmt">' + withPh(t.slice(ci), false, vars) + "</span>";
+}
+function rawLine(i){
+  return sk().lines[i].replace(/\{\{(\w+)\}\}/g, function(_,k){ return fmtVar(k); });
+}
+
+/* ═══ 렌더 ═══ */
+function renderPicker(){
+  $("#picker").innerHTML = '<div class="rl">스케치</div>' + ORDER.map(function(k, i){
+    var s = SK[k];
+    return '<button class="pick" data-k="' + k + '" aria-pressed="' + (k===cur) + '">' +
+      '<span class="ch"></span>' +
+      '<span class="tx"><span class="no">0' + (i+1) + '</span><b>' + s.title + (s.sub ? '<span class="tag">' + s.sub + '</span>' : "") +
+      '</b><span>' + s.file + '</span></span></button>';
+  }).join("");
+  $$(".pick").forEach(function(b){ b.addEventListener("click", function(){ switchTo(b.dataset.k); }); });
+}
+/* ═══ 스케치 전체 설명 — 제목 주석 줄을 고르거나 아무 줄도 안 골랐을 때 ═══ */
+function headerLen(){
+  var L = sk().lines; if(!/^\s*\/\*/.test(L[0] || "")) return 0;
+  var n = 0; for(var i=0;i<L.length;i++){ n++; if(L[i].indexOf("*/") >= 0) break; }
+  return n;
+}
+function overviewHtml(){
+  var ov = sk().overview;
+  if(!ov) return '<p class="ntext">이 스케치의 전체 설명이 아직 없습니다.</p>';
+  var out = '<p class="ntext">' + ov.t + '</p>';
+  if(ov.steps) out += '<div class="words">' + ov.steps.map(function(s){ return '<div class="wd"><b>' + s[0] + '</b><em>' + s[1] + '</em></div>'; }).join("") + '</div>';
+  var sub = "";
+  if(ov.hw)   sub += '<div class="nb why"><b>하드웨어</b><p>' + ov.hw + '</p></div>';
+  if(ov.look) sub += '<div class="nb try"><b>실행하며 볼 것</b><p>' + ov.look + '</p></div>';
+  if(ov.oops) sub += '<div class="nb oops"><b>자주 막히는 곳</b><p>' + ov.oops + '</p></div>';
+  return out + (sub ? '<div class="nsub">' + sub + '</div>' : "");
+}
+function renderSideNote(){
+  var box = $("#sideNote");
+  var b = $("#noteBtn");
+  b.textContent = noteOpen ? "설명 닫기" : "설명 보기";
+  b.classList.toggle("noteon", noteOpen);
+  if(!noteOpen){ box.hidden = true; wasOpen = false; return; }
+  box.hidden = false;
+  if(!wasOpen){
+    wasOpen = true;
+    var st = document.querySelector(".stage");
+    if(st){
+      var y = st.getBoundingClientRect().top + window.pageYOffset - 6;
+      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+    }
+  }
+  var show = (selLine !== null) ? selLine : live;
+  if(show < 0 || show < headerLen()){
+    box.innerHTML = '<div class="nhead"><span class="nno">' + (show < 0 ? '이 스케치는' : (show+1) + '번 줄 · 스케치 전체 설명') + '</span>' +
+      '<span class="ntag">' + esc(sk().file) + '</span>' +
+      '<button class="nclose" id="nclose">닫기</button></div>' + overviewHtml() +
+      (show < 0 ? '<p class="ntext" style="font-size:15px;color:var(--muted);padding-top:0">왼쪽 소스의 아무 줄이나 누르면 그 줄의 설명으로 바뀝니다. 실행 중에는 지나가는 줄을 따라옵니다.</p>' : '');
+  } else {
+    var raw = rawLine(show).trim();
+    box.innerHTML = '<div class="nhead"><span class="nno">' + (show+1) + '번 줄 설명</span>' +
+      '<span class="ntag">' + (selLine !== null ? "직접 고른 줄" : "지금 실행 중") + '</span>' +
+      '<button class="nclose" id="nclose">닫기</button></div>' +
+      (raw ? '<code class="ncode">' + esc(raw) + '</code>' : '') +
+      wordsHtml(raw, show) +
+      braceHtml(show) +
+      noteBody(sk().notes[show]);
+  }
+  var c = $("#nclose");
+  if(c) c.addEventListener("click", function(){ noteOpen = false; renderSrc(); });
+}
+function noteBody(nt){
+  if(!nt) return '<p class="ntext">이 줄에는 따로 설명이 없습니다.</p>';
+  if(typeof nt === "string") return '<p class="ntext">' + nt + '</p>';
+  var out = '<p class="ntext">' + nt.t + '</p>', sub = "";
+  if(nt.why)  sub += '<div class="nb why"><b>왜 이렇게 쓸까</b><p>' + nt.why + '</p></div>';
+  if(nt.go)   sub += '<div class="nb try"><b>바꿔 보기</b><p>' + nt.go + '</p></div>';
+  if(nt.oops) sub += '<div class="nb oops"><b>자주 하는 실수</b><p>' + nt.oops + '</p></div>';
+  return out + (sub ? '<div class="nsub">' + sub + '</div>' : "");
+}
+function renderSrc(){
+  $("#fnName").textContent = sk().file;
+  $("#hwName").textContent = sk().hwName;
+  $("#hTitle").textContent = CH_NAME;
+  $("#hSub").innerHTML = '<b>' + esc(sk().file) + '</b> ' + esc(sk().title + (sk().sub ? " (" + sk().sub + ")" : ""));
+  var vars = sk().vars, cm = cmtMap();
+  var rows = sk().lines.map(function(t,i){
+    var isCmt = !!cm[i];
+    var body = lineHtml(t, isCmt, vars);
+    var cls = "ln" + (isCmt ? " cmt" : "") + (i===live ? " live" : "") + (i===selLine ? " sel" : "");
+    return '<div class="' + cls + '" id="L' + i + '" data-l="' + i + '" tabindex="0" role="button"><i>' + (i+1) + '</i><code>' + (body||" ") +
+           (i===live && iterTxt ? '<span class="iter ph-' + iterPhase + '">' + esc(iterTxt) + '</span>' : "") + '</code></div>';
+  });
+  $("#src").innerHTML = rows.join("");
+  $$(".ed").forEach(function(b){
+    b.addEventListener("click", function(ev){
+      ev.stopPropagation();
+      selVar = b.dataset.v; selLine = +b.parentNode.parentNode.dataset.l;
+      renderSrc(); renderEditor();
+    });
+  });
+  $$("#src .ln").forEach(function(el){
+    el.addEventListener("click", function(){ selLine = +el.dataset.l; renderSrc(); });
+    el.addEventListener("keydown", function(ev){
+      if(ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); selLine = +el.dataset.l; renderSrc(); }
+    });
+  });
+  var cc = 0, vd = sk().vars;
+  Object.keys(vd).forEach(function(k){ if(V[k] !== vd[k].def) cc++; });
+  $("#revertBtn").textContent = cc ? "원래 소스로 (" + cc + "곳 바뀜)" : "원래 소스로";
+  $("#revertBtn").classList.toggle("dim", cc === 0);
+  renderSideNote();
+}
+function afterEdit(){ if(sk().onEdit) sk().onEdit(selVar); renderSrc(); paintHW(); renderWatch(); }
+function renderEditor(){
+  var box = $("#editor");
+  if(!selVar || !sk().vars[selVar]){
+    box.innerHTML = '<p class="none">코드 안의 <b>점선 상자</b>를 누르면 여기서 값을 바꿀 수 있습니다. 바꾸는 즉시 코드와 동작이 함께 달라집니다.</p>';
+    return;
+  }
+  var d = sk().vars[selVar];
+  function curHtml(){ return esc(fmtVar(selVar)) + (d.unit ? '<small>' + d.unit + '</small>' : ""); }
+  var head =
+    '<div class="edrow">' +
+      '<span class="vn">' + selVar + '</span>' +
+      '<span class="vl">' + d.label + '</span>' +
+      (d.text ? "" : '<span class="cur" id="curV">' + curHtml() + '</span>') +
+    '</div>' +
+    '<button class="defbtn" id="defBtn"' + (V[selVar] === d.def ? ' disabled' : '') +
+      '>기본값으로 되돌리기 <b>' + esc(d.hex ? hex2(d.def) : d.def) + '</b></button>';
+  function bindDef(){
+    var db = $("#defBtn");
+    if(!db) return;
+    db.addEventListener("click", function(){ V[selVar] = d.def; renderEditor(); afterEdit(); });
+  }
+  if(d.text){
+    box.innerHTML = '<div class="edrow"><span class="vn">' + selVar + '</span><span class="vl">' + d.label + '</span></div>' +
+      '<input type="text" id="varText" maxlength="' + (d.max || 16) + '" value="' + esc(V[selVar]) + '" aria-label="' + d.label + '">' +
+      '<p class="tlen" id="tlen"></p>' +
+      '<button class="defbtn" id="defBtn"' + (V[selVar] === d.def ? ' disabled' : '') + '>기본값으로 되돌리기 <b>' + esc(d.def) + '</b></button>';
+    var inp = $("#varText");
+    function lenTxt(){ $("#tlen").textContent = V[selVar].length + "글자 (최대 " + (d.max || 16) + ") · 영문·숫자·기호만 화면에 나옵니다"; }
+    lenTxt(); bindDef();
+    inp.addEventListener("input", function(){
+      V[selVar] = this.value.replace(/[^\x20-\x7E]/g, "");
+      if(this.value !== V[selVar]) this.value = V[selVar];
+      lenTxt(); $("#defBtn").disabled = (V[selVar] === d.def);
+      afterEdit();
+    });
+    return;
+  }
+  if(d.choices){
+    box.innerHTML = head + '<div class="chz">' + d.choices.map(function(c){
+      return '<button data-c="' + c[0] + '"' + (V[selVar] === c[0] ? ' class="on"' : "") + '>' + c[1] + '</button>';
+    }).join("") + '</div>';
+    bindDef();
+    $$("#editor .chz button").forEach(function(b){
+      b.addEventListener("click", function(){ V[selVar] = +b.dataset.c; renderEditor(); afterEdit(); });
+    });
+    return;
+  }
+  box.innerHTML = head +
+    '<input type="range" id="varRange" min="' + d.min + '" max="' + d.max + '" step="' + (d.step||1) + '" value="' + V[selVar] + '" aria-label="' + d.label + '">' +
+    (d.hint ? '<p class="hint">' + d.hint + '</p>' : "");
+  bindDef();
+  $("#varRange").addEventListener("input", function(){
+    V[selVar] = +this.value;
+    $("#curV").innerHTML = curHtml();
+    $("#defBtn").disabled = (V[selVar] === d.def);
+    afterEdit();
+  });
+}
+function renderWatch(){
+  var rows = sk().watch(M, V);
+  $("#watch").innerHTML = rows.map(function(r){
+    return '<div><span class="k">' + r[0] + '</span><span class="v' + (r[2]?" hot":"") + '">' + r[1] + '</span></div>';
+  }).join("");
+}
+function renderTrace(){
+  var card = $("#traceCard"), tbl = $("#traceTbl");
+  if(!card || !tbl) return;
+  var tr = M.trace;
+  if(!tr || !tr.length){ card.hidden = true; return; }
+  card.hidden = false;
+  tbl.innerHTML = "<tr><th>바퀴</th><th>" + (M.traceVar || "i") + "</th><th>조건</th><th>몸통</th></tr>" +
+    tr.slice(-9).map(function(r){
+      return '<tr class="' + (r.ok ? "" : "no") + '"><td>' + r.n + '</td>' +
+        '<td class="iv">' + r.i + '</td>' +
+        '<td>' + r.cond + '</td>' +
+        '<td class="' + (r.ok ? "ok" : "no") + '">' + (r.ok ? "실행" : "건너뜀") + '</td></tr>';
+    }).join("");
+}
+function buildHW(){ var h = HWDEF[sk().hw]; $("#hw").innerHTML = ""; h.build($("#hw")); paintHW(); }
+function paintHW(){ var h = HWDEF[sk().hw]; if(h && h.paint) h.paint(); }
+function paint(){ renderSrc(); paintHW(); renderWatch(); renderTrace(); }
+
+/* ═══ 반복문 한 바퀴를 세 걸음으로 — 공용 도우미 ═══
+   forStep(ln, name, from, cond, step, body*) :
+   초기화 → (조건 검사 → 몸통 → 증감) … 조건이 거짓이면 끝.
+   ▶실행 중에는 조건·증감 걸음을 건너뛰어 빠르게 돈다(quick). */
+function* forLoop(o){
+  var name = o.name || "i", i = o.from, turn = 0;
+  M.trace = []; M.traceVar = name; M[name] = i;
+  yield {ln:o.ln, dur:0, phase:"init", iter:"초기화 · " + name + " = " + i + " (한 번만)"};
+  while(true){
+    turn++;
+    var ok = o.cond(i);
+    M.trace.push({ n:turn, i:i, cond:o.condTxt(i), ok:ok });
+    if(!playing || !ok)
+      yield {ln:o.ln, dur:0, phase:"cond", iter:"조건 검사 · " + o.condTxt(i) + " → " + (ok ? "참" : "거짓, 반복 끝")};
+    if(!ok) break;
+    if(turn > (o.maxTurn || 400)){
+      yield {ln:o.ln, dur:600, phase:"warn", iter:"조건이 거짓이 되지 않습니다 — 끝없는 반복문"};
+      break;
+    }
+    yield* o.body(i);
+    i = o.step(i); M[name] = i;
+    if(!playing) yield {ln:o.ln, dur:0, phase:"inc", iter:"증감 · " + o.stepTxt + " 실행 → " + name + " = " + i};
+  }
+  M[name] = null;
+}
+
+/* ═══ 실행 ═══ */
+function stepOnce(){
+  if(!gen) gen = sk().prog(M, V);
+  var r = gen.next();
+  if(r.done){ gen = null; return 0; }
+  live = r.value.ln;
+  iterTxt = r.value.iter || "";
+  iterPhase = r.value.phase || "";
+  lastQuick = !!r.value.quick;
+  M.t += r.value.dur || 1;   /* 줄 하나 = 약 1ms 로 친다 — 떨림 시간이 지나가게 */
+  settleBtns();
+  paint();
+  return r.value.dur || 0;
+}
+$("#noteBtn").addEventListener("click", function(){ noteOpen = !noteOpen; renderSrc(); });
+$("#stepBtn").addEventListener("click", function(){ stop(); selLine = null; stepOnce(); });
+$("#resetBtn").addEventListener("click", function(){ resetRun(); });
+$("#revertBtn").addEventListener("click", function(){ loadVars(); selVar = null; renderEditor(); afterEdit(); });
+$("#playBtn").addEventListener("click", function(){
+  if(playing){ stop(); paint(); return; }
+  playing = true; selLine = null;
+  this.textContent = "■ 정지";
+  $("#stState").innerHTML = "<b>실행 중</b>";
+  (function run(){
+    if(!playing) return;
+    var d = stepOnce();
+    var base = d ? d/speed : (lastQuick ? 28 : 260/speed);
+    timer = setTimeout(run, Math.max(lastQuick ? 28 : 90, base));
+  })();
+});
+$("#speed").addEventListener("input", function(){
+  speed = SPEEDS[+this.value];
+  $("#speedView").textContent = speed + "×";
+});
+
+/* ═══ 글자 크기 ═══ */
+function setZoom(pct, save){
+  pct = Math.max(100, Math.min(230, Math.round(pct/5)*5));
+  document.documentElement.style.setProperty("--zoom", pct/100);
+  $("#zoomR").value = pct;
+  $("#zoomV").textContent = pct + "%";
+  if(save){ try{ localStorage.setItem(ZOOM_KEY, pct); }catch(e){} }
+  if(window.HW3D) HW3D.resizeAll();
+}
+$("#zoomR").addEventListener("input", function(){ setZoom(+this.value, true); });
+
+/* ═══ 시작 ═══ */
+(function(){
+  var z = 140;
+  try{ z = +localStorage.getItem(ZOOM_KEY) || 140; }catch(e){}
+  setZoom(z, false);
+})();
+loadVars();
+renderPicker();
+buildHW();
+resetRun();
+renderEditor();
+})();
+</script>
+<!--/ART-->
+</body>
+</html>

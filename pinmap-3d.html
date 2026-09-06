@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<!--ART-->
+<title>ESP32 핀맵 뷰어</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=Source+Code+Pro:wght@400;600&display=swap">
+<style>
+:root{
+  --case:#171514; --panel:#201D1B; --panel-2:#292522;
+  --rule:#3A342F; --rule-2:#2C2724;
+  --text:#EFE9DF; --text-2:#B7AEA3; --muted:#867C72;
+  --sig:#E8C33A;
+  --ok:#5FCF8E; --warn:#FFB020; --bad:#FF5A3C; --info:#68B7E8;
+  --dead:#5A524A;
+  --font-ui:"Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+  --font-num:"Bebas Neue",sans-serif;
+  --font-code:"Source Code Pro",ui-monospace,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--case);color:var(--text);font-family:var(--font-ui);font-weight:300;font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased}
+h1,h2,h3,p,dl,dd,ul{margin:0}
+ul{padding:0;list-style:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
+:focus-visible{outline:2px solid var(--sig);outline-offset:2px;border-radius:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px 64px}
+
+.masthead{padding:26px 0 16px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.masthead h1{font-family:var(--font-num);font-size:32px;font-weight:400;letter-spacing:.04em;line-height:1}
+.masthead .sub{font-size:12.5px;color:var(--muted)}
+.masthead .src{margin-left:auto;font-family:var(--font-code);font-size:11px;color:var(--muted);border:1px solid var(--rule);border-radius:2px;padding:3px 9px}
+
+.chapters{background:var(--panel);border:1px solid var(--rule);border-radius:2px;padding:14px 16px;margin-bottom:18px}
+.chapters .t{font-size:10.5px;letter-spacing:.16em;color:var(--muted);margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--rule);border-radius:2px;padding:5px 10px;font-size:12px;color:var(--muted);transition:all .16s}
+.chip:hover{color:var(--text);border-color:var(--muted)}
+.chip[aria-pressed="true"]{color:var(--sig);border-color:#5A4B1E;background:rgba(232,195,58,.10)}
+.chip .n{font-family:var(--font-code);font-size:11px;margin-right:5px;opacity:.8}
+.chapters .acts{margin-top:10px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.mini{font-size:11.5px;border:1px solid var(--rule);border-radius:2px;padding:4px 10px;color:var(--text-2);transition:all .16s}
+.mini:hover{border-color:var(--sig);color:var(--sig)}
+.count{margin-left:auto;font-size:11.5px;color:var(--muted)}
+
+.alerts{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.alert{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;border-radius:2px;font-size:12.5px;line-height:1.6;border:1px solid}
+.alert .ic{font-family:var(--font-num);font-size:17px;line-height:1.1;flex:none;letter-spacing:.03em}
+.alert.bad{border-color:var(--bad);background:rgba(255,90,60,.08);color:#FFC6B8}
+.alert.bad .ic{color:var(--bad)}
+.alert.warn{border-color:var(--warn);background:rgba(255,176,32,.08);color:#F2DDB6}
+.alert.warn .ic{color:var(--warn)}
+.alert.ok{border-color:var(--ok);background:rgba(95,207,142,.07);color:#C4E8D4}
+.alert.ok .ic{color:var(--ok)}
+.alert b{font-family:var(--font-code);font-weight:600}
+
+.main{display:grid;grid-template-columns:1fr 372px;gap:18px;align-items:start}
+.stage{position:relative;background:var(--panel);border:1px solid var(--rule);border-radius:2px;height:520px;overflow:hidden}
+#board{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#board.grabbing{cursor:grabbing}
+#tags{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.ptag{
+  position:absolute;transform:translate(-50%,-50%);white-space:nowrap;
+  font-family:var(--font-code);font-size:10px;padding:1px 5px;border-radius:2px;
+  background:rgba(16,14,13,.86);border:1px solid var(--rule);color:var(--text-2);
+}
+.ptag.use{color:var(--sig);border-color:#5A4B1E;background:rgba(30,25,14,.9)}
+.ptag.clash{color:var(--bad);border-color:var(--bad);background:rgba(40,16,12,.92);font-weight:600}
+.ptag.sel{color:var(--case);background:var(--sig);border-color:var(--sig);font-weight:600}
+.stage .cap{position:absolute;left:14px;bottom:12px;right:14px;font-size:10.5px;color:var(--muted);pointer-events:none;line-height:1.55}
+.stage .views{position:absolute;right:12px;top:12px;display:flex;gap:5px}
+.stage .views button{font-size:11px;padding:4px 9px;border:1px solid var(--rule);border-radius:2px;background:rgba(16,14,13,.8);color:var(--text-2)}
+.stage .views button:hover{border-color:var(--sig);color:var(--sig)}
+
+.side{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:2px;padding:15px 17px}
+.card > h2{font-size:10.5px;letter-spacing:.16em;color:var(--muted);margin-bottom:11px;display:flex;align-items:center;gap:9px}
+.card > h2::after{content:"";flex:1;height:1px;background:var(--rule-2)}
+
+.pinhead{display:flex;align-items:baseline;gap:10px;margin-bottom:3px}
+.pinhead .g{font-family:var(--font-num);font-size:34px;line-height:1;color:var(--sig);letter-spacing:.02em}
+.pinhead .alt{font-family:var(--font-code);font-size:12px;color:var(--text-2)}
+.pinrole{font-size:12.5px;color:var(--text-2);margin-bottom:12px}
+.badges{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:13px}
+.badge{font-size:10.5px;padding:2px 8px;border-radius:2px;border:1px solid}
+.badge.b-in{border-color:var(--info);color:var(--info)}
+.badge.b-strap{border-color:var(--warn);color:var(--warn)}
+.badge.b-adc2{border-color:var(--bad);color:var(--bad)}
+.badge.b-adc1{border-color:var(--ok);color:var(--ok)}
+.badge.b-flash{border-color:var(--bad);color:var(--bad);background:rgba(255,90,60,.1)}
+.badge.b-n{border-color:var(--rule);color:var(--muted)}
+
+.uses{display:flex;flex-direction:column}
+.uses div{display:grid;grid-template-columns:52px 1fr;gap:11px;padding:6px 0;border-bottom:1px dotted var(--rule-2);font-size:12.5px;align-items:baseline}
+.uses div:last-child{border-bottom:0}
+.uses dt{font-family:var(--font-code);font-size:11.5px;color:var(--sig)}
+.uses dd{color:var(--text-2)}
+.uses dd b{font-family:var(--font-code);color:var(--text);font-weight:600}
+.uses .none{color:var(--muted);font-size:12.5px;padding:4px 0}
+
+.legend{display:flex;flex-direction:column;gap:6px;font-size:11.5px;color:var(--text-2)}
+.legend div{display:flex;align-items:center;gap:9px}
+.legend i{width:11px;height:11px;border-radius:2px;flex:none}
+
+.table{margin-top:20px;background:var(--panel);border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.table h2{font-size:10.5px;letter-spacing:.16em;color:var(--muted);padding:14px 17px 10px}
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px}
+th{text-align:left;font-weight:400;font-size:10px;letter-spacing:.1em;color:var(--muted);padding:8px 12px;background:var(--panel-2);border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid var(--rule-2);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tr.usedrow{background:rgba(232,195,58,.05)}
+tr.clashrow{background:rgba(255,90,60,.07)}
+td.g{font-family:var(--font-code);font-weight:600;color:var(--sig);white-space:nowrap}
+tr.clashrow td.g{color:var(--bad)}
+td.fn{font-family:var(--font-code);font-size:11.5px;color:var(--text-2)}
+td.ch{font-size:11.5px;color:var(--text-2)}
+td.ch b{color:var(--sig);font-family:var(--font-code)}
+td.wr{font-size:11.5px}
+td.wr span{display:inline-block;margin-right:6px}
+.w-in{color:var(--info)} .w-strap{color:var(--warn)} .w-adc2{color:var(--bad)} .w-flash{color:var(--bad)}
+
+.foot{margin-top:26px;font-size:11.5px;color:var(--muted);line-height:1.7}
+.foot b{color:var(--text-2);font-weight:400}
+
+@media (max-width:940px){
+  .main{grid-template-columns:1fr}
+  .stage{height:56vw;min-height:320px}
+}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms !important}}
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <h1>ESP32 PINMAP</h1>
+    <span class="sub">올인원 키트 실습 44개에서 뽑은 실제 핀 사용 현황</span>
+    <span class="src">source · 실습코드 44 sketches</span>
+  </header>
+
+  <section class="chapters">
+    <p class="t">챕터를 고르면 그 실습이 쓰는 핀만 보드에 켜집니다. 여러 개를 골라 충돌을 확인하세요.</p>
+    <div class="chips" id="chips"></div>
+    <div class="acts">
+      <button class="mini" id="allBtn">전체 선택</button>
+      <button class="mini" id="noneBtn">전체 해제</button>
+      <button class="mini" id="demoBtn">충돌 예시 보기 (6장 + 10장)</button>
+      <span class="count" id="count"></span>
+    </div>
+  </section>
+
+  <div class="alerts" id="alerts"></div>
+
+  <div class="main">
+    <section class="stage">
+      <canvas id="board"></canvas>
+      <div id="tags"></div>
+      <div class="views">
+        <button data-v="top">위에서</button>
+        <button data-v="tilt">비스듬히</button>
+        <button data-v="edge">옆에서</button>
+      </div>
+      <p class="cap">드래그로 회전 · 휠로 확대 · 핀을 클릭하면 오른쪽에 상세가 나옵니다. &nbsp;/&nbsp; 핀의 <b>물리적 순서는 보드 판형마다 다릅니다.</b> 실물에 인쇄된 번호로 확인하세요 — 이 도해가 보장하는 것은 GPIO 번호와 그 기능입니다.</p>
+    </section>
+
+    <aside class="side">
+      <div class="card">
+        <h2>핀 상세</h2>
+        <div id="detail"></div>
+      </div>
+      <div class="card">
+        <h2>표시 색</h2>
+        <div class="legend">
+          <div><i style="background:#E8C33A"></i>고른 챕터가 쓰는 핀</div>
+          <div><i style="background:#FF5A3C"></i>두 챕터 이상이 <b>서로 다른 용도</b>로 쓰는 핀 — 배선 충돌</div>
+          <div><i style="background:#68B7E8"></i>입력 전용 (34·35·36·39) — 출력 불가</div>
+          <div><i style="background:#5A524A"></i>내장 플래시 연결 (6~11) — 사용 금지</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="table">
+    <h2>핀 전체 표</h2>
+    <div class="tscroll">
+      <table>
+        <thead><tr><th>GPIO</th><th>기능</th><th>주의</th><th>이 키트에서 쓰는 곳</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="foot">
+    <b>핀 목록은 추정이 아닙니다.</b> <code style="font-family:var(--font-code)">ESP32 올인원 키트_교안</code> 폴더의 <code style="font-family:var(--font-code)">*.ino</code> 44개를 훑어 변수 선언·<code style="font-family:var(--font-code)">pinMode()</code>·라이브러리 생성자 인자에서 뽑았습니다. 한 챕터 안에서도 스케치마다 배선이 다를 수 있어, 챕터 단위로 합쳐 표시합니다.<br>
+    <b>ADC2 주의가 중요한 이유.</b> ESP32는 WiFi를 켜면 ADC2에 연결된 핀에서 <code style="font-family:var(--font-code)">analogRead()</code>가 동작하지 않습니다. 아날로그 센서를 WiFi 실습과 합칠 때는 ADC1(32·33·34·35·36·39)로 옮기세요.
+  </p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.147.0/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+var $ = function(s){ return document.querySelector(s); };
+var $$ = function(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); };
+
+/* ═══ 실습코드에서 추출한 핀 사용 ═══ */
+var CH = [
+  { no:2,  name:"개발 환경과 첫 프로젝트", pins:[[5,"ledPin"]] },
+  { no:3,  name:"LED 기초",       pins:[[5,"ledPin"],[25,"redPin"],[26,"yellowPin"],[27,"greenPin"]] },
+  { no:4,  name:"RGB LED",        pins:[[15,"PIN (네오픽셀)"]] },
+  { no:5,  name:"소리",           pins:[[5,"buzzer / beeppin"]] },
+  { no:6,  name:"디스플레이",      pins:[[23,"DIN"],[18,"CLK (MAX7219)"],[15,"CS"],[22,"CLK (TM1650)"],[21,"DIO (TM1650)"]] },
+  { no:7,  name:"LCD와 서보모터",  pins:[[4,"servoPin"],[15,"button"]] },
+  { no:8,  name:"버튼 입력",       pins:[[15,"button"],[4,"led"],[19,"add"],[18,"subtract"],[17,"res"],[22,"CLK (TM1650)"],[21,"DIO (TM1650)"]] },
+  { no:9,  name:"게임 만들기",     pins:[[23,"DIN"],[18,"CLK / yellow_key"],[15,"CS"],[19,"red_key"],[17,"green_key"],[16,"blue_key"],[27,"red_led"],[14,"yellow_led"],[13,"green_led"],[12,"blue_led"],[26,"buzz"],[34,"start"],[35,"reset"],[32,"addition"],[33,"subtraction"]] },
+  { no:10, name:"센서 입문",       pins:[[23,"DIN"],[18,"CLK / red_led"],[15,"CS"],[5,"pir"],[19,"buzz"]] },
+  { no:11, name:"아날로그 입력",   pins:[[34,"light / pot"],[25,"led"]] },
+  { no:12, name:"소리 센서",       pins:[[23,"DIN"],[18,"CLK"],[15,"CS"],[34,"sensor"],[33,"sound"],[25,"led"]] },
+  { no:13, name:"온습도 센서",     pins:[[26,"xht11 (DHT11)"]] },
+  { no:14, name:"초음파 거리 측정", pins:[[13,"TrigPin"],[14,"EchoPin"],[5,"beeppin"]] },
+  { no:15, name:"스마트 주차",      pins:[[23,"DIN"],[18,"CLK"],[15,"CS"],[13,"TrigPin"],[14,"EchoPin"],[25,"servo_pin"]] },
+  { no:16, name:"적외선 리모컨",    pins:[[13,"TrigPin"],[14,"EchoPin"],[33,"ligth_sensor"],[25,"pot_sensor"],[32,"sound_sensor"],[26,"xht11 (DHT11)"]] },
+  { no:17, name:"WiFi · IoT",      pins:[[12,"redLED"],[13,"yellowLED"],[14,"greenLED"],[15,"blueLED"],[26,"xht11 (DHT11)"],[34,"LDRPIN (광센서)"]] }
+];
+
+/* ═══ ESP32-WROOM-32 핀 특성 ═══ */
+var INPUT_ONLY = [34,35,36,39];
+var FLASH = [6,7,8,9,10,11];
+var STRAP = [0,2,5,12,15];
+var ADC1 = { 36:"ADC1_CH0", 39:"ADC1_CH3", 32:"ADC1_CH4", 33:"ADC1_CH5", 34:"ADC1_CH6", 35:"ADC1_CH7" };
+var ADC2 = { 0:"ADC2_CH1", 2:"ADC2_CH2", 4:"ADC2_CH0", 12:"ADC2_CH5", 13:"ADC2_CH4", 14:"ADC2_CH6", 15:"ADC2_CH3", 25:"ADC2_CH8", 26:"ADC2_CH9", 27:"ADC2_CH7" };
+var ROLE = {
+  0:"부팅 모드 결정", 1:"UART0 TX (시리얼 출력)", 2:"부팅 모드 결정 / 보드 LED",
+  3:"UART0 RX (시리얼 입력)", 4:"범용", 5:"기본 SPI SS / 부팅 신호",
+  12:"부팅 전압 결정 (주의)", 13:"범용", 14:"범용", 15:"부팅 신호",
+  16:"UART2 RX", 17:"UART2 TX", 18:"기본 SPI SCK", 19:"기본 SPI MISO",
+  21:"기본 I2C SDA", 22:"기본 I2C SCL", 23:"기본 SPI MOSI",
+  25:"DAC1 (아날로그 출력)", 26:"DAC2 (아날로그 출력)", 27:"범용",
+  32:"범용", 33:"범용", 34:"입력 전용", 35:"입력 전용",
+  36:"입력 전용 (VP)", 39:"입력 전용 (VN)"
+};
+var ALT = { 1:"TX0", 3:"RX0", 36:"VP", 39:"VN", 21:"SDA", 22:"SCL", 23:"MOSI", 19:"MISO", 18:"SCK", 5:"SS" };
+
+/* 보드 배치 (DevKit V1 30핀 계열 기준 — 판형마다 다를 수 있음) */
+var LEFT  = [36,39,34,35,32,33,25,26,27,14,12,13];
+var RIGHT = [23,22,1,3,21,19,18,5,17,16,4,0,2,15];
+var ALLPINS = LEFT.concat(RIGHT).concat(FLASH);
+
+var sel = { 12:true };
+var selPin = 15;
+
+/* ═══ 계산 ═══ */
+function usageOf(p){
+  var out = [];
+  CH.forEach(function(c){
+    c.pins.forEach(function(pr){
+      if(pr[0] === p) out.push({ no:c.no, name:c.name, label:pr[1] });
+    });
+  });
+  return out;
+}
+function activeChapters(){ return CH.filter(function(c){ return sel[c.no]; }); }
+function activeUse(){
+  var m = {};
+  activeChapters().forEach(function(c){
+    c.pins.forEach(function(pr){
+      m[pr[0]] = m[pr[0]] || [];
+      m[pr[0]].push({ no:c.no, label:pr[1] });
+    });
+  });
+  return m;
+}
+function clashes(){
+  var m = activeUse(), out = [];
+  Object.keys(m).forEach(function(p){
+    var uses = m[p];
+    if(uses.length < 2) return;
+    var labels = {};
+    uses.forEach(function(u){ labels[u.label] = 1; });
+    if(Object.keys(labels).length > 1) out.push({ pin:+p, uses:uses });
+  });
+  return out.sort(function(a,b){ return a.pin - b.pin; });
+}
+
+/* ═══ 3D 보드 ═══ */
+var canvas = $("#board"), stage = canvas.parentElement;
+var renderer = new THREE.WebGLRenderer({ canvas:canvas, antialias:true, alpha:true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 300);
+scene.add(new THREE.HemisphereLight(0xC3CAD8, 0x2A211C, 0.95));
+var key = new THREE.DirectionalLight(0xFFF3E2, 1.05); key.position.set(6,12,7); scene.add(key);
+var fillL = new THREE.DirectionalLight(0x8FA8CC, 0.35); fillL.position.set(-7,6,-6); scene.add(fillL);
+
+var ROWS = Math.max(LEFT.length, RIGHT.length);
+var SP = 1.0, BW = 7.4, BD = ROWS*SP + 1.8;
+
+scene.add(new THREE.Mesh(
+  new THREE.BoxGeometry(BW, 0.24, BD),
+  new THREE.MeshStandardMaterial({ color:0x1C2530, roughness:0.68 })
+));
+/* 금속 실드 + USB */
+var shield = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.34, 4.2),
+  new THREE.MeshStandardMaterial({ color:0x30353B, roughness:0.42, metalness:0.55 }));
+shield.position.set(0, 0.29, -BD/2 + 3.0); scene.add(shield);
+var usb = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.36, 0.9),
+  new THREE.MeshStandardMaterial({ color:0xB8BCC0, roughness:0.3, metalness:0.7 }));
+usb.position.set(0, 0.3, BD/2 - 0.3); scene.add(usb);
+
+var pinGeo = new THREE.BoxGeometry(0.42, 0.5, 0.42);
+var pinObjs = [];
+function addPin(g, side, i){
+  var m = new THREE.Mesh(pinGeo, new THREE.MeshStandardMaterial({
+    color:0x4A423C, roughness:0.45, metalness:0.35, emissive:0x000000, emissiveIntensity:0
+  }));
+  m.position.set(side * (BW/2 - 0.52), 0.37, -BD/2 + 1.2 + i*SP);
+  m.userData.gpio = g;
+  scene.add(m);
+  var el = document.createElement("div");
+  el.className = "ptag";
+  el.textContent = (ALT[g] ? ALT[g] + "·" : "") + g;
+  $("#tags").appendChild(el);
+  pinObjs.push({ gpio:g, mesh:m, el:el, side:side });
+}
+LEFT.forEach(function(g,i){ addPin(g, -1, i); });
+RIGHT.forEach(function(g,i){ addPin(g, 1, i); });
+/* 플래시 핀은 보드 안쪽에 별도 표시 */
+FLASH.forEach(function(g,i){
+  var m = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.3,0.34),
+    new THREE.MeshStandardMaterial({ color:0x2A2320, roughness:0.7 }));
+  m.position.set(-1.3 + i*0.52, 0.2, BD/2 - 2.2);
+  m.userData.gpio = g; scene.add(m);
+  var el = document.createElement("div"); el.className = "ptag"; el.textContent = g;
+  $("#tags").appendChild(el);
+  pinObjs.push({ gpio:g, mesh:m, el:el, side:0, flash:true });
+});
+
+var cam = { az:-1.5708, el:0.82, dist:20 };
+var VIEWS = { top:{az:-1.5708, el:1.45, d:19}, tilt:{az:-1.5708, el:0.82, d:20}, edge:{az:-1.5708, el:0.14, d:21} };
+$$("[data-v]").forEach(function(b){
+  b.addEventListener("click", function(){ var v = VIEWS[b.dataset.v]; cam.az=v.az; cam.el=v.el; cam.dist=v.d; });
+});
+var drag = false, lx=0, ly=0, moved=0, ptrs={}, pinch=0;
+canvas.addEventListener("pointerdown", function(ev){
+  canvas.setPointerCapture(ev.pointerId);
+  ptrs[ev.pointerId] = {x:ev.clientX,y:ev.clientY};
+  if(Object.keys(ptrs).length===1){ drag=true; lx=ev.clientX; ly=ev.clientY; moved=0; canvas.classList.add("grabbing"); }
+});
+canvas.addEventListener("pointermove", function(ev){
+  if(!ptrs[ev.pointerId]) return;
+  ptrs[ev.pointerId] = {x:ev.clientX,y:ev.clientY};
+  var ids = Object.keys(ptrs);
+  if(ids.length>=2){
+    var a=ptrs[ids[0]], b=ptrs[ids[1]], d=Math.hypot(a.x-b.x,a.y-b.y);
+    if(pinch) cam.dist = Math.max(9, Math.min(60, cam.dist*pinch/d));
+    pinch = d; return;
+  }
+  if(!drag) return;
+  var dx=ev.clientX-lx, dy=ev.clientY-ly; lx=ev.clientX; ly=ev.clientY;
+  moved += Math.abs(dx)+Math.abs(dy);
+  cam.az -= dx*0.006;
+  cam.el = Math.max(0.10, Math.min(1.49, cam.el + dy*0.005));
+});
+function endP(ev){
+  delete ptrs[ev.pointerId];
+  if(Object.keys(ptrs).length<2) pinch=0;
+  if(!Object.keys(ptrs).length){
+    drag=false; canvas.classList.remove("grabbing");
+    if(moved < 6) pick(ev);
+  }
+}
+canvas.addEventListener("pointerup", endP);
+canvas.addEventListener("pointercancel", endP);
+canvas.addEventListener("wheel", function(ev){
+  ev.preventDefault();
+  cam.dist = Math.max(9, Math.min(60, cam.dist*(ev.deltaY>0?1.1:0.909)));
+}, {passive:false});
+
+var ray = new THREE.Raycaster();
+function pick(ev){
+  var r = canvas.getBoundingClientRect();
+  ray.setFromCamera(new THREE.Vector2(
+    ((ev.clientX-r.left)/r.width)*2-1, -((ev.clientY-r.top)/r.height)*2+1), camera);
+  var hits = ray.intersectObjects(pinObjs.map(function(p){ return p.mesh; }));
+  if(hits.length){ selPin = hits[0].object.userData.gpio; render(); }
+}
+
+/* ═══ 렌더 ═══ */
+function pinBadges(g){
+  var out = [];
+  if(FLASH.indexOf(g)>=0) out.push(["b-flash","내장 플래시 · 사용 금지"]);
+  if(INPUT_ONLY.indexOf(g)>=0) out.push(["b-in","입력 전용"]);
+  if(STRAP.indexOf(g)>=0) out.push(["b-strap","스트래핑 핀"]);
+  if(ADC1[g]) out.push(["b-adc1", ADC1[g] + " · WiFi 중 사용 가능"]);
+  if(ADC2[g]) out.push(["b-adc2", ADC2[g] + " · WiFi 켜면 불가"]);
+  if(!out.length) out.push(["b-n","특별한 제약 없음"]);
+  return out;
+}
+function renderDetail(){
+  var g = selPin, use = usageOf(g);
+  $("#detail").innerHTML =
+    '<div class="pinhead"><span class="g">' + g + '</span>' +
+    (ALT[g] ? '<span class="alt">' + ALT[g] + '</span>' : '') + '</div>' +
+    '<p class="pinrole">' + (ROLE[g] || (FLASH.indexOf(g)>=0 ? "내장 플래시 메모리 연결" : "범용 입출력")) + '</p>' +
+    '<div class="badges">' + pinBadges(g).map(function(b){
+      return '<span class="badge ' + b[0] + '">' + b[1] + '</span>';
+    }).join("") + '</div>' +
+    '<dl class="uses">' + (use.length
+      ? use.map(function(u){
+          return '<div><dt>' + u.no + '장</dt><dd>' + u.name + ' · <b>' + u.label + '</b></dd></div>';
+        }).join("")
+      : '<p class="none">이 키트의 실습에서는 쓰이지 않습니다.</p>') + '</dl>';
+}
+function renderChips(){
+  $("#chips").innerHTML = CH.map(function(c){
+    return '<button class="chip" data-c="' + c.no + '" aria-pressed="' + (sel[c.no]?"true":"false") + '">' +
+      '<span class="n">' + (c.no<10?"0":"") + c.no + '</span>' + c.name + '</button>';
+  }).join("");
+  $$("#chips .chip").forEach(function(b){
+    b.addEventListener("click", function(){
+      var n = +b.dataset.c;
+      if(sel[n]) delete sel[n]; else sel[n] = true;
+      render();
+    });
+  });
+}
+function renderAlerts(){
+  var cl = clashes(), act = activeChapters();
+  var out = [];
+  if(!act.length){
+    out.push(['warn','!','챕터를 하나 이상 고르세요. 고른 챕터가 쓰는 핀만 보드에 켜집니다.']);
+  } else if(cl.length){
+    cl.forEach(function(c){
+      out.push(['bad','X','<b>GPIO' + c.pin + '</b> 이 서로 다른 용도로 겹칩니다 — ' +
+        c.uses.map(function(u){ return u.no + '장 <b>' + u.label + '</b>'; }).join(' / ') +
+        '. 두 실습을 한 배선에 함께 올릴 수 없습니다.']);
+    });
+  } else {
+    out.push(['ok','O','고른 ' + act.length + '개 챕터 사이에 핀 충돌이 없습니다. 배선을 그대로 두고 이어서 진행할 수 있습니다.']);
+  }
+  /* ADC2 + WiFi 경고 */
+  if(sel[17]){
+    var m = activeUse(), risky = [];
+    Object.keys(m).forEach(function(p){
+      p = +p;
+      if(ADC2[p]){
+        m[p].forEach(function(u){
+          if(/sensor|pot|light|ligth|sound|analog/i.test(u.label) && u.no !== 17)
+            risky.push(u.no + '장 <b>' + u.label + '</b> (GPIO' + p + ')');
+        });
+      }
+    });
+    if(risky.length){
+      out.push(['warn','!','17장에서 WiFi를 켜면 ADC2 핀의 <b>analogRead()</b> 가 동작하지 않습니다. 확인이 필요한 곳 — ' +
+        risky.join(', ') + '. ADC1(32·33·34·35·36·39)로 옮기면 해결됩니다.']);
+    }
+  }
+  $("#alerts").innerHTML = out.map(function(a){
+    return '<div class="alert ' + a[0] + '"><span class="ic">' + a[1] + '</span><span>' + a[2] + '</span></div>';
+  }).join("");
+}
+function renderTable(){
+  var m = activeUse(), cl = {}, all = ALLPINS.slice().sort(function(a,b){ return a-b; });
+  clashes().forEach(function(c){ cl[c.pin] = 1; });
+  $("#tbody").innerHTML = all.map(function(g){
+    var use = usageOf(g);
+    var wr = [];
+    if(FLASH.indexOf(g)>=0) wr.push('<span class="w-flash">사용 금지</span>');
+    if(INPUT_ONLY.indexOf(g)>=0) wr.push('<span class="w-in">입력 전용</span>');
+    if(STRAP.indexOf(g)>=0) wr.push('<span class="w-strap">스트래핑</span>');
+    if(ADC2[g]) wr.push('<span class="w-adc2">WiFi 중 ADC 불가</span>');
+    return '<tr class="' + (cl[g] ? "clashrow" : (m[g] ? "usedrow" : "")) + '">' +
+      '<td class="g">GPIO' + g + (ALT[g] ? " · " + ALT[g] : "") + '</td>' +
+      '<td class="fn">' + (ROLE[g] || "내장 플래시") + (ADC1[g] ? " · " + ADC1[g] : "") + (ADC2[g] ? " · " + ADC2[g] : "") + '</td>' +
+      '<td class="wr">' + (wr.join("") || '<span style="color:var(--muted)">—</span>') + '</td>' +
+      '<td class="ch">' + (use.length
+        ? use.map(function(u){ return u.no + '장 <b>' + u.label + '</b>'; }).join(", ")
+        : '<span style="color:var(--muted)">미사용</span>') + '</td></tr>';
+  }).join("");
+}
+function render(){
+  renderChips();
+  renderAlerts();
+  renderDetail();
+  renderTable();
+  $("#count").textContent = Object.keys(sel).length + "개 챕터 선택됨";
+
+  var m = activeUse(), cl = {};
+  clashes().forEach(function(c){ cl[c.pin] = 1; });
+  pinObjs.forEach(function(p){
+    var used = !!m[p.gpio], clash = !!cl[p.gpio], isSel = p.gpio === selPin;
+    var col = 0x4A423C, em = 0x000000, ei = 0;
+    if(p.flash){ col = 0x2A2320; }
+    if(INPUT_ONLY.indexOf(p.gpio)>=0) col = 0x2E4356;
+    if(used){ col = 0x8A7420; em = 0xE8C33A; ei = 0.55; }
+    if(clash){ col = 0x8A2A18; em = 0xFF5A3C; ei = 0.9; }
+    if(isSel){ em = clash ? 0xFF5A3C : 0xE8C33A; ei = 1.5; }
+    p.mesh.material.color.setHex(col);
+    p.mesh.material.emissive.setHex(em);
+    p.mesh.material.emissiveIntensity = ei;
+    p.el.className = "ptag" + (isSel ? " sel" : (clash ? " clash" : (used ? " use" : "")));
+  });
+}
+
+$("#allBtn").addEventListener("click", function(){ CH.forEach(function(c){ sel[c.no]=true; }); render(); });
+$("#noneBtn").addEventListener("click", function(){ sel = {}; render(); });
+$("#demoBtn").addEventListener("click", function(){ sel = {6:true, 10:true}; selPin = 18; render(); });
+
+/* ═══ 루프 ═══ */
+var camV = new THREE.Vector3(), projV = new THREE.Vector3();
+function resize(){
+  var w = stage.clientWidth, h = stage.clientHeight;
+  if(!w || !h) return;
+  renderer.setSize(w, h, false);
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+function frame(){
+  requestAnimationFrame(frame);
+  camV.set(Math.cos(cam.el)*Math.cos(cam.az), Math.sin(cam.el), Math.cos(cam.el)*Math.sin(cam.az))
+      .multiplyScalar(cam.dist);
+  camera.position.copy(camV);
+  camera.lookAt(0,0,0);
+  var w = stage.clientWidth, h = stage.clientHeight;
+  pinObjs.forEach(function(p){
+    projV.copy(p.mesh.position); projV.y += 0.55;
+    projV.project(camera);
+    var vis = projV.z < 1 && Math.abs(projV.x) < 1.12 && Math.abs(projV.y) < 1.12;
+    p.el.style.display = vis ? "block" : "none";
+    if(vis){
+      p.el.style.left = ((projV.x*0.5+0.5)*w) + "px";
+      p.el.style.top  = ((-projV.y*0.5+0.5)*h) + "px";
+    }
+  });
+  renderer.render(scene, camera);
+}
+window.addEventListener("resize", resize);
+if(window.ResizeObserver) new ResizeObserver(resize).observe(stage);
+render();
+resize();
+frame();
+})();
+</script>
+<!--/ART-->
+</body>
+</html>
