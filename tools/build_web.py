@@ -3,12 +3,13 @@
 
 로컬본과 다른 점
   · 파일명을 ASCII로 (ch05-buzzer.html) — 한글 URL 인코딩 문제 회피. 드라이브 원본은 그대로.
-  · 대본의 <video>는 안내 문구로 교체 (영상은 깃에 올리지 않음)
+  · 수업 진행 대본은 아예 제외 (교사용 문서)
+  · 영상은 깃에 올리지 않고 안내 문구로 교체
   · 교재 PDF·실습코드·라이브러리는 넣지 않음 (ICBANQ 저작물)
 
 웹 파일명 규칙 (장 번호가 앞에 오므로 정렬 순서가 그대로 유지된다)
   chNN-<주제>.html   소스 실행기 (01장은 조립 순서기)
-  chNN-script.html   수업 진행 대본
+  (수업 진행 대본은 교사용이라 웹에 올리지 않는다)
   chNN-easy.html     아주 쉬운 설명서
 """
 import os, re, glob, io, sys, shutil
@@ -61,21 +62,10 @@ for path in kit_glob("*장_*_소스실행기.html") + kit_glob("*장_*_조립순
     pages[num]["kind"] = kind
     print(f"  {out:22s} ← {os.path.basename(path)}")
 
-# ── 수업 진행 대본 ─────────────────────────
-for path in kit_glob("*장_*_수업진행대본.html"):
-    num = os.path.basename(path)[:2]
-    s = io.open(path, encoding="utf-8").read()
-    s = re.sub(r'<section id="film">.*?</section>', NOTICE, s, flags=re.S)   # 영상 → 안내
-    s = s.replace("ESP32_핀지도.html", "pinmap.html")
-    s = s.replace("ESP32_%ED%95%80%EC%A7%80%EB%8F%84.html", "pinmap.html")
-    out = f"ch{num}-script.html"
-    io.open(os.path.join(WEB, out), "w", encoding="utf-8").write(s)
-    pages.setdefault(num, {})["script"] = out
-    print(f"  {out:22s} ← {os.path.basename(path)}")
-    # 예전 주소(ch03.html)로 들어와도 새 파일로 넘어가게
-    io.open(os.path.join(WEB, f"ch{num}.html"), "w", encoding="utf-8").write(
-        f'<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url={out}">'
-        f'<title>이동 중</title><a href="{out}">{out}</a>')
+# ── 수업 진행 대본 : 웹에 올리지 않는다 ─────
+# 2026-09-10 사용자 결정. 대본은 교사가 수업하며 보는 문서다.
+# 학생 답·교사 메모·다음 반에서 쓸 발문이 그대로 들어 있어 공개 사이트에 두지 않는다.
+# 드라이브 로컬 index.html 에는 그대로 나온다 (build_index.py 쪽).
 
 # ── 아주 쉬운 설명서 ───────────────────────
 for path in kit_glob("*장_*_아주쉬운설명서.html"):
@@ -115,14 +105,11 @@ for name in sorted(os.listdir(KIT)):
     chapters.append((name[:2], name[3:].strip(), pages.get(name[:2], {})))
 
 n_run = sum(1 for _, _, p in chapters if p.get("run"))
-n_script = sum(1 for _, _, p in chapters if p.get("script"))
 
 cards = []
 for num, title, p in chapters:
     if p.get("run"):
         subs = []
-        if p.get("script"):
-            subs.append(f'<a class="sub" href="{p["script"]}">📖 수업 대본</a>')
         if p.get("easy"):
             subs.append(f'<a class="sub" href="{p["easy"]}">🧸 아주 쉬운 설명서</a>')
         subs_html = f'<div class="subs">{"".join(subs)}</div>' if subs else ""
@@ -145,7 +132,7 @@ html = f'''<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>사물 인터넷과 센서 제어</title>
-<meta name="description" content="숭신고 2학년 사물 인터넷과 센서 제어 — 장별 소스 실행기(한 줄씩 실행하며 값을 바꿔 보는 시뮬레이터)와 수업 대본">
+<meta name="description" content="숭신고 2학년 사물 인터넷과 센서 제어 — 장별 소스 실행기(한 줄씩 실행하며 값을 바꿔 보는 시뮬레이터)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@600&display=swap">
 <style>
@@ -258,4 +245,4 @@ html = f'''<!doctype html>
 </html>
 '''
 io.open(os.path.join(WEB, "index.html"), "w", encoding="utf-8").write(html)
-print(f"  index.html  (장 {len(chapters)}개 · 실행기 {n_run}개 · 대본 {n_script}개)")
+print(f"  index.html  (장 {len(chapters)}개 · 실행기 {n_run}개 · 대본은 웹에 올리지 않음)")

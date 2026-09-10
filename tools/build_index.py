@@ -17,6 +17,7 @@ def g(pattern_dir, pat):
 ROOT = r"G:/내 드라이브/2026년/올인원_사물"
 KIT = os.path.join(ROOT, "ESP32 올인원 키트_교안")
 VID = os.path.join(ROOT, "사물영상")
+SCRIPTS = os.path.join(ROOT, "수업교안")   # 교사용 수업 진행 대본 (2026-09-10 분리)
 WEB_URL = "https://kwakjanghun.github.io/iot/"   # 학생 공유용 (build_web.py 가 올린다)
 
 def url(p):
@@ -26,6 +27,11 @@ def url(p):
 def first(pat):
     hits = sorted(os.path.basename(x) for x in g(KIT, pat))
     return hits[0] if hits else None
+
+def first_script(num):
+    """대본은 키트 폴더가 아니라 ROOT/수업교안 에 있다. 키트 폴더 기준 상대경로로 돌려준다."""
+    hits = sorted(os.path.basename(x) for x in g(SCRIPTS, f"{num}장_*_수업진행대본.html"))
+    return f"../수업교안/{hits[0]}" if hits else None
 
 chapters = []
 for name in sorted(os.listdir(KIT)):
@@ -51,7 +57,7 @@ for name in sorted(os.listdir(KIT)):
         kind = "조립 순서기"
     chapters.append(dict(num=num, title=title, folder=name, video=main_video,
                          practice=practice, pdf=pdf,
-                         script=first(f"{num}장_*_수업진행대본.html"),
+                         script=first_script(num),
                          easy=first(f"{num}장_*_아주쉬운설명서.html"),
                          runner=runner, kind=kind if runner else None))
 

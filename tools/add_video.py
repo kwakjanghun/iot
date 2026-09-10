@@ -6,6 +6,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 ROOT = r"G:/내 드라이브/2026년/올인원_사물"
 KIT = os.path.join(ROOT, "ESP32 올인원 키트_교안")
 VID = os.path.join(ROOT, "사물영상")
+SCRIPTS = os.path.join(ROOT, "수업교안")   # 대본 위치 (2026-09-10 분리)
 enc = lambda p: urllib.parse.quote(p.replace("\\", "/"))
 
 VIDEO_CSS = """
@@ -27,7 +28,7 @@ HOME_CSS = """
   nav .in .home{color:var(--amber);border-color:var(--amber);font-weight:900}
 """
 
-for path in sorted(glob.glob(os.path.join(glob.escape(KIT), "*장_*_수업진행대본.html"))):
+for path in sorted(glob.glob(os.path.join(glob.escape(SCRIPTS), "*장_*_수업진행대본.html"))):
     fn = os.path.basename(path)
     num = fn[:2]
     s = io.open(path, encoding="utf-8").read()
@@ -57,7 +58,7 @@ for path in sorted(glob.glob(os.path.join(glob.escape(KIT), "*장_*_수업진행
         inner = "\n".join(
             f'''    <div class="film">
       <b>{os.path.splitext(os.path.basename(c))[0]}</b>
-      <video controls preload="metadata" src="{enc(folder + "/실습영상/" + os.path.basename(c))}"></video>
+      <video controls preload="metadata" src="{enc("../ESP32 올인원 키트_교안/" + folder + "/실습영상/" + os.path.basename(c))}"></video>
     </div>''' for c in clips)
         blocks.append(f'  <div class="clips">\n{inner}\n  </div>')
 
